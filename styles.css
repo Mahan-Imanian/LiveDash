@@ -161,6 +161,50 @@ body{
 .card.dragging{opacity:.65; transform: scale(.99)}
 .card.over{outline:2px dashed rgba(124,92,255,.45); outline-offset:-6px}
 
+.empty-card{
+  grid-column: 1 / -1;
+  border:1px dashed rgba(124,92,255,.45);
+  border-radius: var(--radius);
+  padding:32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  background: linear-gradient(135deg, rgba(124,92,255,.15), rgba(45,212,191,.12));
+  box-shadow: var(--shadow);
+  min-height: 200px;
+}
+.empty-card__content h3{
+  margin:0 0 10px;
+  font-size:20px;
+}
+.empty-card__content p{
+  margin:0;
+  color:var(--fg1);
+  max-width:520px;
+}
+.empty-cta{
+  background:rgba(124,92,255,.18);
+  border-color: rgba(124,92,255,.45);
+  font-weight:700;
+  padding:12px 16px;
+}
+.empty-cta:hover{transform:translateY(-1px)}
+.empty-cta:focus-visible{
+  outline:2px solid rgba(124,92,255,.8);
+  outline-offset:2px;
+}
+@media (max-width: 700px){
+  .empty-card{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .empty-cta{
+    width:100%;
+    justify-content:center;
+  }
+}
+
 .card-head{
   display:flex; align-items:center; justify-content:space-between;
   padding: 12px 12px 10px;
