@@ -1,4 +1,4 @@
-const CACHE = "livedash-cache-v2";
+const CACHE = "livedash-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",
