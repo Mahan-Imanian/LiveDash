@@ -4,6 +4,7 @@
   const WORKSPACE_LIST_KEY = "livedash:workspaces";
   const HISTORY_KEY = "livedash:history";
   const FIRST_LOAD_KEY = "livedash:first-load";
+  const CATALOG_KEY = "livedash:catalog";
   const DEFAULTS = {
     version: 3,
     theme: "dark",
@@ -170,6 +171,41 @@
     }
   ];
 
+  const DASHBOARD_PRESETS = {
+    daily: [
+      ["clock", 1],
+      ["calendar", 2],
+      ["timezone", 1],
+      ["weather", 2],
+      ["prices", 2],
+      ["focus", 2],
+      ["pulse", 2],
+      ["todos", 2],
+      ["notes", 2],
+      ["search", 2],
+      ["links", 2],
+      ["stats", 1],
+      ["agenda", 2],
+      ["habits", 2],
+      ["quote", 1],
+      ["ambient", 1]
+    ],
+    focus: [
+      ["clock", 1],
+      ["focus", 2],
+      ["ambient", 1],
+      ["todos", 2],
+      ["notes", 2],
+      ["quote", 1]
+    ],
+    minimal: [
+      ["clock", 1],
+      ["focus", 2],
+      ["notes", 2],
+      ["todos", 2]
+    ]
+  };
+
   const WIDGET_REGISTRY = new Map();
 
   function registerWidget(type, renderer, meta = {}) {
@@ -210,6 +246,31 @@
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
   const SWR_TTL_MS = 20 * 60 * 1000;
+  const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+  let activeTrap = null;
+
+  function trapFocus(container) {
+    const focusable = () => $$(FOCUSABLE, container).filter(el => !el.disabled && el.offsetParent !== null);
+    const onKey = (e) => {
+      if (e.key !== "Tab") return;
+      const items = focusable();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    container.addEventListener("keydown", onKey);
+    const first = focusable()[0];
+    if (first) first.focus();
+    return () => container.removeEventListener("keydown", onKey);
+  }
 
   const app = {
     state: null,
@@ -217,7 +278,9 @@
     workspaces: [],
     history: [],
     drag: { id: null, over: null },
-    modalMode: "gallery",
+    modalMode: "layout",
+    catalogFilter: "all",
+    ui: { catalogCollapsed: false, catalogOpen: false },
     focus: { running: false, until: 0, mode: "off", tick: null }
   };
 
@@ -242,9 +305,75 @@
   function applyLayout() {
     const { cols, density, card } = app.state.layout;
     document.documentElement.style.setProperty("--cols", String(cols));
+    document.documentElement.style.setProperty("--grid-max-cols", String(cols));
     document.documentElement.style.setProperty("--density", density === "compact" ? "1.35" : "1");
     document.documentElement.style.setProperty("--card", card === "solid" ? "solid" : "glass");
     document.body.dataset.locked = app.state.layout.locked ? "true" : "false";
+  }
+
+  function loadCatalogState() {
+    try {
+      const raw = localStorage.getItem(CATALOG_KEY);
+      if (!raw) return { collapsed: false };
+      const parsed = JSON.parse(raw);
+      return { collapsed: !!parsed.collapsed };
+    } catch {
+      return { collapsed: false };
+    }
+  }
+
+  function saveCatalogState() {
+    localStorage.setItem(CATALOG_KEY, JSON.stringify({ collapsed: app.ui.catalogCollapsed }));
+  }
+
+  function applyCatalogState() {
+    document.body.classList.toggle("catalog-collapsed", app.ui.catalogCollapsed);
+    $("#btnCatalog")?.setAttribute("aria-expanded", String(!app.ui.catalogCollapsed));
+    if (!window.matchMedia("(max-width: 1100px)").matches) {
+      document.body.classList.remove("catalog-open");
+      $("#catalogBackdrop").hidden = true;
+    }
+  }
+
+  function openCatalog() {
+    if (window.matchMedia("(max-width: 1100px)").matches) {
+      app.ui.catalogOpen = true;
+      document.body.classList.add("catalog-open");
+      $("#catalogBackdrop").hidden = false;
+      $("#btnCatalog")?.setAttribute("aria-expanded", "true");
+      activeTrap?.();
+      activeTrap = trapFocus($("#catalogPanel"));
+      renderGallery();
+      return;
+    }
+    app.ui.catalogCollapsed = false;
+    applyCatalogState();
+    saveCatalogState();
+    renderGallery();
+  }
+
+  function closeCatalog() {
+    if (!window.matchMedia("(max-width: 1100px)").matches) return;
+    app.ui.catalogOpen = false;
+    document.body.classList.remove("catalog-open");
+    $("#catalogBackdrop").hidden = true;
+    $("#btnCatalog")?.setAttribute("aria-expanded", "false");
+    activeTrap?.();
+    activeTrap = null;
+  }
+
+  function toggleCatalog() {
+    if (window.matchMedia("(max-width: 1100px)").matches) {
+      if (app.ui.catalogOpen) {
+        closeCatalog();
+      } else {
+        openCatalog();
+      }
+      return;
+    }
+    app.ui.catalogCollapsed = !app.ui.catalogCollapsed;
+    applyCatalogState();
+    saveCatalogState();
   }
 
   function getWorkspaceKey(name) {
@@ -360,6 +489,7 @@
 
   function renderWorkspaceSelect() {
     const sel = $("#workspaceSel");
+    if (!sel) return;
     sel.innerHTML = "";
     for (const name of app.workspaces) {
       const opt = document.createElement("option");
@@ -370,7 +500,7 @@
     }
   }
 
-  function defaultDashboard() {
+  function defaultDashboard(preset = "daily") {
     const mk = (type, size = 2, overrides = {}) => {
       const cat = WIDGET_CATALOG.find(x => x.type === type);
       const base = cat ? cat.defaults : {};
@@ -383,26 +513,10 @@
         options: { ...structuredClone(base), ...overrides }
       };
     };
+    const list = DASHBOARD_PRESETS[preset] || DASHBOARD_PRESETS.daily;
     return {
       ...structuredClone(DEFAULTS),
-      widgets: [
-        mk("clock", 1),
-        mk("calendar", 2),
-        mk("timezone", 1),
-        mk("weather", 2),
-        mk("prices", 2),
-        mk("focus", 2),
-        mk("pulse", 2),
-        mk("todos", 2),
-        mk("notes", 2),
-        mk("search", 2),
-        mk("links", 2),
-        mk("stats", 1),
-        mk("agenda", 2),
-        mk("habits", 2),
-        mk("quote", 1),
-        mk("ambient", 1)
-      ]
+      widgets: list.map(([type, size]) => mk(type, size))
     };
   }
 
@@ -413,37 +527,48 @@
   }
 
   function toast(text) {
+    const host = $("#toastHost") || document.body;
     const el = document.createElement("div");
-    el.className = "pill";
-    el.style.position = "fixed";
-    el.style.right = "14px";
-    el.style.bottom = "14px";
-    el.style.zIndex = "80";
-    el.style.maxWidth = "min(520px, calc(100% - 28px))";
+    el.className = "toast";
     el.textContent = text;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 2200);
+    host.appendChild(el);
+    setTimeout(() => el.remove(), 2400);
   }
 
   function openModal(mode) {
     app.modalMode = mode;
     const modal = $("#modal");
     modal.hidden = false;
-    $("#gallery").hidden = mode !== "gallery";
-    $("#importBox").hidden = mode !== "import";
     $("#layoutBox").hidden = mode !== "layout";
-    if (mode === "gallery") renderGallery();
-    if (mode === "import") $("#importText").value = "";
     if (mode === "layout") renderLayoutControls();
+    activeTrap?.();
+    activeTrap = trapFocus(modal);
   }
 
   function closeModal() {
     $("#modal").hidden = true;
+    activeTrap?.();
+    activeTrap = null;
+  }
+
+  function openDrawer(drawer) {
+    if (!drawer) return;
+    drawer.hidden = false;
+    const panel = $(".drawer-panel", drawer);
+    activeTrap?.();
+    activeTrap = trapFocus(panel || drawer);
+  }
+
+  function closeDrawer(drawer) {
+    if (!drawer) return;
+    drawer.hidden = true;
+    activeTrap?.();
+    activeTrap = null;
   }
 
   function renderGallery() {
     const q = ($("#widgetSearch").value || "").trim().toLowerCase();
-    const f = $("#widgetFilter").value;
+    const f = app.catalogFilter || "all";
 
     const items = WIDGET_CATALOG
       .filter(w => {
@@ -453,6 +578,7 @@
       });
 
     const g = $("#galleryGrid");
+    if (!g) return;
     g.innerHTML = "";
     for (const w of items) {
       const card = document.createElement("div");
@@ -480,6 +606,35 @@
     $("#lockToggle").checked = !!app.state.layout.locked;
   }
 
+  function setCatalogFilter(filter) {
+    app.catalogFilter = filter;
+    $$("#widgetFilters .seg-btn").forEach(btn => {
+      const active = btn.dataset.filter === filter;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-selected", String(active));
+    });
+    renderGallery();
+  }
+
+  function setIoMode(mode) {
+    const tabs = $$("#ioTabs .seg-btn");
+    tabs.forEach(btn => {
+      const active = btn.dataset.io === mode;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-selected", String(active));
+    });
+    $("#ioExport").hidden = mode !== "export";
+    $("#ioImport").hidden = mode !== "import";
+    if (mode === "export") {
+      $("#exportText").value = JSON.stringify(app.state, null, 2);
+    }
+  }
+
+  function openIoDrawer(mode) {
+    setIoMode(mode);
+    openDrawer($("#ioDrawer"));
+  }
+
   function addWidget(type) {
     const cat = WIDGET_CATALOG.find(x => x.type === type);
     const w = {
@@ -494,7 +649,7 @@
     app.state.widgets.unshift(w);
     save();
     renderGrid();
-    closeModal();
+    closeCatalog();
     toast("Widget added");
     updateWeatherPill();
   }
@@ -556,7 +711,7 @@
 
       $('[data-act="remove"]', node).addEventListener("click", () => removeWidget(w.id));
       $('[data-act="refresh"]', node).addEventListener("click", () => refreshWidget(w.id));
-      $('[data-act="settings"]', node).addEventListener("click", () => openSettings(node, w));
+      $('[data-act="settings"]', node).addEventListener("click", () => openSettings(w));
 
       if (!app.state.layout.locked) {
         wireDnD(node);
@@ -577,16 +732,40 @@
     card.innerHTML = `
       <div class="empty-card__content">
         <h3>Build your dashboard</h3>
-        <p>Add widgets like clocks, weather, focus timers, and more to personalize LiveDash.</p>
+        <p>Add widgets like clocks, weather, focus timers, and more to personalize LiveDash. Or start from a preset.</p>
+        <div class="preset-row">
+          <button class="btn ghost preset-btn" type="button" data-preset="daily">Daily preset</button>
+          <button class="btn ghost preset-btn" type="button" data-preset="focus">Focus preset</button>
+          <button class="btn ghost preset-btn" type="button" data-preset="minimal">Minimal preset</button>
+        </div>
       </div>
     `;
     const cta = document.createElement("button");
     cta.type = "button";
     cta.className = "btn empty-cta";
     cta.textContent = "Add your first widget";
-    cta.addEventListener("click", () => openModal("gallery"));
+    cta.addEventListener("click", () => openCatalog());
     card.appendChild(cta);
+    $$(".preset-btn", card).forEach(btn => {
+      btn.addEventListener("click", () => applyPreset(btn.dataset.preset));
+    });
     grid.appendChild(card);
+  }
+
+  function applyPreset(preset) {
+    pushHistory();
+    const next = defaultDashboard(preset);
+    next.theme = app.state.theme;
+    next.background = app.state.background;
+    next.layout = structuredClone(app.state.layout);
+    next.permissions = structuredClone(app.state.permissions);
+    next.resources = structuredClone(app.state.resources);
+    app.state = next;
+    save();
+    renderGrid();
+    updateWeatherPill();
+    closeCatalog();
+    toast(`Preset applied: ${preset}`);
   }
 
   function refreshWidget(id) {
@@ -633,10 +812,14 @@
     });
   }
 
-  function openSettings(cardNode, w) {
-    const body = $(".card-body", cardNode);
-    const old = body.firstChild;
+  function openSettings(w) {
     const panel = $("#tplSettings").content.firstElementChild.cloneNode(true);
+    const drawer = $("#settingsDrawer");
+    const body = $("#settingsBody");
+    body.innerHTML = "";
+    body.appendChild(panel);
+    const title = $("#settingsTitle");
+    if (title) title.textContent = `Settings · ${w.title || w.type}`;
 
     const t = $('[data-k="title"]', panel);
     const a = $('[data-k="accent"]', panel);
@@ -646,12 +829,9 @@
     a.value = w.accent || "#7c5cff";
     o.value = JSON.stringify(w.options ?? {}, null, 2);
 
-    const restore = () => {
-      body.innerHTML = "";
-      body.appendChild(renderWidgetBody(w));
-    };
+    const close = () => closeDrawer(drawer);
 
-    $('[data-act="cancel"]', panel).addEventListener("click", restore);
+    $('[data-act="cancel"]', panel).addEventListener("click", close);
 
     $('[data-act="save"]', panel).addEventListener("click", () => {
       const nextTitle = t.value.trim().slice(0, 60);
@@ -674,11 +854,10 @@
       renderGrid();
       updateWeatherPill();
       if (w.type === "focus") syncFocusPill();
+      close();
     });
 
-    body.innerHTML = "";
-    body.appendChild(panel);
-    if (old && old.scrollIntoView) old.scrollIntoView({ block: "nearest" });
+    openDrawer(drawer);
   }
 
   function renderWidgetBody(w) {
@@ -2076,65 +2255,109 @@
   }
 
   function bindUI() {
-    $("#workspaceSel").addEventListener("change", (e) => setWorkspace(e.target.value));
-    $("#btnWorkspaceAdd").addEventListener("click", () => {
-      const name = (prompt("Workspace name") || "").trim().slice(0, 20);
-      if (!name) return;
-      if (app.workspaces.includes(name)) {
-        toast("Workspace already exists");
-        return;
-      }
-      app.workspaces.push(name);
-      saveWorkspaceList();
-      setWorkspace(name);
+    const workspaceSel = $("#workspaceSel");
+    if (workspaceSel) workspaceSel.addEventListener("change", (e) => setWorkspace(e.target.value));
+    const workspaceAdd = $("#btnWorkspaceAdd");
+    if (workspaceAdd) {
+      workspaceAdd.addEventListener("click", () => {
+        const name = (prompt("Workspace name") || "").trim().slice(0, 20);
+        if (!name) return;
+        if (app.workspaces.includes(name)) {
+          toast("Workspace already exists");
+          return;
+        }
+        app.workspaces.push(name);
+        saveWorkspaceList();
+        setWorkspace(name);
+      });
+    }
+
+    $("#btnCatalog")?.addEventListener("click", toggleCatalog);
+    $("#btnCatalogClose")?.addEventListener("click", closeCatalog);
+    $("#catalogBackdrop")?.addEventListener("click", closeCatalog);
+    $("#btnAdd")?.addEventListener("click", openCatalog);
+    $("#btnLayout")?.addEventListener("click", () => openModal("layout"));
+    $("#btnTheme")?.addEventListener("click", () => setTheme(app.state.theme === "dark" ? "light" : "dark"));
+    $("#btnExport")?.addEventListener("click", () => openIoDrawer("export"));
+    $("#btnImport")?.addEventListener("click", () => openIoDrawer("import"));
+    $("#btnUndo")?.addEventListener("click", undo);
+    $("#btnReset")?.addEventListener("click", resetDashboard);
+
+    $("#widgetSearch")?.addEventListener("input", renderGallery);
+    $("#widgetFilters")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-filter]");
+      if (!btn) return;
+      setCatalogFilter(btn.dataset.filter);
     });
 
-    $("#btnAdd").addEventListener("click", () => openModal("gallery"));
-    $("#btnLayout").addEventListener("click", () => openModal("layout"));
-    $("#btnTheme").addEventListener("click", () => setTheme(app.state.theme === "dark" ? "light" : "dark"));
-    $("#btnExport").addEventListener("click", exportDashboard);
-    $("#btnImport").addEventListener("click", () => openModal("import"));
-    $("#btnUndo").addEventListener("click", undo);
-    $("#btnReset").addEventListener("click", resetDashboard);
+    $$(".preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => applyPreset(btn.dataset.preset));
+    });
 
-    $("#widgetSearch").addEventListener("input", () => app.modalMode === "gallery" && renderGallery());
-    $("#widgetFilter").addEventListener("change", () => app.modalMode === "gallery" && renderGallery());
+    $("#ioTabs")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-io]");
+      if (!btn) return;
+      setIoMode(btn.dataset.io);
+    });
+    $("#btnDownloadExport")?.addEventListener("click", exportDashboard);
+    $("#btnCopyExport")?.addEventListener("click", async () => {
+      const text = $("#exportText")?.value || "";
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        toast("Copied export JSON");
+      } catch {
+        toast("Copy failed");
+      }
+    });
 
-    $("#modal").addEventListener("click", (e) => {
+    $("#modal")?.addEventListener("click", (e) => {
       const t = e.target;
       if (t && t.dataset && t.dataset.close) closeModal();
     });
+    $("#settingsDrawer")?.addEventListener("click", (e) => {
+      const t = e.target;
+      if (t && t.dataset && t.dataset.close) closeDrawer($("#settingsDrawer"));
+    });
+    $("#ioDrawer")?.addEventListener("click", (e) => {
+      const t = e.target;
+      if (t && t.dataset && t.dataset.close) closeDrawer($("#ioDrawer"));
+    });
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !$("#modal").hidden) closeModal();
+      if (e.key !== "Escape") return;
+      if (!$("#modal").hidden) closeModal();
+      if (!$("#settingsDrawer").hidden) closeDrawer($("#settingsDrawer"));
+      if (!$("#ioDrawer").hidden) closeDrawer($("#ioDrawer"));
+      if (document.body.classList.contains("catalog-open")) closeCatalog();
     });
 
-    $("#btnDoImport").addEventListener("click", doImport);
+    $("#btnDoImport")?.addEventListener("click", doImport);
 
-    $("#densitySel").addEventListener("change", () => {
+    $("#densitySel")?.addEventListener("change", () => {
       pushHistory();
       app.state.layout.density = $("#densitySel").value === "compact" ? "compact" : "comfortable";
       save();
       applyLayout();
     });
-    $("#cardSel").addEventListener("change", () => {
+    $("#cardSel")?.addEventListener("change", () => {
       pushHistory();
       app.state.layout.card = $("#cardSel").value === "solid" ? "solid" : "glass";
       save();
       applyLayout();
     });
-    $("#bgSel").addEventListener("change", () => {
+    $("#bgSel")?.addEventListener("change", () => {
       pushHistory();
       app.state.background = $("#bgSel").value || "aurora";
       save();
       applyBackground();
     });
-    $("#lockToggle").addEventListener("change", () => {
+    $("#lockToggle")?.addEventListener("change", () => {
       pushHistory();
       app.state.layout.locked = $("#lockToggle").checked;
       save();
       renderGrid();
     });
-    $("#colsRange").addEventListener("input", () => {
+    $("#colsRange")?.addEventListener("input", () => {
       pushHistory();
       const v = Number($("#colsRange").value) || 4;
       $("#colsVal").textContent = String(v);
@@ -2200,9 +2423,12 @@
       }));
     pushHistory();
     app.state = next;
+    setTheme(app.state.theme);
+    applyBackground();
+    applyLayout();
     save();
     renderGrid();
-    closeModal();
+    closeDrawer($("#ioDrawer"));
     updateWeatherPill();
     toast("Imported");
   }
@@ -2210,7 +2436,7 @@
   function resetDashboard() {
     pushHistory();
     localStorage.removeItem(getWorkspaceKey(app.workspace));
-    app.state = defaultDashboard();
+    app.state = defaultDashboard("daily");
     save();
     renderGrid();
     updateWeatherPill();
@@ -2227,17 +2453,20 @@
     app.workspace = localStorage.getItem(WORKSPACE_KEY) || app.workspaces[0];
     app.state = loadWorkspace(app.workspace);
     app.history = loadHistory(app.workspace);
+    app.ui.catalogCollapsed = loadCatalogState().collapsed;
 
     setTheme(app.state.theme);
     applyBackground();
     applyLayout();
+    applyCatalogState();
 
     bindUI();
     renderWorkspaceSelect();
     if (!app.state.widgets.length && !localStorage.getItem(FIRST_LOAD_KEY)) {
-      openModal("gallery");
+      openCatalog();
       localStorage.setItem(FIRST_LOAD_KEY, "true");
     }
+    setCatalogFilter(app.catalogFilter);
     renderGrid();
     updateWeatherPill();
     initPWA();
