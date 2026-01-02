@@ -1,13 +1,15 @@
-const CACHE = "livedash-cache-v2";
+const CACHE = "livedash-cache-v3";
+const BASE_URL = new URL("./", self.location);
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./manifest.webmanifest",
-  "./favicon.svg",
-  "./icon.svg"
+  BASE_URL.href,
+  new URL("index.html", BASE_URL).href,
+  new URL("styles.css", BASE_URL).href,
+  new URL("app.js", BASE_URL).href,
+  new URL("manifest.webmanifest", BASE_URL).href,
+  new URL("favicon.svg", BASE_URL).href,
+  new URL("icon.svg", BASE_URL).href
 ];
+const FALLBACK_URL = new URL("index.html", BASE_URL).href;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -29,9 +31,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
 
   if (url.origin !== self.location.origin) {
-    event.respondWith(
-      fetch(req).catch(() => caches.match("./index.html"))
-    );
+    event.respondWith(fetch(req).catch(() => caches.match(FALLBACK_URL)));
     return;
   }
 
@@ -42,7 +42,7 @@ self.addEventListener("fetch", (event) => {
         const copy = res.clone();
         caches.open(CACHE).then((cache) => cache.put(req, copy));
         return res;
-      }).catch(() => caches.match("./index.html"));
+      }).catch(() => caches.match(FALLBACK_URL));
     })
   );
 });
