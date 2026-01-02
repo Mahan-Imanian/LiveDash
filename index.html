@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Startpage</title>
+  <link rel="icon" href="favicon.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="clock">
+        <div id="time" class="time">--:--</div>
+        <div id="date" class="date">---</div>
+      </div>
+      <div id="status" class="status" aria-live="polite"></div>
+    </div>
+
+    <div class="top-actions">
+      <button class="btn ghost" id="btnPalette" type="button" title="Command palette">Command</button>
+      <button class="btn" id="btnSettings" type="button" title="Settings">Settings</button>
+    </div>
+  </header>
+
+  <main class="grid" id="grid" aria-label="Dashboard grid">
+    <section class="card" data-card="search">
+      <div class="card-head">
+        <h2>Search</h2>
+        <div class="card-actions">
+          <select id="searchEngine" class="select" aria-label="Search engine">
+            <option value="ddg">DuckDuckGo</option>
+            <option value="g">Google</option>
+            <option value="yt">YouTube</option>
+            <option value="gh">GitHub</option>
+            <option value="mdn">MDN</option>
+            <option value="so">Stack Overflow</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="searchInput" class="input" placeholder="Search (/, Enter). Bangs: g, ddg, yt, gh, mdn, so" autocomplete="off" />
+        <div class="hint-row">
+          <div class="pill">Ctrl+K</div>
+          <div class="hint">Commands, navigation, utilities</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" data-card="weather">
+      <div class="card-head">
+        <h2>Weather</h2>
+        <div class="card-actions">
+          <button class="btn ghost" id="btnWeatherRefresh" type="button">Refresh</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="weather-top">
+          <div>
+            <div id="weatherPlace" class="muted">Not set</div>
+            <div id="weatherNow" class="weather-now">—</div>
+          </div>
+          <div id="weatherIcon" class="weather-icon" aria-hidden="true"></div>
+        </div>
+        <div id="weatherMeta" class="weather-meta"></div>
+        <div id="weatherForecast" class="forecast"></div>
+      </div>
+    </section>
+
+    <section class="card" data-card="agenda">
+      <div class="card-head">
+        <h2>Agenda</h2>
+        <div class="card-actions">
+          <label class="btn ghost file">
+            Import .ics
+            <input id="icsFile" type="file" accept=".ics,text/calendar" />
+          </label>
+          <button class="btn ghost" id="btnAgendaClear" type="button">Clear</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="agendaList" class="list"></div>
+      </div>
+    </section>
+
+    <section class="card" data-card="tasks">
+      <div class="card-head">
+        <h2>Tasks</h2>
+        <div class="card-actions segmented" role="tablist" aria-label="Task filters">
+          <button class="seg" data-filter="today" type="button" aria-pressed="true">Today</button>
+          <button class="seg" data-filter="upcoming" type="button" aria-pressed="false">Upcoming</button>
+          <button class="seg" data-filter="all" type="button" aria-pressed="false">All</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <input id="taskInput" class="input" placeholder='Add: "Pay rent @2026-01-05 #home"' autocomplete="off" />
+        <div id="taskList" class="list"></div>
+      </div>
+    </section>
+
+    <section class="card" data-card="notes">
+      <div class="card-head">
+        <h2>Notes</h2>
+        <div class="card-actions">
+          <button class="btn ghost" id="btnNotesMode" type="button">Preview</button>
+          <button class="btn ghost" id="btnNotesClear" type="button">Clear</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="notesWrap" class="notes">
+          <textarea id="notesInput" class="textarea" placeholder="Markdown notes. Autosaves."></textarea>
+          <div id="notesPreview" class="preview" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" data-card="links">
+      <div class="card-head">
+        <h2>Links</h2>
+        <div class="card-actions">
+          <button class="btn ghost" id="btnLinkAdd" type="button">Add</button>
+          <button class="btn ghost" id="btnLinksExport" type="button">Export</button>
+          <label class="btn ghost file">
+            Import
+            <input id="linksImport" type="file" accept="application/json,.json" />
+          </label>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="linksList" class="links"></div>
+      </div>
+    </section>
+
+    <section class="card" data-card="focus">
+      <div class="card-head">
+        <h2>Focus</h2>
+        <div class="card-actions">
+          <button class="btn ghost" id="btnFocusReset" type="button">Reset</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="focus">
+          <div id="focusLabel" class="muted">Pomodoro</div>
+          <div id="focusTime" class="focus-time">25:00</div>
+          <div class="focus-actions">
+            <button class="btn" id="btnFocusStart" type="button">Start</button>
+            <button class="btn ghost" id="btnFocusPause" type="button">Pause</button>
+            <button class="btn ghost" id="btnFocusSkip" type="button">Skip</button>
+          </div>
+          <div class="hint tiny">Notifications optional. Offline-safe.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="dlgSettings" class="dlg">
+    <form method="dialog" class="dlg-inner">
+      <div class="dlg-head">
+        <h3>Settings</h3>
+        <button class="btn ghost" value="cancel" type="submit">Close</button>
+      </div>
+
+      <div class="dlg-body">
+        <div class="form-grid">
+          <label class="field">
+            <div class="lbl">Theme</div>
+            <select id="setTheme" class="select">
+              <option value="auto">Auto</option>
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <div class="lbl">Accent</div>
+            <input id="setAccent" class="input" type="text" placeholder="#7c5cff" />
+          </label>
+
+          <label class="field">
+            <div class="lbl">Time format</div>
+            <select id="setClock" class="select">
+              <option value="auto">Auto</option>
+              <option value="12">12h</option>
+              <option value="24">24h</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <div class="lbl">Temperature</div>
+            <select id="setTempUnit" class="select">
+              <option value="c">C</option>
+              <option value="f">F</option>
+            </select>
+          </label>
+
+          <label class="field full">
+            <div class="lbl">Location</div>
+            <div class="row">
+              <input id="setPlaceQuery" class="input" type="text" placeholder="City, Region, Country" />
+              <button class="btn" id="btnPlaceFind" type="button">Set</button>
+              <button class="btn ghost" id="btnPlaceGeo" type="button">Use GPS</button>
+            </div>
+            <div id="placeResult" class="hint tiny"></div>
+          </label>
+
+          <label class="field full">
+            <div class="lbl">Data</div>
+            <div class="row">
+              <button class="btn ghost" id="btnDataExport" type="button">Export all</button>
+              <label class="btn ghost file">
+                Import all
+                <input id="dataImport" type="file" accept="application/json,.json" />
+              </label>
+              <button class="btn danger" id="btnDataReset" type="button">Reset</button>
+            </div>
+          </label>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlgPalette" class="dlg">
+    <form method="dialog" class="dlg-inner palette">
+      <div class="dlg-head">
+        <h3>Command</h3>
+        <button class="btn ghost" value="cancel" type="submit">Close</button>
+      </div>
+      <div class="dlg-body">
+        <input id="palInput" class="input" placeholder="Type a command (open settings, add task, focus search, start focus...)" autocomplete="off" />
+        <div id="palList" class="list"></div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlgLink" class="dlg">
+    <form method="dialog" class="dlg-inner">
+      <div class="dlg-head">
+        <h3 id="linkTitle">Add link</h3>
+        <button class="btn ghost" value="cancel" type="submit">Close</button>
+      </div>
+      <div class="dlg-body">
+        <div class="form-grid">
+          <label class="field full">
+            <div class="lbl">Name</div>
+            <input id="linkName" class="input" type="text" autocomplete="off" />
+          </label>
+          <label class="field full">
+            <div class="lbl">URL</div>
+            <input id="linkUrl" class="input" type="url" placeholder="https://…" autocomplete="off" />
+          </label>
+          <label class="field full">
+            <div class="lbl">Group</div>
+            <input id="linkGroup" class="input" type="text" placeholder="Work, Dev, Personal…" autocomplete="off" />
+          </label>
+          <div class="row">
+            <button class="btn" id="btnLinkSave" value="ok" type="submit">Save</button>
+            <button class="btn danger" id="btnLinkDelete" value="ok" type="submit" hidden>Delete</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="storage.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
