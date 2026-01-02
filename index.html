@@ -22,6 +22,10 @@
       </div>
 
       <div class="top-actions">
+        <button class="btn ghost" id="btnCatalog" type="button" title="Widget catalog" aria-expanded="true">
+          <span class="btn-ic" aria-hidden="true">☰</span>
+          <span class="btn-tx">Catalog</span>
+        </button>
         <button class="btn ghost" id="btnAdd" type="button" title="Add widget">
           <span class="btn-ic" aria-hidden="true">＋</span>
           <span class="btn-tx">Add</span>
@@ -51,20 +55,61 @@
     </header>
 
     <main class="main">
-      <section class="statusbar" aria-live="polite">
-        <div class="status-left">
-          <span class="pill" id="pillNow">—</span>
-          <span class="pill" id="pillFocus">Focus: off</span>
-          <span class="pill" id="pillWeather">Weather: —</span>
-        </div>
-        <div class="status-right">
-          <span class="hint">Drag widgets to reorder. Edit titles. Everything saves locally.</span>
-        </div>
-      </section>
+      <div class="catalog-backdrop" id="catalogBackdrop" data-close="catalog" hidden></div>
+      <div class="layout">
+        <aside class="catalog" id="catalogPanel" aria-label="Widget catalog">
+          <div class="catalog-head">
+            <div>
+              <div class="catalog-title">Widget catalog</div>
+              <div class="catalog-subtitle">Search, filter, and add widgets.</div>
+            </div>
+            <button class="iconbtn ghost" id="btnCatalogClose" type="button" aria-label="Close catalog">✕</button>
+          </div>
 
-      <section class="grid-wrap">
-        <div id="grid" class="grid" aria-label="Dashboard widgets"></div>
-      </section>
+          <div class="catalog-controls">
+            <label class="sr-only" for="widgetSearch">Search widgets</label>
+            <input class="input search" id="widgetSearch" type="search" placeholder="Search widgets…" autocomplete="off" />
+            <div class="segmented" id="widgetFilters" role="tablist" aria-label="Widget filters">
+              <button class="seg-btn is-active" type="button" role="tab" aria-selected="true" data-filter="all">All</button>
+              <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="daily">Daily</button>
+              <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="focus">Focus</button>
+              <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="info">Info</button>
+              <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="tools">Tools</button>
+            </div>
+          </div>
+
+          <div class="catalog-section">
+            <div class="section-title">Starter presets</div>
+            <div class="preset-row">
+              <button class="btn ghost preset-btn" type="button" data-preset="daily">Daily</button>
+              <button class="btn ghost preset-btn" type="button" data-preset="focus">Focus</button>
+              <button class="btn ghost preset-btn" type="button" data-preset="minimal">Minimal</button>
+            </div>
+          </div>
+
+          <div class="catalog-section">
+            <div class="section-title">Widgets</div>
+            <div class="gallery" id="galleryGrid"></div>
+          </div>
+        </aside>
+
+        <section class="content">
+          <section class="statusbar" aria-live="polite">
+            <div class="status-left">
+              <span class="pill" id="pillNow">—</span>
+              <span class="pill" id="pillFocus">Focus: off</span>
+              <span class="pill" id="pillWeather">Weather: —</span>
+            </div>
+            <div class="status-right">
+              <span class="hint">Drag widgets to reorder. Edit titles. Everything saves locally.</span>
+            </div>
+          </section>
+
+          <section class="grid-wrap">
+            <div id="grid" class="grid" aria-label="Dashboard widgets"></div>
+          </section>
+        </section>
+      </div>
     </main>
 
     <footer class="footer">
@@ -84,33 +129,11 @@
     <div class="modal-backdrop" data-close="1"></div>
     <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-head">
-        <div class="modal-title" id="modalTitle">Add widgets</div>
+        <div class="modal-title" id="modalTitle">Layout settings</div>
         <button class="iconbtn" type="button" data-close="1" aria-label="Close">✕</button>
       </div>
 
       <div class="modal-body">
-        <div class="toolbar">
-          <input class="input" id="widgetSearch" type="search" placeholder="Search widgets…" autocomplete="off" />
-          <select class="select" id="widgetFilter" aria-label="Filter widgets">
-            <option value="all">All</option>
-            <option value="daily">Daily</option>
-            <option value="focus">Focus</option>
-            <option value="info">Info</option>
-            <option value="tools">Tools</option>
-          </select>
-        </div>
-
-        <div class="gallery" id="gallery"></div>
-
-        <div class="importbox" id="importBox" hidden>
-          <div class="import-title">Import dashboard JSON</div>
-          <textarea class="textarea" id="importText" placeholder='Paste exported JSON here'></textarea>
-          <div class="import-actions">
-            <button class="btn" id="btnDoImport" type="button">Import</button>
-            <button class="btn ghost" data-close="1" type="button">Cancel</button>
-          </div>
-        </div>
-
         <div class="layoutbox" id="layoutBox" hidden>
           <div class="import-title">Layout</div>
           <div class="layout-row">
@@ -132,6 +155,18 @@
               <option value="solid">Solid</option>
             </select>
           </div>
+          <div class="layout-row">
+            <label class="lab">Background</label>
+            <select class="select" id="bgSel">
+              <option value="aurora">Aurora</option>
+              <option value="noir">Noir</option>
+              <option value="dawn">Dawn</option>
+            </select>
+          </div>
+          <div class="layout-row">
+            <label class="lab">Lock layout</label>
+            <input class="toggle" id="lockToggle" type="checkbox" />
+          </div>
           <div class="import-actions">
             <button class="btn" data-close="1" type="button">Done</button>
           </div>
@@ -139,6 +174,53 @@
       </div>
     </div>
   </div>
+
+  <div class="drawer" id="settingsDrawer" hidden>
+    <div class="drawer-backdrop" data-close="settings"></div>
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="drawer-head">
+        <div class="drawer-title" id="settingsTitle">Widget settings</div>
+        <button class="iconbtn" type="button" data-close="settings" aria-label="Close settings">✕</button>
+      </div>
+      <div class="drawer-body" id="settingsBody"></div>
+    </div>
+  </div>
+
+  <div class="drawer" id="ioDrawer" hidden>
+    <div class="drawer-backdrop" data-close="io"></div>
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="ioTitle">
+      <div class="drawer-head">
+        <div class="drawer-title" id="ioTitle">Import &amp; export</div>
+        <button class="iconbtn" type="button" data-close="io" aria-label="Close import/export">✕</button>
+      </div>
+      <div class="drawer-body">
+        <div class="segmented" id="ioTabs" role="tablist" aria-label="Import or export">
+          <button class="seg-btn is-active" type="button" role="tab" aria-selected="true" data-io="export">Export</button>
+          <button class="seg-btn" type="button" role="tab" aria-selected="false" data-io="import">Import</button>
+        </div>
+
+        <div class="io-panel" id="ioExport">
+          <div class="import-title">Export dashboard JSON</div>
+          <textarea class="textarea" id="exportText" readonly></textarea>
+          <div class="import-actions">
+            <button class="btn" id="btnDownloadExport" type="button">Download JSON</button>
+            <button class="btn ghost" id="btnCopyExport" type="button">Copy</button>
+          </div>
+        </div>
+
+        <div class="io-panel" id="ioImport" hidden>
+          <div class="import-title">Import dashboard JSON</div>
+          <textarea class="textarea" id="importText" placeholder='Paste exported JSON here'></textarea>
+          <div class="import-actions">
+            <button class="btn" id="btnDoImport" type="button">Import</button>
+            <button class="btn ghost" data-close="io" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-host" id="toastHost" aria-live="polite" aria-atomic="true"></div>
 
   <template id="tplWidget">
     <article class="card" draggable="true">
