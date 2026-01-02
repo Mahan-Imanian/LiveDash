@@ -200,6 +200,9 @@ body{
   padding:7px 9px;
   cursor:pointer;
 }
+.big{font-size:30px; font-weight:950; letter-spacing:.4px}
+.small{color:var(--muted); font-size:12px}
+.timer .btn{box-shadow:none}
 
 .card-body{padding:12px}
 
@@ -306,6 +309,8 @@ body{
   background:rgba(0,0,0,.12);
   color:var(--fg1);
 }
+.quote-text{font-size:18px; font-weight:700; line-height:1.3}
+.quote-source{margin-top:8px}
 
 .importbox, .layoutbox{
   border:1px solid var(--line);
