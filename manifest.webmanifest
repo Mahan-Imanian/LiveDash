@@ -1,17 +1,13 @@
 {
-  "name": "Startpage",
-  "short_name": "Startpage",
+  "name": "LiveDash",
+  "short_name": "LiveDash",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b1020",
-  "theme_color": "#0b1020",
+  "background_color": "#0b0f1a",
+  "theme_color": "#0b0f1a",
+  "description": "A fast, customizable daily dashboard.",
   "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
 }
