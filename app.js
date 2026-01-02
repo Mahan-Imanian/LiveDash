@@ -1,1137 +1,1178 @@
-import { kv } from "./storage.js"
+(() => {
+  const STORAGE_KEY = "livedash:v2";
+  const DEFAULTS = {
+    version: 2,
+    theme: "dark",
+    layout: { cols: 4, density: "comfortable", card: "glass" },
+    widgets: []
+  };
 
-const $ = (s)=> document.querySelector(s)
+  const WIDGET_CATALOG = [
+    {
+      type: "clock",
+      title: "Clock",
+      tags: ["daily", "info"],
+      desc: "Local time + date with seconds.",
+      defaults: { tz: "local", seconds: true, format24: false }
+    },
+    {
+      type: "weather",
+      title: "Weather",
+      tags: ["daily", "info"],
+      desc: "Current conditions via Open-Meteo.",
+      defaults: { city: "New York", units: "metric", autoLocation: true }
+    },
+    {
+      type: "focus",
+      title: "Focus Timer",
+      tags: ["focus", "tools"],
+      desc: "Pomodoro-style timer with ambient mode.",
+      defaults: { workMin: 25, breakMin: 5, longBreakMin: 15, every: 4 }
+    },
+    {
+      type: "todos",
+      title: "Tasks",
+      tags: ["daily", "tools"],
+      desc: "Fast todo list that persists locally.",
+      defaults: { showCompleted: true }
+    },
+    {
+      type: "notes",
+      title: "Notes",
+      tags: ["daily", "tools"],
+      desc: "Quick notes with autosave.",
+      defaults: { placeholder: "Write anything…" }
+    },
+    {
+      type: "links",
+      title: "Quick Links",
+      tags: ["daily", "tools"],
+      desc: "Launch your daily sites fast.",
+      defaults: { links: [{ name: "Gmail", url: "https://mail.google.com" }, { name: "Calendar", url: "https://calendar.google.com" }] }
+    },
+    {
+      type: "stats",
+      title: "Today",
+      tags: ["daily", "info"],
+      desc: "Simple daily KPIs you can reset.",
+      defaults: { counters: [{ k: "Water", v: 0 }, { k: "Steps", v: 0 }, { k: "Deep work", v: 0 }] }
+    }
+  ];
 
-const elTime = $("#time")
-const elDate = $("#date")
-const elStatus = $("#status")
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
 
-const elSearch = $("#searchInput")
-const elEngine = $("#searchEngine")
+  const app = {
+    state: null,
+    drag: { id: null, over: null },
+    modalMode: "gallery",
+    focus: { running: false, until: 0, mode: "off", tick: null }
+  };
 
-const elWeatherPlace = $("#weatherPlace")
-const elWeatherNow = $("#weatherNow")
-const elWeatherIcon = $("#weatherIcon")
-const elWeatherMeta = $("#weatherMeta")
-const elWeatherForecast = $("#weatherForecast")
-const btnWeatherRefresh = $("#btnWeatherRefresh")
+  function nowString() {
+    const d = new Date();
+    return d.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric" }) + " • " +
+      d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  }
 
-const elAgendaList = $("#agendaList")
-const elIcsFile = $("#icsFile")
-const btnAgendaClear = $("#btnAgendaClear")
+  function setTheme(theme) {
+    const t = theme === "light" ? "light" : "dark";
+    document.documentElement.dataset.theme = t;
+    app.state.theme = t;
+    save();
+  }
 
-const elTaskInput = $("#taskInput")
-const elTaskList = $("#taskList")
+  function applyLayout() {
+    const { cols, density, card } = app.state.layout;
+    document.documentElement.style.setProperty("--cols", String(cols));
+    document.documentElement.style.setProperty("--density", density === "compact" ? "1.35" : "1");
+    document.documentElement.style.setProperty("--card", card === "solid" ? "solid" : "glass");
+  }
 
-const elNotesInput = $("#notesInput")
-const elNotesPreview = $("#notesPreview")
-const btnNotesMode = $("#btnNotesMode")
-const btnNotesClear = $("#btnNotesClear")
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return structuredClone(DEFAULTS);
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return structuredClone(DEFAULTS);
+      const s = { ...structuredClone(DEFAULTS), ...parsed };
+      if (!Array.isArray(s.widgets)) s.widgets = [];
+      if (!s.layout) s.layout = structuredClone(DEFAULTS.layout);
+      if (!s.layout.cols) s.layout.cols = 4;
+      if (!s.layout.density) s.layout.density = "comfortable";
+      if (!s.layout.card) s.layout.card = "glass";
+      if (!s.theme) s.theme = "dark";
+      if (!s.version) s.version = 2;
+      return s;
+    } catch {
+      return structuredClone(DEFAULTS);
+    }
+  }
 
-const elLinksList = $("#linksList")
-const btnLinkAdd = $("#btnLinkAdd")
-const btnLinksExport = $("#btnLinksExport")
-const elLinksImport = $("#linksImport")
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(app.state));
+  }
 
-const elFocusLabel = $("#focusLabel")
-const elFocusTime = $("#focusTime")
-const btnFocusStart = $("#btnFocusStart")
-const btnFocusPause = $("#btnFocusPause")
-const btnFocusSkip = $("#btnFocusSkip")
-const btnFocusReset = $("#btnFocusReset")
+  function defaultDashboard() {
+    const mk = (type, size = 2, overrides = {}) => {
+      const cat = WIDGET_CATALOG.find(x => x.type === type);
+      const base = cat ? cat.defaults : {};
+      return {
+        id: uid(),
+        type,
+        title: (cat?.title ?? type),
+        size,
+        accent: "#7c5cff",
+        options: { ...structuredClone(base), ...overrides }
+      };
+    };
+    return {
+      ...structuredClone(DEFAULTS),
+      widgets: [
+        mk("clock", 1),
+        mk("weather", 2),
+        mk("focus", 2),
+        mk("todos", 2),
+        mk("notes", 2),
+        mk("links", 2),
+        mk("stats", 1)
+      ]
+    };
+  }
 
-const dlgSettings = $("#dlgSettings")
-const btnSettings = $("#btnSettings")
-const setTheme = $("#setTheme")
-const setAccent = $("#setAccent")
-const setClock = $("#setClock")
-const setTempUnit = $("#setTempUnit")
-const setPlaceQuery = $("#setPlaceQuery")
-const btnPlaceFind = $("#btnPlaceFind")
-const btnPlaceGeo = $("#btnPlaceGeo")
-const placeResult = $("#placeResult")
-const btnDataExport = $("#btnDataExport")
-const dataImport = $("#dataImport")
-const btnDataReset = $("#btnDataReset")
+  function setStatus() {
+    $("#pillNow").textContent = nowString();
+    $("#footerNet").textContent = navigator.onLine ? "Online" : "Offline";
+    $(".dot").style.background = navigator.onLine ? "var(--ok)" : "var(--warn)";
+  }
 
-const dlgPalette = $("#dlgPalette")
-const btnPalette = $("#btnPalette")
-const palInput = $("#palInput")
-const palList = $("#palList")
+  function toast(text) {
+    const el = document.createElement("div");
+    el.className = "pill";
+    el.style.position = "fixed";
+    el.style.right = "14px";
+    el.style.bottom = "14px";
+    el.style.zIndex = "80";
+    el.style.maxWidth = "min(520px, calc(100% - 28px))";
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2200);
+  }
 
-const dlgLink = $("#dlgLink")
-const linkTitle = $("#linkTitle")
-const linkName = $("#linkName")
-const linkUrl = $("#linkUrl")
-const linkGroup = $("#linkGroup")
-const btnLinkSave = $("#btnLinkSave")
-const btnLinkDelete = $("#btnLinkDelete")
+  function openModal(mode) {
+    app.modalMode = mode;
+    const modal = $("#modal");
+    modal.hidden = false;
+    $("#gallery").hidden = mode !== "gallery";
+    $("#importBox").hidden = mode !== "import";
+    $("#layoutBox").hidden = mode !== "layout";
+    if (mode === "gallery") renderGallery();
+    if (mode === "import") $("#importText").value = "";
+    if (mode === "layout") renderLayoutControls();
+  }
 
-const taskFilterButtons = [...document.querySelectorAll('.segmented .seg')]
+  function closeModal() {
+    $("#modal").hidden = true;
+  }
 
-const DEFAULTS = {
-  settings: {
-    theme: "auto",
-    accent: "#7c5cff",
-    clock: "auto",
-    tempUnit: "c",
-    engine: "ddg",
-    place: null
-  },
-  tasks: [],
-  links: [
-    {id: crypto.randomUUID(), name:"GitHub", url:"https://github.com", group:"Dev"},
-    {id: crypto.randomUUID(), name:"Docs", url:"https://developer.mozilla.org", group:"Dev"},
-    {id: crypto.randomUUID(), name:"Mail", url:"https://mail.google.com", group:"Personal"}
-  ],
-  notes: "",
-  agenda: [],
-  focus: {mode:"work", endsAt: null, pausedLeft: null}
-}
+  function renderGallery() {
+    const q = ($("#widgetSearch").value || "").trim().toLowerCase();
+    const f = $("#widgetFilter").value;
 
-let state = structuredClone(DEFAULTS)
-let taskFilter = "today"
-let notesPreviewMode = false
-let linkEditingId = null
-let focusTick = null
+    const items = WIDGET_CATALOG
+      .filter(w => {
+        const inText = !q || (w.title.toLowerCase().includes(q) || w.desc.toLowerCase().includes(q) || w.tags.join(" ").includes(q));
+        const inFilter = f === "all" || w.tags.includes(f);
+        return inText && inFilter;
+      });
 
-function clamp(n,a,b){ return Math.max(a, Math.min(b, n)) }
-function pad2(n){ return String(n).padStart(2,"0") }
-function todayYmd(d=new Date()){ return d.toISOString().slice(0,10) }
+    const g = $("#gallery");
+    g.innerHTML = "";
+    for (const w of items) {
+      const card = document.createElement("div");
+      card.className = "gcard";
+      card.tabIndex = 0;
+      card.innerHTML = `
+        <div class="gtitle">${escapeHtml(w.title)}</div>
+        <div class="gmeta">${escapeHtml(w.desc)}</div>
+        <div class="gtags">${w.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+      `;
+      card.addEventListener("click", () => addWidget(w.type));
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") addWidget(w.type);
+      });
+      g.appendChild(card);
+    }
+  }
 
-function setStatus(msg){ elStatus.textContent = msg || "" }
+  function renderLayoutControls() {
+    $("#densitySel").value = app.state.layout.density;
+    $("#cardSel").value = app.state.layout.card;
+    $("#colsRange").value = String(app.state.layout.cols);
+    $("#colsVal").textContent = String(app.state.layout.cols);
+  }
 
-function applyTheme(){
-  const s = state.settings
-  document.body.dataset.theme = s.theme === "auto" ? "" : s.theme
-  document.documentElement.style.setProperty("--accent", s.accent || "#7c5cff")
-}
+  function addWidget(type) {
+    const cat = WIDGET_CATALOG.find(x => x.type === type);
+    const w = {
+      id: uid(),
+      type,
+      title: cat?.title ?? type,
+      size: 2,
+      accent: "#7c5cff",
+      options: structuredClone(cat?.defaults ?? {})
+    };
+    app.state.widgets.unshift(w);
+    save();
+    renderGrid();
+    closeModal();
+    toast("Widget added");
+    updateWeatherPill();
+  }
 
-function prefers24h(){
-  if(state.settings.clock === "24") return true
-  if(state.settings.clock === "12") return false
-  const test = new Intl.DateTimeFormat(undefined,{hour:"numeric"}).format(new Date())
-  return !/[AP]M/i.test(test)
-}
+  function removeWidget(id) {
+    app.state.widgets = app.state.widgets.filter(w => w.id !== id);
+    save();
+    renderGrid();
+    updateWeatherPill();
+  }
 
-function renderTime(){
-  const now = new Date()
-  const h24 = prefers24h()
-  const hrs = now.getHours()
-  const h = h24 ? hrs : ((hrs % 12) || 12)
-  const m = now.getMinutes()
-  const ampm = h24 ? "" : (hrs < 12 ? " AM" : " PM")
-  elTime.textContent = `${pad2(h)}:${pad2(m)}${ampm}`
-  const df = new Intl.DateTimeFormat(undefined,{weekday:"long", year:"numeric", month:"short", day:"numeric"})
-  elDate.textContent = df.format(now)
-}
+  function moveWidget(fromId, toId) {
+    const a = app.state.widgets;
+    const from = a.findIndex(w => w.id === fromId);
+    const to = a.findIndex(w => w.id === toId);
+    if (from < 0 || to < 0 || from === to) return;
+    const [item] = a.splice(from, 1);
+    a.splice(to, 0, item);
+    save();
+    renderGrid();
+  }
 
-function parseSearchInput(raw){
-  const t = raw.trim()
-  if(!t) return null
-  const parts = t.split(/\s+/)
-  const bang = parts[0].toLowerCase()
-  const map = {g:"g", ddg:"ddg", yt:"yt", gh:"gh", mdn:"mdn", so:"so"}
-  if(map[bang] && parts.length>1) return {engine: map[bang], q: parts.slice(1).join(" ")}
-  return {engine: state.settings.engine || "ddg", q: t}
-}
+  function renderGrid() {
+    applyLayout();
+    const grid = $("#grid");
+    grid.innerHTML = "";
 
-function engineUrl(engine,q){
-  const e = encodeURIComponent(q)
-  if(engine==="g") return `https://www.google.com/search?q=${e}`
-  if(engine==="yt") return `https://www.youtube.com/results?search_query=${e}`
-  if(engine==="gh") return `https://github.com/search?q=${e}`
-  if(engine==="mdn") return `https://developer.mozilla.org/en-US/search?q=${e}`
-  if(engine==="so") return `https://stackoverflow.com/search?q=${e}`
-  return `https://duckduckgo.com/?q=${e}`
-}
+    for (const w of app.state.widgets) {
+      const node = $("#tplWidget").content.firstElementChild.cloneNode(true);
+      node.dataset.id = w.id;
+      node.dataset.type = w.type;
+      node.dataset.size = String(w.size || 2);
+      node.style.setProperty("--accent", w.accent || "#7c5cff");
 
-function escapeHtml(s){
-  return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;")
-}
+      const title = $(".card-title", node);
+      title.value = w.title || w.type;
+      title.addEventListener("change", () => {
+        w.title = title.value.trim().slice(0, 60) || (WIDGET_CATALOG.find(x => x.type === w.type)?.title ?? w.type);
+        save();
+      });
 
-function mdToHtml(src){
-  const lines = src.replace(/\r\n/g,"\n").split("\n")
-  let out = []
-  let inCode = false
-  let codeBuf = []
-  for(const line of lines){
-    if(line.trim().startsWith("```")){
-      if(!inCode){
-        inCode = true
-        codeBuf = []
-      }else{
-        inCode = false
-        out.push(`<pre><code>${escapeHtml(codeBuf.join("\n"))}</code></pre>`)
+      const sizeSel = $('[data-act="size"]', node);
+      sizeSel.value = String(w.size || 2);
+      sizeSel.addEventListener("change", () => {
+        w.size = Number(sizeSel.value) || 2;
+        node.dataset.size = String(w.size);
+        save();
+      });
+
+      $('[data-act="remove"]', node).addEventListener("click", () => removeWidget(w.id));
+      $('[data-act="refresh"]', node).addEventListener("click", () => refreshWidget(w.id));
+      $('[data-act="settings"]', node).addEventListener("click", () => openSettings(node, w));
+
+      wireDnD(node);
+
+      const body = $(".card-body", node);
+      body.appendChild(renderWidgetBody(w));
+
+      grid.appendChild(node);
+    }
+  }
+
+  function refreshWidget(id) {
+    const w = app.state.widgets.find(x => x.id === id);
+    if (!w) return;
+    renderGrid();
+    updateWeatherPill();
+    if (w.type === "focus") syncFocusPill();
+  }
+
+  function wireDnD(node) {
+    const id = node.dataset.id;
+
+    node.addEventListener("dragstart", (e) => {
+      app.drag.id = id;
+      node.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", id);
+    });
+
+    node.addEventListener("dragend", () => {
+      node.classList.remove("dragging");
+      $$(".card").forEach(x => x.classList.remove("over"));
+      app.drag = { id: null, over: null };
+    });
+
+    node.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const fromId = app.drag.id || e.dataTransfer.getData("text/plain");
+      if (!fromId || fromId === id) return;
+      node.classList.add("over");
+      app.drag.over = id;
+      e.dataTransfer.dropEffect = "move";
+    });
+
+    node.addEventListener("dragleave", () => node.classList.remove("over"));
+
+    node.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const fromId = app.drag.id || e.dataTransfer.getData("text/plain");
+      node.classList.remove("over");
+      if (!fromId || fromId === id) return;
+      moveWidget(fromId, id);
+    });
+  }
+
+  function openSettings(cardNode, w) {
+    const body = $(".card-body", cardNode);
+    const old = body.firstChild;
+    const panel = $("#tplSettings").content.firstElementChild.cloneNode(true);
+
+    const t = $('[data-k="title"]', panel);
+    const a = $('[data-k="accent"]', panel);
+    const o = $('[data-k="options"]', panel);
+
+    t.value = w.title || "";
+    a.value = w.accent || "#7c5cff";
+    o.value = JSON.stringify(w.options ?? {}, null, 2);
+
+    const restore = () => {
+      body.innerHTML = "";
+      body.appendChild(renderWidgetBody(w));
+    };
+
+    $('[data-act="cancel"]', panel).addEventListener("click", restore);
+
+    $('[data-act="save"]', panel).addEventListener("click", () => {
+      const nextTitle = t.value.trim().slice(0, 60);
+      const nextAccent = a.value.trim().slice(0, 40) || "#7c5cff";
+
+      let nextOptions = null;
+      try {
+        nextOptions = JSON.parse(o.value || "{}");
+      } catch {
+        toast("Invalid JSON options");
+        return;
       }
-      continue
+
+      w.title = nextTitle || (WIDGET_CATALOG.find(x => x.type === w.type)?.title ?? w.type);
+      w.accent = nextAccent;
+      w.options = nextOptions;
+
+      save();
+      renderGrid();
+      updateWeatherPill();
+      if (w.type === "focus") syncFocusPill();
+    });
+
+    body.innerHTML = "";
+    body.appendChild(panel);
+    if (old && old.scrollIntoView) old.scrollIntoView({ block: "nearest" });
+  }
+
+  function renderWidgetBody(w) {
+    const type = w.type;
+    if (type === "clock") return widgetClock(w);
+    if (type === "weather") return widgetWeather(w);
+    if (type === "focus") return widgetFocus(w);
+    if (type === "todos") return widgetTodos(w);
+    if (type === "notes") return widgetNotes(w);
+    if (type === "links") return widgetLinks(w);
+    if (type === "stats") return widgetStats(w);
+    return widgetUnknown(w);
+  }
+
+  function widgetUnknown(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+    el.innerHTML = `
+      <div class="kpi">
+        <div class="k">Unknown widget type</div>
+        <div class="v">${escapeHtml(w.type)}</div>
+      </div>
+      <div class="small">Remove this widget or edit its type in exported JSON.</div>
+    `;
+    return el;
+  }
+
+  function widgetClock(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const big = document.createElement("div");
+    big.className = "big";
+    const small = document.createElement("div");
+    small.className = "small";
+
+    el.appendChild(big);
+    el.appendChild(small);
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "clock")?.defaults);
+    const update = () => {
+      const d = new Date();
+      const time = d.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: opts.seconds ? "2-digit" : undefined,
+        hour12: !opts.format24
+      });
+      const date = d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+      big.textContent = time;
+      small.textContent = date;
+      $("#pillNow").textContent = nowString();
+    };
+
+    update();
+    const t = setInterval(update, 1000);
+    el.addEventListener("DOMNodeRemoved", () => clearInterval(t), { once: true });
+    return el;
+  }
+
+  async function widgetWeather(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+    el.innerHTML = `
+      <div class="kpi-row">
+        <div class="kpi"><div class="k">Temp</div><div class="v" data-w="t">—</div></div>
+        <div class="kpi"><div class="k">Wind</div><div class="v" data-w="w">—</div></div>
+        <div class="kpi"><div class="k">Condition</div><div class="v" data-w="c">—</div></div>
+      </div>
+      <hr class="sep2" />
+      <div class="small" data-w="loc">—</div>
+      <div class="small" data-w="hint">Tip: open Settings → Options to disable autoLocation or change city.</div>
+    `;
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "weather")?.defaults);
+    const locEl = $('[data-w="loc"]', el);
+    const tEl = $('[data-w="t"]', el);
+    const wEl = $('[data-w="w"]', el);
+    const cEl = $('[data-w="c"]', el);
+
+    const units = opts.units === "imperial" ? "imperial" : "metric";
+    const unitTemp = units === "imperial" ? "°F" : "°C";
+    const unitWind = units === "imperial" ? "mph" : "m/s";
+
+    const setData = (d) => {
+      tEl.textContent = d.temp + unitTemp;
+      wEl.textContent = d.wind + " " + unitWind;
+      cEl.textContent = d.codeText;
+      locEl.textContent = d.place;
+    };
+
+    const fail = (msg) => {
+      locEl.textContent = msg;
+      tEl.textContent = "—";
+      wEl.textContent = "—";
+      cEl.textContent = "—";
+    };
+
+    try {
+      const place = await resolveWeatherPlace(opts);
+      if (!place) throw new Error("no place");
+      const data = await fetchWeather(place.lat, place.lon, units);
+      setData({ ...data, place: place.label });
+      updateWeatherPillWithData(data, place.label);
+    } catch {
+      fail("Weather unavailable (blocked or offline)");
+      $("#pillWeather").textContent = "Weather: —";
     }
-    if(inCode){ codeBuf.push(line); continue }
 
-    const h1 = line.match(/^# (.+)$/)
-    if(h1){ out.push(`<h1>${escapeInline(h1[1])}</h1>`); continue }
-    const h2 = line.match(/^## (.+)$/)
-    if(h2){ out.push(`<h2>${escapeInline(h2[1])}</h2>`); continue }
+    return el;
+  }
 
-    const bq = line.match(/^> (.+)$/)
-    if(bq){ out.push(`<blockquote>${escapeInline(bq[1])}</blockquote>`); continue }
+  async function resolveWeatherPlace(opts) {
+    if (opts.autoLocation) {
+      const geo = await getGeolocation().catch(() => null);
+      if (geo) return { lat: geo.lat, lon: geo.lon, label: geo.label };
+    }
+    const city = (opts.city || "").trim();
+    if (!city) return null;
+    const g = await geocodeCity(city).catch(() => null);
+    if (!g) return null;
+    return { lat: g.lat, lon: g.lon, label: g.label };
+  }
 
-    const li = line.match(/^\- (.+)$/)
-    if(li){
-      const items = [li[1]]
-      let i = out.length-1
-      if(i>=0 && out[i].startsWith("<ul>") && out[i].endsWith("</ul>")){
-        const inner = out[i].slice(4,-5)
-        out[i] = `<ul>${inner}<li>${escapeInline(items[0])}</li></ul>`
-      }else{
-        out.push(`<ul><li>${escapeInline(items[0])}</li></ul>`)
+  function getGeolocation() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error("no geo"));
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        resolve({ lat, lon, label: "Your location" });
+      }, reject, { enableHighAccuracy: false, timeout: 7000, maximumAge: 600000 });
+    });
+  }
+
+  async function geocodeCity(q) {
+    const url = "https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=" + encodeURIComponent(q);
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error("geo http");
+    const j = await r.json();
+    if (!j || !j.results || !j.results.length) throw new Error("no results");
+    const x = j.results[0];
+    const parts = [x.name, x.admin1, x.country].filter(Boolean);
+    return { lat: x.latitude, lon: x.longitude, label: parts.join(", ") };
+  }
+
+  function codeToText(code) {
+    const m = new Map([
+      [0, "Clear"], [1, "Mainly clear"], [2, "Partly cloudy"], [3, "Overcast"],
+      [45, "Fog"], [48, "Rime fog"],
+      [51, "Light drizzle"], [53, "Drizzle"], [55, "Dense drizzle"],
+      [56, "Freezing drizzle"], [57, "Freezing drizzle"],
+      [61, "Light rain"], [63, "Rain"], [65, "Heavy rain"],
+      [66, "Freezing rain"], [67, "Freezing rain"],
+      [71, "Light snow"], [73, "Snow"], [75, "Heavy snow"],
+      [77, "Snow grains"],
+      [80, "Rain showers"], [81, "Rain showers"], [82, "Violent showers"],
+      [85, "Snow showers"], [86, "Snow showers"],
+      [95, "Thunderstorm"], [96, "Thunder + hail"], [99, "Thunder + hail"]
+    ]);
+    return m.get(code) || ("Code " + String(code));
+  }
+
+  async function fetchWeather(lat, lon, units) {
+    const windUnit = units === "imperial" ? "mph" : "ms";
+    const tempUnit = units === "imperial" ? "fahrenheit" : "celsius";
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + encodeURIComponent(lat) +
+      "&longitude=" + encodeURIComponent(lon) +
+      "&current=temperature_2m,weather_code,wind_speed_10m" +
+      "&temperature_unit=" + tempUnit +
+      "&wind_speed_unit=" + windUnit +
+      "&timezone=auto";
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error("wx http");
+    const j = await r.json();
+    const c = j.current;
+    const temp = Math.round(c.temperature_2m);
+    const wind = Math.round(c.wind_speed_10m);
+    const code = c.weather_code;
+    return { temp, wind, code, codeText: codeToText(code) };
+  }
+
+  function updateWeatherPillWithData(data, label) {
+    $("#pillWeather").textContent = `Weather: ${data.temp}° • ${data.codeText} (${label})`;
+  }
+
+  async function updateWeatherPill() {
+    const wx = app.state.widgets.find(x => x.type === "weather");
+    if (!wx) {
+      $("#pillWeather").textContent = "Weather: —";
+      return;
+    }
+    try {
+      const opts = normalizeOptions(wx, WIDGET_CATALOG.find(x => x.type === "weather")?.defaults);
+      const place = await resolveWeatherPlace(opts);
+      if (!place) throw new Error("no place");
+      const units = opts.units === "imperial" ? "imperial" : "metric";
+      const data = await fetchWeather(place.lat, place.lon, units);
+      updateWeatherPillWithData(data, place.label);
+    } catch {
+      $("#pillWeather").textContent = "Weather: —";
+    }
+  }
+
+  function widgetFocus(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "focus")?.defaults);
+
+    const timer = document.createElement("div");
+    timer.className = "timer";
+    timer.innerHTML = `
+      <div>
+        <div class="big" data-x="time">25:00</div>
+        <div class="small" data-x="mode">Focus: off</div>
+      </div>
+      <div class="row">
+        <button class="btn" data-x="start" type="button">Start</button>
+        <button class="btn ghost" data-x="pause" type="button">Pause</button>
+        <button class="btn danger" data-x="stop" type="button">Stop</button>
+      </div>
+    `;
+
+    const tEl = $('[data-x="time"]', timer);
+    const mEl = $('[data-x="mode"]', timer);
+    const startBtn = $('[data-x="start"]', timer);
+    const pauseBtn = $('[data-x="pause"]', timer);
+    const stopBtn = $('[data-x="stop"]', timer);
+
+    const dataKey = `livedash:focus:${w.id}`;
+    const local = loadJson(dataKey, null) || { running: false, until: 0, mode: "off", cycle: 0, pausedLeft: 0 };
+    app.focus = { ...app.focus, ...local };
+
+    const fmt = (ms) => {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const mm = String(Math.floor(s / 60)).padStart(2, "0");
+      const ss = String(s % 60).padStart(2, "0");
+      return `${mm}:${ss}`;
+    };
+
+    const currentDurationMs = () => {
+      const mode = app.focus.mode;
+      if (mode === "work") return (Number(opts.workMin) || 25) * 60000;
+      if (mode === "break") return (Number(opts.breakMin) || 5) * 60000;
+      if (mode === "long") return (Number(opts.longBreakMin) || 15) * 60000;
+      return (Number(opts.workMin) || 25) * 60000;
+    };
+
+    const setMode = (mode) => {
+      app.focus.mode = mode;
+      mEl.textContent = mode === "work" ? "Focus: work" : mode === "break" ? "Focus: break" : mode === "long" ? "Focus: long break" : "Focus: off";
+      $("#pillFocus").textContent = mEl.textContent;
+    };
+
+    const persist = () => {
+      saveJson(dataKey, { running: app.focus.running, until: app.focus.until, mode: app.focus.mode, cycle: app.focus.cycle, pausedLeft: app.focus.pausedLeft });
+    };
+
+    const stop = () => {
+      app.focus.running = false;
+      app.focus.until = 0;
+      app.focus.pausedLeft = 0;
+      setMode("off");
+      tEl.textContent = fmt(currentDurationMs());
+      persist();
+      syncFocusPill();
+    };
+
+    const tick = () => {
+      if (!app.focus.running) {
+        if (app.focus.pausedLeft) tEl.textContent = fmt(app.focus.pausedLeft);
+        return;
       }
-      continue
-    }
-
-    if(line.trim()===""){ out.push(""); continue }
-    out.push(`<p>${escapeInline(line)}</p>`)
-  }
-  return out.filter(x=>x!==null).join("\n")
-}
-
-function escapeInline(s){
-  let x = escapeHtml(s)
-  x = x.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_,t,u)=> `<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`)
-  x = x.replace(/`([^`]+)`/g, (_,c)=> `<code>${c}</code>`)
-  x = x.replace(/\*\*([^*]+)\*\*/g, (_,b)=> `<strong>${b}</strong>`)
-  x = x.replace(/\*([^*]+)\*/g, (_,i)=> `<em>${i}</em>`)
-  return x
-}
-
-function normalizeUrl(u){
-  const t = u.trim()
-  if(!t) return ""
-  if(/^https?:\/\//i.test(t)) return t
-  return "https://" + t
-}
-
-function safeHost(u){
-  try{ return new URL(u).host.replace(/^www\./,"") }catch{ return u }
-}
-
-function byGroup(links){
-  const map = new Map()
-  for(const l of links){
-    const g = (l.group || "General").trim() || "General"
-    if(!map.has(g)) map.set(g, [])
-    map.get(g).push(l)
-  }
-  const groups = [...map.entries()].sort((a,b)=> a[0].localeCompare(b[0]))
-  for(const [g,arr] of groups) arr.sort((a,b)=> a.name.localeCompare(b.name))
-  return groups
-}
-
-function renderLinks(){
-  elLinksList.innerHTML = ""
-  const groups = byGroup(state.links)
-  for(const [g,arr] of groups){
-    const wrap = document.createElement("div")
-    wrap.className = "group"
-    const head = document.createElement("div")
-    head.className = "group-head"
-    head.innerHTML = `<div class="group-name">${escapeHtml(g)}</div><div class="muted">${arr.length}</div>`
-    const grid = document.createElement("div")
-    grid.className = "link-grid"
-    for(const l of arr){
-      const a = document.createElement("a")
-      a.className = "a"
-      a.href = l.url
-      a.target = "_blank"
-      a.rel = "noopener noreferrer"
-      a.innerHTML = `<div><div class="title">${escapeHtml(l.name)}</div><div class="u">${escapeHtml(safeHost(l.url))}</div></div><button class="btn ghost" type="button" data-edit="${l.id}">Edit</button>`
-      a.addEventListener("click",(e)=>{
-        if(e.target && e.target.dataset && e.target.dataset.edit){
-          e.preventDefault()
-          openLinkDialog(l.id)
-        }
-      })
-      grid.appendChild(a)
-    }
-    wrap.appendChild(head)
-    wrap.appendChild(grid)
-    elLinksList.appendChild(wrap)
-  }
-}
-
-function openLinkDialog(id=null){
-  linkEditingId = id
-  if(!id){
-    linkTitle.textContent = "Add link"
-    linkName.value = ""
-    linkUrl.value = ""
-    linkGroup.value = ""
-    btnLinkDelete.hidden = true
-  }else{
-    const l = state.links.find(x=>x.id===id)
-    if(!l) return
-    linkTitle.textContent = "Edit link"
-    linkName.value = l.name
-    linkUrl.value = l.url
-    linkGroup.value = l.group || ""
-    btnLinkDelete.hidden = false
-  }
-  dlgLink.showModal()
-  linkName.focus()
-}
-
-function exportJson(filename, obj){
-  const blob = new Blob([JSON.stringify(obj,null,2)], {type:"application/json"})
-  const a = document.createElement("a")
-  a.href = URL.createObjectURL(blob)
-  a.download = filename
-  a.click()
-  setTimeout(()=> URL.revokeObjectURL(a.href), 1000)
-}
-
-function parseTaskLine(raw){
-  const s = raw.trim()
-  if(!s) return null
-  const dueMatch = s.match(/@(\d{4}\-\d{2}\-\d{2})/)
-  const tagMatch = [...s.matchAll(/#([a-zA-Z0-9_\-]+)/g)].map(m=>m[1])
-  const clean = s.replace(/@\d{4}\-\d{2}\-\d{2}/g,"").replace(/#[a-zA-Z0-9_\-]+/g,"").trim()
-  return {
-    id: crypto.randomUUID(),
-    title: clean || s,
-    due: dueMatch ? dueMatch[1] : null,
-    tags: tagMatch,
-    done: false,
-    createdAt: Date.now()
-  }
-}
-
-function taskIsToday(t){
-  const y = todayYmd()
-  return t.due === y
-}
-
-function taskIsUpcoming(t){
-  if(!t.due) return false
-  const now = todayYmd()
-  return t.due >= now
-}
-
-function renderTasks(){
-  elTaskList.innerHTML = ""
-  const now = todayYmd()
-  const list = state.tasks
-    .filter(t=> !t.done)
-    .filter(t=>{
-      if(taskFilter==="all") return true
-      if(taskFilter==="today") return t.due === now || (!t.due && true)
-      if(taskFilter==="upcoming") return !t.due || t.due >= now
-      return true
-    })
-    .sort((a,b)=>{
-      const ad = a.due || "9999-12-31"
-      const bd = b.due || "9999-12-31"
-      if(ad!==bd) return ad.localeCompare(bd)
-      return a.createdAt - b.createdAt
-    })
-
-  if(list.length===0){
-    const d = document.createElement("div")
-    d.className = "muted"
-    d.textContent = "No tasks."
-    elTaskList.appendChild(d)
-    return
-  }
-
-  for(const t of list){
-    const row = document.createElement("div")
-    row.className = "item"
-    const tags = (t.tags||[]).slice(0,3).map(x=>`<span class="tag">#${escapeHtml(x)}</span>`).join("")
-    const due = t.due ? `<div class="meta">${escapeHtml(t.due)}</div>` : `<div class="meta">No due date</div>`
-    row.innerHTML = `<div><div class="title">${escapeHtml(t.title)}</div>${due}<div class="row" style="margin-top:6px;gap:6px">${tags}</div></div><div class="right"><button class="btn ghost" type="button" data-done="${t.id}">Done</button><button class="btn ghost" type="button" data-del="${t.id}">Delete</button></div>`
-    elTaskList.appendChild(row)
-  }
-}
-
-function toggleTaskDone(id){
-  const t = state.tasks.find(x=>x.id===id)
-  if(!t) return
-  t.done = true
-}
-
-function deleteTask(id){
-  state.tasks = state.tasks.filter(x=>x.id!==id)
-}
-
-function setTaskFilter(f){
-  taskFilter = f
-  for(const b of taskFilterButtons){
-    const on = b.dataset.filter === f
-    b.setAttribute("aria-pressed", on ? "true" : "false")
-  }
-  renderTasks()
-}
-
-function renderNotes(){
-  if(notesPreviewMode){
-    elNotesPreview.hidden = false
-    elNotesInput.hidden = true
-    elNotesPreview.innerHTML = mdToHtml(state.notes || "")
-    btnNotesMode.textContent = "Edit"
-  }else{
-    elNotesPreview.hidden = true
-    elNotesInput.hidden = false
-    btnNotesMode.textContent = "Preview"
-  }
-}
-
-function ymdFromDate(d){
-  return d.toISOString().slice(0,10)
-}
-
-function parseIcsText(text){
-  const rawLines = text.replace(/\r\n/g,"\n").split("\n")
-  const lines = []
-  for(const l of rawLines){
-    if(l.startsWith(" ") || l.startsWith("\t")){
-      if(lines.length) lines[lines.length-1] += l.slice(1)
-    }else{
-      lines.push(l)
-    }
-  }
-
-  const events = []
-  let cur = null
-
-  for(const line of lines){
-    if(line==="BEGIN:VEVENT"){ cur = {}; continue }
-    if(line==="END:VEVENT"){
-      if(cur && cur.dtstart && cur.summary){
-        const ev = normalizeEvent(cur)
-        if(ev) events.push(ev)
+      const left = app.focus.until - Date.now();
+      if (left <= 0) {
+        const next = nextMode(app.focus.mode, opts, app.focus.cycle);
+        if (app.focus.mode === "work") app.focus.cycle += 1;
+        setMode(next);
+        const dur = durationForMode(next, opts);
+        app.focus.until = Date.now() + dur;
+        persist();
+        tEl.textContent = fmt(dur);
+        tryNotify(`Timer: ${mEl.textContent.replace("Focus: ", "")}`, "Next session started.");
+        return;
       }
-      cur = null
-      continue
-    }
-    if(!cur) continue
+      tEl.textContent = fmt(left);
+    };
 
-    const idx = line.indexOf(":")
-    if(idx<0) continue
-    const keyPart = line.slice(0,idx)
-    const val = line.slice(idx+1).trim()
-    const key = keyPart.split(";")[0].toUpperCase()
+    const durationForMode = (mode, opts2) => {
+      if (mode === "work") return (Number(opts2.workMin) || 25) * 60000;
+      if (mode === "break") return (Number(opts2.breakMin) || 5) * 60000;
+      if (mode === "long") return (Number(opts2.longBreakMin) || 15) * 60000;
+      return (Number(opts2.workMin) || 25) * 60000;
+    };
 
-    if(key==="DTSTART") cur.dtstart = val
-    if(key==="DTEND") cur.dtend = val
-    if(key==="SUMMARY") cur.summary = val
-    if(key==="LOCATION") cur.location = val
-  }
-
-  const dedup = new Map()
-  for(const e of events){
-    const k = `${e.start}|${e.end}|${e.summary}|${e.location||""}`
-    if(!dedup.has(k)) dedup.set(k,e)
-  }
-  return [...dedup.values()].sort((a,b)=> a.start - b.start)
-}
-
-function parseIcsDate(v){
-  if(!v) return null
-  if(/^\d{8}$/.test(v)){
-    const y = Number(v.slice(0,4))
-    const m = Number(v.slice(4,6))-1
-    const d = Number(v.slice(6,8))
-    return new Date(y,m,d,0,0,0,0)
-  }
-  const m = v.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?$/)
-  if(m){
-    const y = Number(m[1]), mo = Number(m[2])-1, d = Number(m[3])
-    const hh = Number(m[4]), mm = Number(m[5]), ss = Number(m[6])
-    if(v.endsWith("Z")) return new Date(Date.UTC(y,mo,d,hh,mm,ss))
-    return new Date(y,mo,d,hh,mm,ss)
-  }
-  return null
-}
-
-function normalizeEvent(cur){
-  const start = parseIcsDate(cur.dtstart)
-  const end = parseIcsDate(cur.dtend) || start
-  if(!start) return null
-  return {
-    id: crypto.randomUUID(),
-    start: start.getTime(),
-    end: end.getTime(),
-    summary: cur.summary,
-    location: cur.location || ""
-  }
-}
-
-function renderAgenda(){
-  elAgendaList.innerHTML = ""
-  const now = Date.now()
-  const horizon = now + 7*24*60*60*1000
-  const upcoming = state.agenda.filter(e=> e.end >= now - 12*60*60*1000 && e.start <= horizon).sort((a,b)=> a.start-b.start)
-
-  if(upcoming.length===0){
-    const d = document.createElement("div")
-    d.className = "muted"
-    d.textContent = "No events in the next 7 days."
-    elAgendaList.appendChild(d)
-    return
-  }
-
-  const tf = new Intl.DateTimeFormat(undefined,{weekday:"short", month:"short", day:"numeric"})
-  const ttf = new Intl.DateTimeFormat(undefined,{hour:"2-digit", minute:"2-digit"})
-  for(const e of upcoming.slice(0,30)){
-    const row = document.createElement("div")
-    row.className = "item"
-    const sd = new Date(e.start)
-    const ed = new Date(e.end)
-    const day = tf.format(sd)
-    const time = `${ttf.format(sd)}–${ttf.format(ed)}`
-    const loc = e.location ? `<div class="meta">${escapeHtml(e.location)}</div>` : ""
-    row.innerHTML = `<div><div class="title">${escapeHtml(e.summary)}</div><div class="meta">${escapeHtml(day)} · ${escapeHtml(time)}</div>${loc}</div><div class="right"><button class="btn ghost" type="button" data-evdel="${e.id}">Delete</button></div>`
-    elAgendaList.appendChild(row)
-  }
-}
-
-function deleteAgenda(id){
-  state.agenda = state.agenda.filter(e=> e.id!==id)
-}
-
-function wmoLabel(code){
-  const c = Number(code)
-  if([0].includes(c)) return "Clear"
-  if([1,2].includes(c)) return "Mostly clear"
-  if([3].includes(c)) return "Overcast"
-  if([45,48].includes(c)) return "Fog"
-  if([51,53,55].includes(c)) return "Drizzle"
-  if([61,63,65].includes(c)) return "Rain"
-  if([66,67].includes(c)) return "Freezing rain"
-  if([71,73,75].includes(c)) return "Snow"
-  if([77].includes(c)) return "Snow grains"
-  if([80,81,82].includes(c)) return "Showers"
-  if([85,86].includes(c)) return "Snow showers"
-  if([95].includes(c)) return "Thunderstorm"
-  if([96,99].includes(c)) return "Thunderstorm hail"
-  return "Weather"
-}
-
-function wmoGlyph(code){
-  const c = Number(code)
-  if(c===0) return "☀"
-  if([1,2].includes(c)) return "⛅"
-  if(c===3) return "☁"
-  if([45,48].includes(c)) return "🌫"
-  if([51,53,55].includes(c)) return "🌦"
-  if([61,63,65].includes(c)) return "🌧"
-  if([66,67].includes(c)) return "🌧"
-  if([71,73,75,77].includes(c)) return "🌨"
-  if([80,81,82].includes(c)) return "🌦"
-  if([85,86].includes(c)) return "🌨"
-  if([95,96,99].includes(c)) return "⛈"
-  return "⛅"
-}
-
-async function fetchWeather(){
-  const place = state.settings.place
-  if(!place){
-    elWeatherPlace.textContent = "Set location in Settings"
-    elWeatherNow.textContent = "—"
-    elWeatherMeta.textContent = ""
-    elWeatherForecast.innerHTML = ""
-    elWeatherIcon.textContent = ""
-    return
-  }
-
-  const unit = state.settings.tempUnit === "f" ? "fahrenheit" : "celsius"
-  const windUnit = state.settings.tempUnit === "f" ? "mph" : "kmh"
-  const url = new URL("https://api.open-meteo.com/v1/forecast")
-  url.searchParams.set("latitude", String(place.lat))
-  url.searchParams.set("longitude", String(place.lon))
-  url.searchParams.set("current", "temperature_2m,apparent_temperature,is_day,weather_code,wind_speed_10m")
-  url.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset")
-  url.searchParams.set("temperature_unit", unit)
-  url.searchParams.set("wind_speed_unit", windUnit)
-  url.searchParams.set("timezone", "auto")
-
-  setStatus("Weather: updating")
-  const res = await fetch(url.toString(), {cache:"no-store"})
-  const data = await res.json()
-
-  const cur = data.current
-  const d0 = 0
-  const max0 = data.daily.temperature_2m_max[d0]
-  const min0 = data.daily.temperature_2m_min[d0]
-  const code = cur.weather_code
-
-  elWeatherPlace.textContent = place.name
-  elWeatherNow.textContent = `${Math.round(cur.temperature_2m)}°`
-  elWeatherIcon.textContent = wmoGlyph(code)
-
-  const feel = `Feels ${Math.round(cur.apparent_temperature)}°`
-  const wind = `Wind ${Math.round(cur.wind_speed_10m)} ${windUnit.toUpperCase()}`
-  const range = `Today ${Math.round(min0)}–${Math.round(max0)}°`
-  elWeatherMeta.textContent = `${wmoLabel(code)} · ${feel} · ${wind} · ${range}`
-
-  elWeatherForecast.innerHTML = ""
-  const df = new Intl.DateTimeFormat(undefined,{weekday:"short"})
-  for(let i=1;i<=3;i++){
-    const day = df.format(new Date(data.daily.time[i]))
-    const mx = Math.round(data.daily.temperature_2m_max[i])
-    const mn = Math.round(data.daily.temperature_2m_min[i])
-    const cd = data.daily.weather_code[i]
-    const div = document.createElement("div")
-    div.className = "fore"
-    div.innerHTML = `<div class="d">${escapeHtml(day)} · ${escapeHtml(wmoGlyph(cd))}</div><div class="t">${mn}–${mx}°</div>`
-    elWeatherForecast.appendChild(div)
-  }
-
-  setStatus("")
-}
-
-async function geolocate(){
-  return await new Promise((resolve,reject)=>{
-    navigator.geolocation.getCurrentPosition(
-      (pos)=> resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
-      (err)=> reject(err),
-      {enableHighAccuracy:false, timeout: 8000, maximumAge: 300000}
-    )
-  })
-}
-
-async function reversePlace(lat,lon){
-  const url = new URL("https://nominatim.openstreetmap.org/reverse")
-  url.searchParams.set("format","jsonv2")
-  url.searchParams.set("lat", String(lat))
-  url.searchParams.set("lon", String(lon))
-  const res = await fetch(url.toString(), {cache:"no-store"})
-  const j = await res.json()
-  const name = j && (j.name || (j.display_name || "").split(",").slice(0,3).join(", ").trim()) || "Location"
-  return {name, lat, lon}
-}
-
-async function forwardPlace(q){
-  const url = new URL("https://nominatim.openstreetmap.org/search")
-  url.searchParams.set("format","jsonv2")
-  url.searchParams.set("limit","1")
-  url.searchParams.set("q", q)
-  const res = await fetch(url.toString(), {cache:"no-store"})
-  const j = await res.json()
-  if(!Array.isArray(j) || j.length===0) return null
-  const r = j[0]
-  const name = (r.display_name || "").split(",").slice(0,3).join(", ").trim() || q
-  return {name, lat: Number(r.lat), lon: Number(r.lon)}
-}
-
-function focusState(){
-  const f = state.focus
-  if(f.endsAt){
-    const left = Math.max(0, f.endsAt - Date.now())
-    return {running:true, leftMs:left, mode:f.mode}
-  }
-  if(f.pausedLeft!=null){
-    return {running:false, leftMs:f.pausedLeft, mode:f.mode}
-  }
-  return {running:false, leftMs: f.mode==="work" ? 25*60*1000 : 5*60*1000, mode:f.mode}
-}
-
-function setFocusDisplay(){
-  const f = focusState()
-  const mm = Math.floor(f.leftMs/60000)
-  const ss = Math.floor((f.leftMs%60000)/1000)
-  elFocusTime.textContent = `${pad2(mm)}:${pad2(ss)}`
-  elFocusLabel.textContent = f.mode === "work" ? "Pomodoro" : "Break"
-  btnFocusStart.disabled = f.running
-}
-
-function stopFocusTick(){
-  if(focusTick){ clearInterval(focusTick); focusTick = null }
-}
-
-function startFocusTick(){
-  stopFocusTick()
-  focusTick = setInterval(()=>{
-    const f = focusState()
-    if(f.running){
-      if(f.leftMs<=0){
-        finishFocus()
-      }else{
-        setFocusDisplay()
+    const nextMode = (mode, opts2, cycle) => {
+      if (mode === "off") return "work";
+      if (mode === "work") {
+        const every = Number(opts2.every) || 4;
+        return ((cycle + 1) % every === 0) ? "long" : "break";
       }
-    }
-  }, 250)
-}
+      return "work";
+    };
 
-async function notify(title, body){
-  if(!("Notification" in window)) return
-  if(Notification.permission === "granted"){
-    new Notification(title, {body})
-    return
-  }
-  if(Notification.permission === "default"){
-    const p = await Notification.requestPermission()
-    if(p==="granted") new Notification(title, {body})
-  }
-}
-
-function beep(){
-  try{
-    const ctx = new AudioContext()
-    const o = ctx.createOscillator()
-    const g = ctx.createGain()
-    o.type = "sine"
-    o.frequency.value = 880
-    g.gain.value = 0.05
-    o.connect(g)
-    g.connect(ctx.destination)
-    o.start()
-    setTimeout(()=>{ o.stop(); ctx.close() }, 180)
-  }catch{}
-}
-
-async function finishFocus(){
-  const was = state.focus.mode
-  state.focus.endsAt = null
-  state.focus.pausedLeft = null
-  state.focus.mode = was === "work" ? "break" : "work"
-  await kv.set("focus", state.focus)
-  setFocusDisplay()
-  stopFocusTick()
-  startFocusTick()
-  beep()
-  await notify("Timer", was === "work" ? "Break started." : "Work started.")
-}
-
-async function startFocus(){
-  const f = focusState()
-  const left = f.leftMs
-  state.focus.pausedLeft = null
-  state.focus.endsAt = Date.now() + left
-  await kv.set("focus", state.focus)
-  setFocusDisplay()
-  startFocusTick()
-}
-
-async function pauseFocus(){
-  const f = focusState()
-  if(!f.running) return
-  state.focus.pausedLeft = f.leftMs
-  state.focus.endsAt = null
-  await kv.set("focus", state.focus)
-  setFocusDisplay()
-}
-
-async function skipFocus(){
-  await finishFocus()
-}
-
-async function resetFocus(){
-  state.focus.endsAt = null
-  state.focus.pausedLeft = null
-  state.focus.mode = "work"
-  await kv.set("focus", state.focus)
-  setFocusDisplay()
-  stopFocusTick()
-}
-
-function buildPalette(){
-  const actions = [
-    {k:"open settings", run:()=> dlgSettings.showModal()},
-    {k:"focus search", run:()=> { elSearch.focus(); dlgPalette.close() }},
-    {k:"add task", run:()=> { elTaskInput.focus(); dlgPalette.close() }},
-    {k:"add link", run:()=> { openLinkDialog(null); dlgPalette.close() }},
-    {k:"import calendar", run:()=> { elIcsFile.click(); dlgPalette.close() }},
-    {k:"toggle notes preview", run:()=> { notesPreviewMode = !notesPreviewMode; renderNotes(); dlgPalette.close() }},
-    {k:"start focus", run:()=> { startFocus(); dlgPalette.close() }},
-    {k:"pause focus", run:()=> { pauseFocus(); dlgPalette.close() }},
-    {k:"skip focus", run:()=> { skipFocus(); dlgPalette.close() }},
-    {k:"refresh weather", run:()=> { fetchWeather(); dlgPalette.close() }},
-    {k:"theme auto", run:()=> { state.settings.theme="auto"; applyTheme(); persistSettings(); dlgPalette.close() }},
-    {k:"theme dark", run:()=> { state.settings.theme="dark"; applyTheme(); persistSettings(); dlgPalette.close() }},
-    {k:"theme light", run:()=> { state.settings.theme="light"; applyTheme(); persistSettings(); dlgPalette.close() }}
-  ]
-  return actions
-}
-
-function renderPalette(q){
-  const t = (q||"").trim().toLowerCase()
-  palList.innerHTML = ""
-  const actions = buildPalette().filter(a=> !t || a.k.includes(t)).slice(0,12)
-  if(actions.length===0){
-    const d = document.createElement("div")
-    d.className = "muted"
-    d.textContent = "No matches."
-    palList.appendChild(d)
-    return
-  }
-  for(const a of actions){
-    const row = document.createElement("div")
-    row.className = "item"
-    row.innerHTML = `<div><div class="title">${escapeHtml(a.k)}</div><div class="meta">Enter to run</div></div><div class="right"><span class="pill">↵</span></div>`
-    row.addEventListener("click", ()=> a.run())
-    palList.appendChild(row)
-  }
-}
-
-async function persistAll(){
-  await kv.set("settings", state.settings)
-  await kv.set("tasks", state.tasks)
-  await kv.set("links", state.links)
-  await kv.set("notes", state.notes)
-  await kv.set("agenda", state.agenda)
-  await kv.set("focus", state.focus)
-}
-
-async function persistSettings(){
-  await kv.set("settings", state.settings)
-}
-
-async function loadState(){
-  const s = await kv.get("settings")
-  const tasks = await kv.get("tasks")
-  const links = await kv.get("links")
-  const notes = await kv.get("notes")
-  const agenda = await kv.get("agenda")
-  const focus = await kv.get("focus")
-
-  state.settings = {...DEFAULTS.settings, ...(s||{})}
-  state.tasks = Array.isArray(tasks) ? tasks : structuredClone(DEFAULTS.tasks)
-  state.links = Array.isArray(links) ? links : structuredClone(DEFAULTS.links)
-  state.notes = typeof notes === "string" ? notes : ""
-  state.agenda = Array.isArray(agenda) ? agenda : []
-  state.focus = focus && typeof focus === "object" ? {...DEFAULTS.focus, ...focus} : structuredClone(DEFAULTS.focus)
-
-  elEngine.value = state.settings.engine || "ddg"
-  elNotesInput.value = state.notes || ""
-}
-
-function wireUi(){
-  elSearch.addEventListener("keydown",(e)=>{
-    if(e.key==="Enter"){
-      const p = parseSearchInput(elSearch.value)
-      if(!p) return
-      window.open(engineUrl(p.engine, p.q), "_blank", "noopener,noreferrer")
-      elSearch.select()
-    }
-  })
-
-  elEngine.addEventListener("change", async ()=>{
-    state.settings.engine = elEngine.value
-    await persistSettings()
-  })
-
-  btnSettings.addEventListener("click", ()=>{
-    setTheme.value = state.settings.theme
-    setAccent.value = state.settings.accent
-    setClock.value = state.settings.clock
-    setTempUnit.value = state.settings.tempUnit
-    placeResult.textContent = state.settings.place ? `Current: ${state.settings.place.name}` : "Not set"
-    setPlaceQuery.value = ""
-    dlgSettings.showModal()
-  })
-
-  btnPalette.addEventListener("click", ()=>{
-    dlgPalette.showModal()
-    palInput.value = ""
-    renderPalette("")
-    palInput.focus()
-  })
-
-  palInput.addEventListener("input", ()=> renderPalette(palInput.value))
-  palInput.addEventListener("keydown",(e)=>{
-    if(e.key==="Enter"){
-      e.preventDefault()
-      const q = palInput.value.trim().toLowerCase()
-      const a = buildPalette().find(x=> x.k.includes(q)) || buildPalette().find(x=> x.k.startsWith(q))
-      if(a) a.run()
-    }
-  })
-
-  document.addEventListener("keydown",(e)=>{
-    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase()
-    const inInput = ["input","textarea","select"].includes(tag)
-    if(e.key==="/" && !inInput){
-      e.preventDefault()
-      elSearch.focus()
-      return
-    }
-    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="k"){
-      e.preventDefault()
-      dlgPalette.showModal()
-      palInput.value = ""
-      renderPalette("")
-      palInput.focus()
-      return
-    }
-  })
-
-  btnWeatherRefresh.addEventListener("click", ()=> fetchWeather())
-
-  elIcsFile.addEventListener("change", async ()=>{
-    const f = elIcsFile.files && elIcsFile.files[0]
-    if(!f) return
-    const text = await f.text()
-    const events = parseIcsText(text)
-    state.agenda = events
-    await kv.set("agenda", state.agenda)
-    renderAgenda()
-    setStatus("Agenda imported")
-    setTimeout(()=> setStatus(""), 1200)
-    elIcsFile.value = ""
-  })
-
-  btnAgendaClear.addEventListener("click", async ()=>{
-    state.agenda = []
-    await kv.set("agenda", state.agenda)
-    renderAgenda()
-  })
-
-  elAgendaList.addEventListener("click", async (e)=>{
-    const id = e.target && e.target.dataset && e.target.dataset.evdel
-    if(!id) return
-    deleteAgenda(id)
-    await kv.set("agenda", state.agenda)
-    renderAgenda()
-  })
-
-  elTaskInput.addEventListener("keydown", async (e)=>{
-    if(e.key!=="Enter") return
-    const t = parseTaskLine(elTaskInput.value)
-    if(!t) return
-    state.tasks.push(t)
-    elTaskInput.value = ""
-    await kv.set("tasks", state.tasks)
-    renderTasks()
-  })
-
-  elTaskList.addEventListener("click", async (e)=>{
-    const doneId = e.target && e.target.dataset && e.target.dataset.done
-    const delId = e.target && e.target.dataset && e.target.dataset.del
-    if(doneId){
-      toggleTaskDone(doneId)
-      await kv.set("tasks", state.tasks)
-      renderTasks()
-    }
-    if(delId){
-      deleteTask(delId)
-      await kv.set("tasks", state.tasks)
-      renderTasks()
-    }
-  })
-
-  for(const b of taskFilterButtons){
-    b.addEventListener("click", ()=> setTaskFilter(b.dataset.filter))
-  }
-
-  btnNotesMode.addEventListener("click", ()=>{
-    notesPreviewMode = !notesPreviewMode
-    renderNotes()
-  })
-
-  elNotesInput.addEventListener("input", async ()=>{
-    state.notes = elNotesInput.value
-    await kv.set("notes", state.notes)
-    if(notesPreviewMode) renderNotes()
-  })
-
-  btnNotesClear.addEventListener("click", async ()=>{
-    state.notes = ""
-    elNotesInput.value = ""
-    await kv.set("notes", state.notes)
-    renderNotes()
-  })
-
-  btnLinkAdd.addEventListener("click", ()=> openLinkDialog(null))
-
-  btnLinksExport.addEventListener("click", ()=>{
-    exportJson("links.json", state.links)
-  })
-
-  elLinksImport.addEventListener("change", async ()=>{
-    const f = elLinksImport.files && elLinksImport.files[0]
-    if(!f) return
-    const text = await f.text()
-    let j = null
-    try{ j = JSON.parse(text) }catch{}
-    if(Array.isArray(j)){
-      const cleaned = j
-        .filter(x=> x && typeof x.name==="string" && typeof x.url==="string")
-        .map(x=> ({id: x.id || crypto.randomUUID(), name: x.name, url: normalizeUrl(x.url), group: x.group || "General"}))
-      state.links = cleaned
-      await kv.set("links", state.links)
-      renderLinks()
-    }
-    elLinksImport.value = ""
-  })
-
-  dlgLink.addEventListener("close", async ()=>{
-    linkEditingId = null
-  })
-
-  dlgLink.querySelector("form").addEventListener("submit", async (e)=>{
-    const name = linkName.value.trim()
-    const url = normalizeUrl(linkUrl.value)
-    const group = (linkGroup.value || "General").trim() || "General"
-    const del = btnLinkDelete.matches(":focus") || e.submitter === btnLinkDelete
-
-    if(linkEditingId && del){
-      state.links = state.links.filter(x=> x.id !== linkEditingId)
-      await kv.set("links", state.links)
-      renderLinks()
-      return
-    }
-
-    if(!name || !url) return
-
-    if(!linkEditingId){
-      state.links.push({id: crypto.randomUUID(), name, url, group})
-    }else{
-      const l = state.links.find(x=> x.id===linkEditingId)
-      if(l){
-        l.name = name
-        l.url = url
-        l.group = group
+    const start = async () => {
+      if (Notification && Notification.permission === "default") {
+        try { await Notification.requestPermission(); } catch {}
       }
-    }
-    await kv.set("links", state.links)
-    renderLinks()
-  })
+      if (!app.focus.mode || app.focus.mode === "off") setMode("work");
+      const dur = durationForMode(app.focus.mode, opts);
+      const left = app.focus.pausedLeft || dur;
+      app.focus.until = Date.now() + left;
+      app.focus.running = true;
+      app.focus.pausedLeft = 0;
+      persist();
+      tick();
+      syncFocusPill();
+    };
 
-  btnLinkDelete.addEventListener("click", ()=>{
-    btnLinkDelete.dataset.delete = "1"
-  })
+    const pause = () => {
+      if (!app.focus.running) return;
+      app.focus.pausedLeft = Math.max(0, app.focus.until - Date.now());
+      app.focus.running = false;
+      app.focus.until = 0;
+      persist();
+      tick();
+      syncFocusPill();
+    };
 
-  setTheme.addEventListener("change", async ()=>{
-    state.settings.theme = setTheme.value
-    applyTheme()
-    await persistSettings()
-  })
-  setAccent.addEventListener("change", async ()=>{
-    state.settings.accent = setAccent.value.trim() || "#7c5cff"
-    applyTheme()
-    await persistSettings()
-  })
-  setClock.addEventListener("change", async ()=>{
-    state.settings.clock = setClock.value
-    await persistSettings()
-    renderTime()
-  })
-  setTempUnit.addEventListener("change", async ()=>{
-    state.settings.tempUnit = setTempUnit.value
-    await persistSettings()
-    fetchWeather()
-  })
+    startBtn.addEventListener("click", start);
+    pauseBtn.addEventListener("click", pause);
+    stopBtn.addEventListener("click", stop);
 
-  btnPlaceFind.addEventListener("click", async ()=>{
-    const q = setPlaceQuery.value.trim()
-    if(!q) return
-    placeResult.textContent = "Searching..."
-    try{
-      const p = await forwardPlace(q)
-      if(!p){
-        placeResult.textContent = "No match."
-        return
+    setMode(app.focus.mode || "off");
+    if (!app.focus.mode || app.focus.mode === "off") tEl.textContent = fmt((Number(opts.workMin) || 25) * 60000);
+
+    if (app.focus.running) tick();
+    if (app.focus.pausedLeft) tEl.textContent = fmt(app.focus.pausedLeft);
+
+    if (app.focus.tick) clearInterval(app.focus.tick);
+    app.focus.tick = setInterval(tick, 500);
+
+    el.appendChild(timer);
+
+    const hint = document.createElement("div");
+    hint.className = "small";
+    hint.textContent = "Settings → Options supports: workMin, breakMin, longBreakMin, every.";
+    el.appendChild(hint);
+
+    syncFocusPill();
+    return el;
+  }
+
+  function syncFocusPill() {
+    const m = app.focus.mode || "off";
+    const base = m === "work" ? "Focus: work" : m === "break" ? "Focus: break" : m === "long" ? "Focus: long break" : "Focus: off";
+    $("#pillFocus").textContent = base;
+  }
+
+  function tryNotify(title, body) {
+    if (!("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+    try {
+      new Notification(title, { body });
+    } catch {}
+  }
+
+  function widgetTodos(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:todos:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "todos")?.defaults);
+    const data = loadJson(key, { items: [] });
+
+    const top = document.createElement("div");
+    top.className = "todo";
+    top.innerHTML = `
+      <input class="input" type="text" placeholder="Add a task and press Enter" />
+      <button class="btn" type="button">Add</button>
+    `;
+    const inp = $("input", top);
+    const addBtn = $("button", top);
+
+    const list = document.createElement("div");
+    list.className = "list";
+
+    const render = () => {
+      list.innerHTML = "";
+      const items = data.items.filter(x => opts.showCompleted ? true : !x.done);
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No tasks.";
+        list.appendChild(empty);
+        return;
       }
-      state.settings.place = p
-      await persistSettings()
-      placeResult.textContent = `Set: ${p.name}`
-      fetchWeather()
-    }catch{
-      placeResult.textContent = "Failed."
+      for (const it of items) {
+        const row = document.createElement("div");
+        row.className = "item" + (it.done ? " done" : "");
+        row.innerHTML = `
+          <div class="left">
+            <input class="chk" type="checkbox" ${it.done ? "checked" : ""} />
+            <div class="txt"></div>
+          </div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        $(".txt", row).textContent = it.text;
+        const chk = $(".chk", row);
+        const del = $("button", row);
+
+        chk.addEventListener("change", () => {
+          it.done = !!chk.checked;
+          saveJson(key, data);
+          render();
+        });
+
+        del.addEventListener("click", () => {
+          data.items = data.items.filter(x => x.id !== it.id);
+          saveJson(key, data);
+          render();
+        });
+
+        list.appendChild(row);
+      }
+    };
+
+    const add = () => {
+      const text = inp.value.trim();
+      if (!text) return;
+      data.items.unshift({ id: uid(), text: text.slice(0, 140), done: false, t: Date.now() });
+      inp.value = "";
+      saveJson(key, data);
+      render();
+    };
+
+    addBtn.addEventListener("click", add);
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
+
+    el.appendChild(top);
+    el.appendChild(list);
+    render();
+
+    const hint = document.createElement("div");
+    hint.className = "small";
+    hint.textContent = "Settings → Options supports: showCompleted (true/false).";
+    el.appendChild(hint);
+
+    return el;
+  }
+
+  function widgetNotes(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:notes:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "notes")?.defaults);
+    const data = loadJson(key, { text: "" });
+
+    const ta = document.createElement("textarea");
+    ta.className = "textarea";
+    ta.placeholder = opts.placeholder || "Write anything…";
+    ta.value = data.text || "";
+    let t = null;
+    ta.addEventListener("input", () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        data.text = ta.value.slice(0, 20000);
+        saveJson(key, data);
+      }, 250);
+    });
+
+    el.appendChild(ta);
+
+    const meta = document.createElement("div");
+    meta.className = "small";
+    meta.textContent = "Autosaves locally.";
+    el.appendChild(meta);
+
+    return el;
+  }
+
+  function widgetLinks(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:links:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "links")?.defaults);
+    const data = loadJson(key, { links: Array.isArray(opts.links) ? opts.links : [] });
+
+    const editor = document.createElement("div");
+    editor.className = "stack";
+    editor.innerHTML = `
+      <div class="linkrow">
+        <input class="input" data-a="name" type="text" placeholder="Name" />
+        <input class="input" data-a="url" type="url" placeholder="https://example.com" />
+        <button class="btn" data-a="add" type="button">Add</button>
+      </div>
+      <div class="links" data-a="list"></div>
+      <div class="small">Tip: you can keep this widget small; links still work.</div>
+    `;
+
+    const nameIn = $('[data-a="name"]', editor);
+    const urlIn = $('[data-a="url"]', editor);
+    const addBtn = $('[data-a="add"]', editor);
+    const list = $('[data-a="list"]', editor);
+
+    const render = () => {
+      list.innerHTML = "";
+      if (!data.links.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No links.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const l of data.links) {
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = `
+          <div class="left">
+            <a class="quick" target="_blank" rel="noreferrer"></a>
+          </div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        const a = $("a", row);
+        a.textContent = l.name || l.url;
+        a.href = l.url;
+        const del = $("button", row);
+        del.addEventListener("click", () => {
+          data.links = data.links.filter(x => x.id !== l.id);
+          saveJson(key, data);
+          render();
+        });
+        list.appendChild(row);
+      }
+    };
+
+    const add = () => {
+      const name = nameIn.value.trim().slice(0, 40);
+      const url = urlIn.value.trim().slice(0, 300);
+      if (!url || !/^https?:\/\//i.test(url)) {
+        toast("URL must start with http(s)://");
+        return;
+      }
+      data.links.unshift({ id: uid(), name: name || url.replace(/^https?:\/\//i, ""), url });
+      nameIn.value = "";
+      urlIn.value = "";
+      saveJson(key, data);
+      render();
+    };
+
+    addBtn.addEventListener("click", add);
+    urlIn.addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
+
+    el.appendChild(editor);
+    render();
+    return el;
+  }
+
+  function widgetStats(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:stats:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "stats")?.defaults);
+    const data = loadJson(key, { counters: Array.isArray(opts.counters) ? opts.counters.map(x => ({ id: uid(), k: x.k, v: x.v })) : [] });
+
+    const kpis = document.createElement("div");
+    kpis.className = "kpi-row";
+
+    const controls = document.createElement("div");
+    controls.className = "row";
+    controls.innerHTML = `
+      <button class="btn" type="button" data-a="reset">Reset</button>
+      <button class="btn ghost" type="button" data-a="add">Add KPI</button>
+    `;
+
+    const render = () => {
+      kpis.innerHTML = "";
+      if (!data.counters.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No KPIs. Add one.";
+        kpis.appendChild(empty);
+        return;
+      }
+
+      for (const c of data.counters) {
+        const box = document.createElement("div");
+        box.className = "kpi";
+        box.innerHTML = `
+          <div class="k"></div>
+          <div class="v"></div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn ghost" type="button" data-a="dec">−</button>
+            <button class="btn" type="button" data-a="inc">+</button>
+            <button class="btn danger" type="button" data-a="del">Del</button>
+          </div>
+        `;
+        $(".k", box).textContent = c.k;
+        $(".v", box).textContent = String(c.v);
+
+        $('[data-a="inc"]', box).addEventListener("click", () => { c.v += 1; saveJson(key, data); render(); });
+        $('[data-a="dec"]', box).addEventListener("click", () => { c.v -= 1; saveJson(key, data); render(); });
+        $('[data-a="del"]', box).addEventListener("click", () => { data.counters = data.counters.filter(x => x.id !== c.id); saveJson(key, data); render(); });
+
+        kpis.appendChild(box);
+      }
+    };
+
+    $('[data-a="reset"]', controls).addEventListener("click", () => {
+      data.counters.forEach(x => x.v = 0);
+      saveJson(key, data);
+      render();
+      toast("KPIs reset");
+    });
+
+    $('[data-a="add"]', controls).addEventListener("click", () => {
+      const name = prompt("KPI name") || "";
+      const k = name.trim().slice(0, 20);
+      if (!k) return;
+      data.counters.unshift({ id: uid(), k, v: 0 });
+      saveJson(key, data);
+      render();
+    });
+
+    el.appendChild(kpis);
+    el.appendChild(controls);
+    render();
+
+    const hint = document.createElement("div");
+    hint.className = "small";
+    hint.textContent = "This widget is local-only by design.";
+    el.appendChild(hint);
+
+    return el;
+  }
+
+  function normalizeOptions(w, defaults) {
+    const d = structuredClone(defaults || {});
+    const o = (w && w.options && typeof w.options === "object") ? w.options : {};
+    return { ...d, ...o };
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
+  }
+
+  function loadJson(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return structuredClone(fallback);
+      return JSON.parse(raw);
+    } catch {
+      return structuredClone(fallback);
     }
-  })
+  }
 
-  btnPlaceGeo.addEventListener("click", async ()=>{
-    placeResult.textContent = "Locating..."
-    try{
-      const g = await geolocate()
-      const p = await reversePlace(g.lat, g.lon)
-      state.settings.place = p
-      await persistSettings()
-      placeResult.textContent = `Set: ${p.name}`
-      fetchWeather()
-    }catch{
-      placeResult.textContent = "Blocked or failed."
+  function saveJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function bindUI() {
+    $("#btnAdd").addEventListener("click", () => openModal("gallery"));
+    $("#btnLayout").addEventListener("click", () => openModal("layout"));
+    $("#btnTheme").addEventListener("click", () => setTheme(app.state.theme === "dark" ? "light" : "dark"));
+    $("#btnExport").addEventListener("click", exportDashboard);
+    $("#btnImport").addEventListener("click", () => openModal("import"));
+    $("#btnReset").addEventListener("click", resetDashboard);
+
+    $("#widgetSearch").addEventListener("input", () => app.modalMode === "gallery" && renderGallery());
+    $("#widgetFilter").addEventListener("change", () => app.modalMode === "gallery" && renderGallery());
+
+    $("#modal").addEventListener("click", (e) => {
+      const t = e.target;
+      if (t && t.dataset && t.dataset.close) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !$("#modal").hidden) closeModal();
+    });
+
+    $("#btnDoImport").addEventListener("click", doImport);
+
+    $("#densitySel").addEventListener("change", () => {
+      app.state.layout.density = $("#densitySel").value === "compact" ? "compact" : "comfortable";
+      save();
+      applyLayout();
+    });
+    $("#cardSel").addEventListener("change", () => {
+      app.state.layout.card = $("#cardSel").value === "solid" ? "solid" : "glass";
+      save();
+      applyLayout();
+    });
+    $("#colsRange").addEventListener("input", () => {
+      const v = Number($("#colsRange").value) || 4;
+      $("#colsVal").textContent = String(v);
+      app.state.layout.cols = Math.max(2, Math.min(6, v));
+      save();
+      applyLayout();
+    });
+
+    window.addEventListener("online", setStatus);
+    window.addEventListener("offline", setStatus);
+
+    setStatus();
+    setInterval(setStatus, 30_000);
+  }
+
+  function exportDashboard() {
+    const data = JSON.stringify(app.state, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "livedash-export.json";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 0);
+    toast("Exported JSON");
+  }
+
+  function doImport() {
+    const raw = ($("#importText").value || "").trim();
+    if (!raw) return;
+    let parsed = null;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      toast("Invalid JSON");
+      return;
     }
-  })
-
-  btnDataExport.addEventListener("click", ()=>{
-    exportJson("startpage-data.json", state)
-  })
-
-  dataImport.addEventListener("change", async ()=>{
-    const f = dataImport.files && dataImport.files[0]
-    if(!f) return
-    const text = await f.text()
-    let j = null
-    try{ j = JSON.parse(text) }catch{}
-    if(j && typeof j==="object"){
-      state.settings = {...DEFAULTS.settings, ...(j.settings||{})}
-      state.tasks = Array.isArray(j.tasks) ? j.tasks : []
-      state.links = Array.isArray(j.links) ? j.links : []
-      state.notes = typeof j.notes==="string" ? j.notes : ""
-      state.agenda = Array.isArray(j.agenda) ? j.agenda : []
-      state.focus = j.focus && typeof j.focus==="object" ? {...DEFAULTS.focus, ...j.focus} : structuredClone(DEFAULTS.focus)
-      await persistAll()
-      applyTheme()
-      elEngine.value = state.settings.engine || "ddg"
-      elNotesInput.value = state.notes || ""
-      renderNotes()
-      renderTasks()
-      renderLinks()
-      renderAgenda()
-      setFocusDisplay()
-      fetchWeather()
-      setStatus("Imported")
-      setTimeout(()=> setStatus(""), 1200)
+    if (!parsed || typeof parsed !== "object") {
+      toast("Invalid JSON");
+      return;
     }
-    dataImport.value = ""
-  })
+    if (!Array.isArray(parsed.widgets)) {
+      toast("Missing widgets[]");
+      return;
+    }
+    const next = {
+      ...structuredClone(DEFAULTS),
+      ...parsed,
+      layout: { ...structuredClone(DEFAULTS.layout), ...(parsed.layout || {}) }
+    };
+    next.widgets = next.widgets
+      .filter(x => x && typeof x === "object" && typeof x.type === "string")
+      .map(x => ({
+        id: x.id || uid(),
+        type: String(x.type),
+        title: String(x.title || (WIDGET_CATALOG.find(w => w.type === x.type)?.title ?? x.type)),
+        size: Number(x.size) || 2,
+        accent: String(x.accent || "#7c5cff"),
+        options: (x.options && typeof x.options === "object") ? x.options : {}
+      }));
+    app.state = next;
+    save();
+    renderGrid();
+    closeModal();
+    updateWeatherPill();
+    toast("Imported");
+  }
 
-  btnDataReset.addEventListener("click", async ()=>{
-    state = structuredClone(DEFAULTS)
-    await persistAll()
-    applyTheme()
-    elEngine.value = state.settings.engine
-    elNotesInput.value = state.notes
-    notesPreviewMode = false
-    renderNotes()
-    setTaskFilter("today")
-    renderLinks()
-    renderAgenda()
-    await resetFocus()
-    fetchWeather()
-    setStatus("Reset")
-    setTimeout(()=> setStatus(""), 1200)
-  })
+  function resetDashboard() {
+    localStorage.removeItem(STORAGE_KEY);
+    app.state = defaultDashboard();
+    save();
+    renderGrid();
+    updateWeatherPill();
+    toast("Reset done");
+  }
 
-  btnFocusStart.addEventListener("click", ()=> startFocus())
-  btnFocusPause.addEventListener("click", ()=> pauseFocus())
-  btnFocusSkip.addEventListener("click", ()=> skipFocus())
-  btnFocusReset.addEventListener("click", ()=> resetFocus())
-}
+  function initPWA() {
+    if (!("serviceWorker" in navigator)) return;
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  }
 
-async function boot(){
-  await loadState()
-  applyTheme()
-  renderTime()
-  setInterval(renderTime, 1000)
-  renderNotes()
-  renderLinks()
-  setTaskFilter("today")
-  renderAgenda()
-  setFocusDisplay()
-  startFocusTick()
-  wireUi()
-  fetchWeather()
-  registerSw()
-}
+  function boot() {
+    app.state = load();
+    if (!app.state.widgets.length) {
+      app.state = defaultDashboard();
+      save();
+    }
 
-async function registerSw(){
-  if(!("serviceWorker" in navigator)) return
-  try{
-    await navigator.serviceWorker.register("./service-worker.js", {scope:"./"})
-  }catch{}
-}
+    setTheme(app.state.theme);
+    applyLayout();
 
-boot()
+    bindUI();
+    renderGrid();
+    updateWeatherPill();
+    initPWA();
+  }
+
+  boot();
+})();
