@@ -118,20 +118,6 @@
       defaults: { metrics: [{ label: "MRR", value: "$24.3k", delta: "+4.2%" }, { label: "Active users", value: "12,480", delta: "+1.8%" }, { label: "Churn", value: "2.1%", delta: "-0.3%" }] }
     },
     {
-      type: "friends",
-      title: "Friends",
-      tags: ["daily", "social"],
-      desc: "Lightweight status board for your circle.",
-      defaults: { friends: [{ name: "Ava", status: "online" }, { name: "Noah", status: "away" }, { name: "Zara", status: "offline" }] }
-    },
-    {
-      type: "pet",
-      title: "Companion",
-      tags: ["daily", "social"],
-      desc: "A tiny pet companion to keep you company.",
-      defaults: { name: "Byte", mood: 70 }
-    },
-    {
       type: "quote",
       title: "Daily Inspiration",
       tags: ["info", "daily"],
@@ -144,13 +130,6 @@
       tags: ["focus", "tools"],
       desc: "Play ambient soundscapes and set focus mode.",
       defaults: { sound: "Rain", durationMin: 45, volume: 60 }
-    },
-    {
-      type: "privacy",
-      title: "Privacy Controls",
-      tags: ["tools", "info"],
-      desc: "Opt-in telemetry and data policy summary.",
-      defaults: { telemetry: false }
     }
   ];
 
@@ -342,15 +321,11 @@
         mk("notes", 2),
         mk("search", 2),
         mk("links", 2),
-        mk("bookmarks", 2),
         mk("stats", 1),
         mk("agenda", 2),
         mk("habits", 2),
-        mk("friends", 1),
-        mk("pet", 1),
         mk("quote", 1),
-        mk("ambient", 1),
-        mk("privacy", 1)
+        mk("ambient", 1)
       ]
     };
   }
@@ -622,11 +597,8 @@
     if (type === "agenda") return widgetAgenda(w);
     if (type === "habits") return widgetHabits(w);
     if (type === "pulse") return widgetPulse(w);
-    if (type === "friends") return widgetFriends(w);
-    if (type === "pet") return widgetPet(w);
     if (type === "quote") return widgetQuote(w);
     if (type === "ambient") return widgetAmbient(w);
-    if (type === "privacy") return widgetPrivacy(w);
     return widgetUnknown(w);
   }
 
@@ -1803,125 +1775,6 @@
     return el;
   }
 
-  function widgetFriends(w) {
-    const el = document.createElement("div");
-    el.className = "stack";
-
-    const key = `livedash:friends:${w.id}`;
-    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "friends")?.defaults);
-    const data = loadJson(key, { friends: Array.isArray(opts.friends) ? opts.friends.map(f => ({ id: uid(), ...f })) : [] });
-
-    const list = document.createElement("div");
-    list.className = "friends-list";
-
-    const controls = document.createElement("div");
-    controls.className = "row";
-    controls.innerHTML = `
-      <button class="btn" type="button" data-a="add">Add friend</button>
-      <button class="btn ghost" type="button" data-a="shuffle">Shuffle statuses</button>
-    `;
-
-    const render = () => {
-      list.innerHTML = "";
-      if (!data.friends.length) {
-        const empty = document.createElement("div");
-        empty.className = "small";
-        empty.textContent = "No friends added yet.";
-        list.appendChild(empty);
-        return;
-      }
-      for (const friend of data.friends) {
-        const row = document.createElement("div");
-        row.className = "friend-item";
-        row.innerHTML = `
-          <div class="left">
-            <span class="status-dot"></span>
-            <div>
-              <div class="habit-name"></div>
-              <div class="small"></div>
-            </div>
-          </div>
-          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
-        `;
-        const dot = $(".status-dot", row);
-        dot.classList.toggle("away", friend.status === "away");
-        dot.classList.toggle("offline", friend.status === "offline");
-        $(".habit-name", row).textContent = friend.name;
-        $(".small", row).textContent = friend.status;
-        $("button", row).addEventListener("click", () => {
-          data.friends = data.friends.filter(x => x.id !== friend.id);
-          saveJson(key, data);
-          render();
-        });
-        list.appendChild(row);
-      }
-    };
-
-    $('[data-a="add"]', controls).addEventListener("click", () => {
-      const name = (prompt("Friend name") || "").trim().slice(0, 20);
-      if (!name) return;
-      data.friends.unshift({ id: uid(), name, status: "online" });
-      saveJson(key, data);
-      render();
-    });
-    $('[data-a="shuffle"]', controls).addEventListener("click", () => {
-      const states = ["online", "away", "offline"];
-      data.friends.forEach(f => { f.status = states[Math.floor(Math.random() * states.length)]; });
-      saveJson(key, data);
-      render();
-    });
-
-    el.appendChild(list);
-    el.appendChild(controls);
-    render();
-    return el;
-  }
-
-  function widgetPet(w) {
-    const el = document.createElement("div");
-    el.className = "stack";
-
-    const key = `livedash:pet:${w.id}`;
-    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "pet")?.defaults);
-    const data = loadJson(key, { name: opts.name || "Byte", mood: Number(opts.mood) || 70 });
-
-    const card = document.createElement("div");
-    card.className = "pet-card";
-    card.innerHTML = `
-      <div class="pet-face">🐾</div>
-      <div class="pet-meta">
-        <div class="habit-name"></div>
-        <div class="small" data-a="mood"></div>
-      </div>
-      <div class="row">
-        <button class="btn" type="button" data-a="feed">Feed</button>
-        <button class="btn ghost" type="button" data-a="play">Play</button>
-      </div>
-    `;
-
-    const nameEl = $(".habit-name", card);
-    const moodEl = $('[data-a="mood"]', card);
-    const update = () => {
-      nameEl.textContent = data.name;
-      moodEl.textContent = `Mood: ${data.mood}%`;
-    };
-
-    $('[data-a="feed"]', card).addEventListener("click", () => {
-      data.mood = Math.min(100, data.mood + 10);
-      saveJson(key, data);
-      update();
-    });
-    $('[data-a="play"]', card).addEventListener("click", () => {
-      data.mood = Math.min(100, data.mood + 6);
-      saveJson(key, data);
-      update();
-    });
-
-    update();
-    el.appendChild(card);
-    return el;
-  }
-
   function widgetQuote(w) {
     const el = document.createElement("div");
     el.className = "stack";
@@ -1996,36 +1849,6 @@
     hint.textContent = "Settings → Options supports: sound, durationMin, volume.";
     el.appendChild(hint);
 
-    return el;
-  }
-
-  function widgetPrivacy(w) {
-    const el = document.createElement("div");
-    el.className = "stack";
-
-    const key = "livedash:telemetry";
-    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "privacy")?.defaults);
-    const data = loadJson(key, { telemetry: !!opts.telemetry });
-
-    const card = document.createElement("div");
-    card.className = "privacy-card";
-    card.innerHTML = `
-      <div><strong>Telemetry</strong> helps improve LiveDash. It's opt-in and never sends notes or personal content.</div>
-      <label class="toggle">
-        <input type="checkbox" data-a="telemetry" />
-        <span>Enable anonymous usage metrics</span>
-      </label>
-      <div class="small">Data policy: stored locally unless opted in. You can export or delete anytime.</div>
-    `;
-    const toggle = $('[data-a="telemetry"]', card);
-    toggle.checked = !!data.telemetry;
-    toggle.addEventListener("change", () => {
-      data.telemetry = toggle.checked;
-      saveJson(key, data);
-      toast(data.telemetry ? "Telemetry enabled" : "Telemetry disabled");
-    });
-
-    el.appendChild(card);
     return el;
   }
 
