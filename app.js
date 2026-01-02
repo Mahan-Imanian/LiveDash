@@ -1,9 +1,13 @@
 (() => {
-  const STORAGE_KEY = "livedash:v2";
+  const STORAGE_KEY = "livedash:v3";
+  const WORKSPACE_KEY = "livedash:workspace";
+  const WORKSPACE_LIST_KEY = "livedash:workspaces";
+  const HISTORY_KEY = "livedash:history";
   const DEFAULTS = {
-    version: 2,
+    version: 3,
     theme: "dark",
-    layout: { cols: 4, density: "comfortable", card: "glass" },
+    background: "aurora",
+    layout: { cols: 4, density: "comfortable", card: "glass", locked: false },
     widgets: []
   };
 
@@ -16,11 +20,32 @@
       defaults: { tz: "local", seconds: true, format24: false }
     },
     {
+      type: "calendar",
+      title: "Calendar",
+      tags: ["daily", "info"],
+      desc: "Month view with quick highlights.",
+      defaults: { highlightWeekends: true }
+    },
+    {
+      type: "timezone",
+      title: "Timezones",
+      tags: ["daily", "info"],
+      desc: "Track multiple cities at a glance.",
+      defaults: { zones: [{ label: "San Francisco", zone: "America/Los_Angeles" }, { label: "London", zone: "Europe/London" }, { label: "Tokyo", zone: "Asia/Tokyo" }] }
+    },
+    {
       type: "weather",
       title: "Weather",
       tags: ["daily", "info"],
       desc: "Current conditions via Open-Meteo.",
       defaults: { city: "New York", units: "metric", autoLocation: true }
+    },
+    {
+      type: "prices",
+      title: "Prices",
+      tags: ["info", "daily"],
+      desc: "Crypto + currency tickers with caching.",
+      defaults: { assets: ["bitcoin", "ethereum"], fx: ["USD", "EUR"] }
     },
     {
       type: "focus",
@@ -44,6 +69,13 @@
       defaults: { placeholder: "Write anything…" }
     },
     {
+      type: "search",
+      title: "Smart Search",
+      tags: ["daily", "tools"],
+      desc: "Search the web or jump to apps fast.",
+      defaults: { provider: "duckduckgo" }
+    },
+    {
       type: "links",
       title: "Quick Links",
       tags: ["daily", "tools"],
@@ -51,11 +83,74 @@
       defaults: { links: [{ name: "Gmail", url: "https://mail.google.com" }, { name: "Calendar", url: "https://calendar.google.com" }] }
     },
     {
+      type: "bookmarks",
+      title: "Bookmarks",
+      tags: ["daily", "tools"],
+      desc: "Taggable bookmarks with quick filter.",
+      defaults: { bookmarks: [{ title: "Docs", url: "https://developer.mozilla.org", tags: ["docs"] }] }
+    },
+    {
       type: "stats",
       title: "Today",
       tags: ["daily", "info"],
       desc: "Simple daily KPIs you can reset.",
       defaults: { counters: [{ k: "Water", v: 0 }, { k: "Steps", v: 0 }, { k: "Deep work", v: 0 }] }
+    },
+    {
+      type: "agenda",
+      title: "Agenda",
+      tags: ["daily", "tools"],
+      desc: "Today’s schedule with time blocks.",
+      defaults: { blocks: [{ time: "09:00", title: "Team standup", note: "Zoom" }, { time: "13:00", title: "Deep work", note: "Roadmap" }] }
+    },
+    {
+      type: "habits",
+      title: "Habits",
+      tags: ["daily", "focus"],
+      desc: "Track daily habits with streaks.",
+      defaults: { habits: [{ name: "Workout", streak: 3 }, { name: "Reading", streak: 7 }, { name: "Meditation", streak: 5 }] }
+    },
+    {
+      type: "pulse",
+      title: "Pulse Metrics",
+      tags: ["info", "daily"],
+      desc: "High-level business metrics to update daily.",
+      defaults: { metrics: [{ label: "MRR", value: "$24.3k", delta: "+4.2%" }, { label: "Active users", value: "12,480", delta: "+1.8%" }, { label: "Churn", value: "2.1%", delta: "-0.3%" }] }
+    },
+    {
+      type: "friends",
+      title: "Friends",
+      tags: ["daily", "social"],
+      desc: "Lightweight status board for your circle.",
+      defaults: { friends: [{ name: "Ava", status: "online" }, { name: "Noah", status: "away" }, { name: "Zara", status: "offline" }] }
+    },
+    {
+      type: "pet",
+      title: "Companion",
+      tags: ["daily", "social"],
+      desc: "A tiny pet companion to keep you company.",
+      defaults: { name: "Byte", mood: 70 }
+    },
+    {
+      type: "quote",
+      title: "Daily Inspiration",
+      tags: ["info", "daily"],
+      desc: "Motivational quote and focus mantra.",
+      defaults: { source: "Curated", quotes: ["Stay curious.", "Progress over perfection.", "Do the hard thing first."] }
+    },
+    {
+      type: "ambient",
+      title: "Ambient Focus",
+      tags: ["focus", "tools"],
+      desc: "Play ambient soundscapes and set focus mode.",
+      defaults: { sound: "Rain", durationMin: 45, volume: 60 }
+    },
+    {
+      type: "privacy",
+      title: "Privacy Controls",
+      tags: ["tools", "info"],
+      desc: "Opt-in telemetry and data policy summary.",
+      defaults: { telemetry: false }
     }
   ];
 
@@ -65,6 +160,9 @@
 
   const app = {
     state: null,
+    workspace: "Work",
+    workspaces: [],
+    history: [],
     drag: { id: null, over: null },
     modalMode: "gallery",
     focus: { running: false, until: 0, mode: "off", tick: null }
@@ -83,16 +181,26 @@
     save();
   }
 
+  function applyBackground() {
+    const bg = app.state.background || "aurora";
+    document.body.dataset.bg = bg;
+  }
+
   function applyLayout() {
     const { cols, density, card } = app.state.layout;
     document.documentElement.style.setProperty("--cols", String(cols));
     document.documentElement.style.setProperty("--density", density === "compact" ? "1.35" : "1");
     document.documentElement.style.setProperty("--card", card === "solid" ? "solid" : "glass");
+    document.body.dataset.locked = app.state.layout.locked ? "true" : "false";
   }
 
-  function load() {
+  function getWorkspaceKey(name) {
+    return `${STORAGE_KEY}:${name}`;
+  }
+
+  function loadWorkspace(name) {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(getWorkspaceKey(name)) || localStorage.getItem(STORAGE_KEY);
       if (!raw) return structuredClone(DEFAULTS);
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return structuredClone(DEFAULTS);
@@ -102,16 +210,109 @@
       if (!s.layout.cols) s.layout.cols = 4;
       if (!s.layout.density) s.layout.density = "comfortable";
       if (!s.layout.card) s.layout.card = "glass";
+      if (typeof s.layout.locked !== "boolean") s.layout.locked = false;
       if (!s.theme) s.theme = "dark";
-      if (!s.version) s.version = 2;
+      if (!s.background) s.background = "aurora";
+      if (!s.version) s.version = 3;
       return s;
     } catch {
       return structuredClone(DEFAULTS);
     }
   }
 
+  function saveWorkspace(name) {
+    localStorage.setItem(getWorkspaceKey(name), JSON.stringify(app.state));
+  }
+
   function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(app.state));
+    saveWorkspace(app.workspace);
+  }
+
+  function loadWorkspaceList() {
+    const fallback = ["Work", "Personal", "Minimal"];
+    const raw = localStorage.getItem(WORKSPACE_LIST_KEY);
+    if (!raw) return fallback;
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) && parsed.length ? parsed : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function saveWorkspaceList() {
+    localStorage.setItem(WORKSPACE_LIST_KEY, JSON.stringify(app.workspaces));
+  }
+
+  function getHistoryKey(name) {
+    return `${HISTORY_KEY}:${name}`;
+  }
+
+  function loadHistory(name) {
+    try {
+      const raw = localStorage.getItem(getHistoryKey(name));
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveHistory(name) {
+    localStorage.setItem(getHistoryKey(name), JSON.stringify(app.history.slice(-10)));
+  }
+
+  function pushHistory() {
+    app.history.push({
+      widgets: structuredClone(app.state.widgets),
+      layout: structuredClone(app.state.layout)
+    });
+    saveHistory(app.workspace);
+  }
+
+  function undo() {
+    const prev = app.history.pop();
+    if (!prev) {
+      toast("Nothing to undo");
+      return;
+    }
+    app.state.widgets = prev.widgets;
+    app.state.layout = prev.layout;
+    save();
+    applyLayout();
+    renderGrid();
+    updateWeatherPill();
+  }
+
+  function setWorkspace(name) {
+    if (!name) return;
+    if (app.workspace === name) return;
+    saveWorkspace(app.workspace);
+    app.workspace = name;
+    localStorage.setItem(WORKSPACE_KEY, name);
+    app.state = loadWorkspace(name);
+    app.history = loadHistory(name);
+    setTheme(app.state.theme);
+    applyBackground();
+    applyLayout();
+    renderGrid();
+    updateWeatherPill();
+    syncFocusPill();
+    renderWorkspaceSelect();
+    toast(`Workspace: ${name}`);
+  }
+
+  function renderWorkspaceSelect() {
+    const sel = $("#workspaceSel");
+    sel.innerHTML = "";
+    for (const name of app.workspaces) {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      if (name === app.workspace) opt.selected = true;
+      sel.appendChild(opt);
+    }
   }
 
   function defaultDashboard() {
@@ -131,12 +332,25 @@
       ...structuredClone(DEFAULTS),
       widgets: [
         mk("clock", 1),
+        mk("calendar", 2),
+        mk("timezone", 1),
         mk("weather", 2),
+        mk("prices", 2),
         mk("focus", 2),
+        mk("pulse", 2),
         mk("todos", 2),
         mk("notes", 2),
+        mk("search", 2),
         mk("links", 2),
-        mk("stats", 1)
+        mk("bookmarks", 2),
+        mk("stats", 1),
+        mk("agenda", 2),
+        mk("habits", 2),
+        mk("friends", 1),
+        mk("pet", 1),
+        mk("quote", 1),
+        mk("ambient", 1),
+        mk("privacy", 1)
       ]
     };
   }
@@ -187,7 +401,7 @@
         return inText && inFilter;
       });
 
-    const g = $("#gallery");
+    const g = $("#galleryGrid");
     g.innerHTML = "";
     for (const w of items) {
       const card = document.createElement("div");
@@ -211,6 +425,8 @@
     $("#cardSel").value = app.state.layout.card;
     $("#colsRange").value = String(app.state.layout.cols);
     $("#colsVal").textContent = String(app.state.layout.cols);
+    $("#bgSel").value = app.state.background || "aurora";
+    $("#lockToggle").checked = !!app.state.layout.locked;
   }
 
   function addWidget(type) {
@@ -223,6 +439,7 @@
       accent: "#7c5cff",
       options: structuredClone(cat?.defaults ?? {})
     };
+    pushHistory();
     app.state.widgets.unshift(w);
     save();
     renderGrid();
@@ -232,6 +449,7 @@
   }
 
   function removeWidget(id) {
+    pushHistory();
     app.state.widgets = app.state.widgets.filter(w => w.id !== id);
     save();
     renderGrid();
@@ -243,6 +461,7 @@
     const from = a.findIndex(w => w.id === fromId);
     const to = a.findIndex(w => w.id === toId);
     if (from < 0 || to < 0 || from === to) return;
+    pushHistory();
     const [item] = a.splice(from, 1);
     a.splice(to, 0, item);
     save();
@@ -260,6 +479,8 @@
       node.dataset.type = w.type;
       node.dataset.size = String(w.size || 2);
       node.style.setProperty("--accent", w.accent || "#7c5cff");
+      node.draggable = !app.state.layout.locked;
+      node.classList.toggle("is-locked", app.state.layout.locked);
 
       const title = $(".card-title", node);
       title.value = w.title || w.type;
@@ -271,6 +492,7 @@
       const sizeSel = $('[data-act="size"]', node);
       sizeSel.value = String(w.size || 2);
       sizeSel.addEventListener("change", () => {
+        pushHistory();
         w.size = Number(sizeSel.value) || 2;
         node.dataset.size = String(w.size);
         save();
@@ -280,7 +502,9 @@
       $('[data-act="refresh"]', node).addEventListener("click", () => refreshWidget(w.id));
       $('[data-act="settings"]', node).addEventListener("click", () => openSettings(node, w));
 
-      wireDnD(node);
+      if (!app.state.layout.locked) {
+        wireDnD(node);
+      }
 
       const body = $(".card-body", node);
       body.appendChild(renderWidgetBody(w));
@@ -365,6 +589,7 @@
         return;
       }
 
+      pushHistory();
       w.title = nextTitle || (WIDGET_CATALOG.find(x => x.type === w.type)?.title ?? w.type);
       w.accent = nextAccent;
       w.options = nextOptions;
@@ -383,12 +608,25 @@
   function renderWidgetBody(w) {
     const type = w.type;
     if (type === "clock") return widgetClock(w);
+    if (type === "calendar") return widgetCalendar(w);
+    if (type === "timezone") return widgetTimezone(w);
     if (type === "weather") return widgetWeather(w);
+    if (type === "prices") return widgetPrices(w);
     if (type === "focus") return widgetFocus(w);
     if (type === "todos") return widgetTodos(w);
     if (type === "notes") return widgetNotes(w);
+    if (type === "search") return widgetSearch(w);
     if (type === "links") return widgetLinks(w);
+    if (type === "bookmarks") return widgetBookmarks(w);
     if (type === "stats") return widgetStats(w);
+    if (type === "agenda") return widgetAgenda(w);
+    if (type === "habits") return widgetHabits(w);
+    if (type === "pulse") return widgetPulse(w);
+    if (type === "friends") return widgetFriends(w);
+    if (type === "pet") return widgetPet(w);
+    if (type === "quote") return widgetQuote(w);
+    if (type === "ambient") return widgetAmbient(w);
+    if (type === "privacy") return widgetPrivacy(w);
     return widgetUnknown(w);
   }
 
@@ -438,6 +676,181 @@
     return el;
   }
 
+  function widgetCalendar(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "calendar")?.defaults);
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const first = new Date(year, month, 1);
+    const last = new Date(year, month + 1, 0);
+    const startDay = first.getDay();
+    const daysInMonth = last.getDate();
+
+    const card = document.createElement("div");
+    card.className = "calendar";
+    card.innerHTML = `
+      <div class="calendar-head">
+        <div class="calendar-title"></div>
+        <div class="small">${today.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</div>
+      </div>
+      <div class="calendar-grid" data-a="grid"></div>
+    `;
+    $(".calendar-title", card).textContent = today.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    const grid = $('[data-a="grid"]', card);
+
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    for (const name of dayNames) {
+      const cell = document.createElement("div");
+      cell.className = "calendar-cell";
+      cell.textContent = name;
+      grid.appendChild(cell);
+    }
+    for (let i = 0; i < startDay; i += 1) {
+      const cell = document.createElement("div");
+      cell.className = "calendar-cell";
+      cell.textContent = "";
+      grid.appendChild(cell);
+    }
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const cell = document.createElement("div");
+      cell.className = "calendar-cell";
+      cell.textContent = String(day);
+      const current = new Date(year, month, day);
+      if (day === today.getDate()) cell.classList.add("today");
+      if (opts.highlightWeekends && (current.getDay() === 0 || current.getDay() === 6)) {
+        cell.classList.add("active");
+      }
+      grid.appendChild(cell);
+    }
+
+    el.appendChild(card);
+    return el;
+  }
+
+  function widgetTimezone(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "timezone")?.defaults);
+    const zones = Array.isArray(opts.zones) ? opts.zones : [];
+
+    const list = document.createElement("div");
+    list.className = "timezone-list";
+
+    const render = () => {
+      list.innerHTML = "";
+      if (!zones.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No timezones configured.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const item of zones) {
+        const row = document.createElement("div");
+        row.className = "timezone-item";
+        row.innerHTML = `
+          <div class="timezone-city"></div>
+          <div class="timezone-time"></div>
+        `;
+        $(".timezone-city", row).textContent = item.label || item.zone;
+        const fmt = new Intl.DateTimeFormat(undefined, { timeZone: item.zone, hour: "2-digit", minute: "2-digit" });
+        $(".timezone-time", row).textContent = fmt.format(new Date());
+        list.appendChild(row);
+      }
+    };
+
+    render();
+    const tick = setInterval(render, 60_000);
+    el.addEventListener("DOMNodeRemoved", () => clearInterval(tick), { once: true });
+    el.appendChild(list);
+    return el;
+  }
+
+  function widgetPrices(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "prices")?.defaults);
+    const key = `livedash:prices:${w.id}`;
+    const cached = loadJson(key, { data: {}, updatedAt: 0 });
+
+    const grid = document.createElement("div");
+    grid.className = "price-grid";
+    const meta = document.createElement("div");
+    meta.className = "small";
+    el.appendChild(grid);
+    el.appendChild(meta);
+
+    const render = (data, updatedAt) => {
+      grid.innerHTML = "";
+      const assets = Array.isArray(opts.assets) ? opts.assets : [];
+      const fx = Array.isArray(opts.fx) ? opts.fx : [];
+      const list = [];
+      for (const a of assets) {
+        if (data.crypto && data.crypto[a]) {
+          list.push({ label: a.toUpperCase(), value: `$${data.crypto[a].usd}` });
+        }
+      }
+      for (const f of fx) {
+        if (data.fx && data.fx[f]) {
+          list.push({ label: `USD/${f}`, value: data.fx[f].toFixed(2) });
+        }
+      }
+      if (!list.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No price data yet.";
+        grid.appendChild(empty);
+      } else {
+        for (const item of list) {
+          const card = document.createElement("div");
+          card.className = "price-card";
+          card.innerHTML = `
+            <div class="label"></div>
+            <div class="value"></div>
+          `;
+          $(".label", card).textContent = item.label;
+          $(".value", card).textContent = item.value;
+          grid.appendChild(card);
+        }
+      }
+      meta.textContent = updatedAt ? `Last updated ${new Date(updatedAt).toLocaleTimeString()}` : "Last updated —";
+    };
+
+    render(cached.data || {}, cached.updatedAt || 0);
+
+    const fetchPrices = async () => {
+      const assets = Array.isArray(opts.assets) ? opts.assets : [];
+      const fx = Array.isArray(opts.fx) ? opts.fx : [];
+      try {
+        const cryptoUrl = assets.length
+          ? `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(assets.join(","))}&vs_currencies=usd`
+          : null;
+        const fxUrl = fx.length
+          ? `https://api.exchangerate.host/latest?base=USD&symbols=${encodeURIComponent(fx.join(","))}`
+          : null;
+        const [cryptoResp, fxResp] = await Promise.all([
+          cryptoUrl ? fetch(cryptoUrl, { cache: "no-store" }) : Promise.resolve(null),
+          fxUrl ? fetch(fxUrl, { cache: "no-store" }) : Promise.resolve(null)
+        ]);
+        const crypto = cryptoResp && cryptoResp.ok ? await cryptoResp.json() : {};
+        const fxJson = fxResp && fxResp.ok ? await fxResp.json() : {};
+        const data = { crypto, fx: fxJson.rates || {} };
+        const updatedAt = Date.now();
+        saveJson(key, { data, updatedAt });
+        render(data, updatedAt);
+      } catch {
+        render(cached.data || {}, cached.updatedAt || 0);
+      }
+    };
+
+    fetchPrices();
+    return el;
+  }
+
   async function widgetWeather(w) {
     const el = document.createElement("div");
     el.className = "stack";
@@ -476,11 +889,19 @@
       cEl.textContent = "—";
     };
 
+    const cacheKey = `livedash:weather:${w.id}`;
+    const cached = loadJson(cacheKey, null);
+    if (cached && cached.data) {
+      setData(cached.data);
+    }
+
     try {
       const place = await resolveWeatherPlace(opts);
       if (!place) throw new Error("no place");
       const data = await fetchWeather(place.lat, place.lon, units);
-      setData({ ...data, place: place.label });
+      const full = { ...data, place: place.label };
+      setData(full);
+      saveJson(cacheKey, { data: full, updatedAt: Date.now() });
       updateWeatherPillWithData(data, place.label);
     } catch {
       fail("Weather unavailable (blocked or offline)");
@@ -861,6 +1282,64 @@
     return el;
   }
 
+  function widgetSearch(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "search")?.defaults);
+    const providers = [
+      { id: "google", label: "Google", url: "https://www.google.com/search?q=" },
+      { id: "duckduckgo", label: "DuckDuckGo", url: "https://duckduckgo.com/?q=" },
+      { id: "youtube", label: "YouTube", url: "https://www.youtube.com/results?search_query=" },
+      { id: "github", label: "GitHub", url: "https://github.com/search?q=" }
+    ];
+    let current = providers.find(p => p.id === opts.provider) || providers[1];
+
+    const box = document.createElement("div");
+    box.className = "search-box";
+    box.innerHTML = `
+      <input class="input" type="search" placeholder="Search…" />
+      <button class="btn" type="button">Go</button>
+    `;
+    const input = $("input", box);
+    const btn = $("button", box);
+
+    const chips = document.createElement("div");
+    chips.className = "search-sites";
+
+    const renderChips = () => {
+      chips.innerHTML = "";
+      for (const p of providers) {
+        const chip = document.createElement("button");
+        chip.className = "search-chip" + (p.id === current.id ? " active" : "");
+        chip.type = "button";
+        chip.textContent = p.label;
+        chip.addEventListener("click", () => {
+          current = p;
+          opts.provider = p.id;
+          w.options = { ...opts };
+          save();
+          renderChips();
+        });
+        chips.appendChild(chip);
+      }
+    };
+
+    const go = () => {
+      const q = input.value.trim();
+      if (!q) return;
+      window.open(current.url + encodeURIComponent(q), "_blank", "noopener,noreferrer");
+    };
+
+    btn.addEventListener("click", go);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+
+    el.appendChild(box);
+    el.appendChild(chips);
+    renderChips();
+    return el;
+  }
+
   function widgetLinks(w) {
     const el = document.createElement("div");
     el.className = "stack";
@@ -933,6 +1412,92 @@
 
     addBtn.addEventListener("click", add);
     urlIn.addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
+
+    el.appendChild(editor);
+    render();
+    return el;
+  }
+
+  function widgetBookmarks(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:bookmarks:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "bookmarks")?.defaults);
+    const data = loadJson(key, { bookmarks: Array.isArray(opts.bookmarks) ? opts.bookmarks.map(b => ({ id: uid(), ...b })) : [] });
+
+    const editor = document.createElement("div");
+    editor.className = "stack";
+    editor.innerHTML = `
+      <div class="bookmark-row">
+        <input class="input" data-a="title" type="text" placeholder="Title" />
+        <input class="input" data-a="url" type="url" placeholder="https://example.com" />
+        <input class="input" data-a="tags" type="text" placeholder="tags" />
+        <button class="btn" data-a="add" type="button">Add</button>
+      </div>
+      <input class="input" data-a="filter" type="search" placeholder="Filter by tag or title" />
+      <div class="bookmark-list" data-a="list"></div>
+    `;
+
+    const titleIn = $('[data-a="title"]', editor);
+    const urlIn = $('[data-a="url"]', editor);
+    const tagsIn = $('[data-a="tags"]', editor);
+    const addBtn = $('[data-a="add"]', editor);
+    const filterIn = $('[data-a="filter"]', editor);
+    const list = $('[data-a="list"]', editor);
+
+    const render = () => {
+      list.innerHTML = "";
+      const q = filterIn.value.trim().toLowerCase();
+      const items = data.bookmarks.filter(b => !q || b.title.toLowerCase().includes(q) || (b.tags || []).join(" ").toLowerCase().includes(q));
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No bookmarks found.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const b of items) {
+        const row = document.createElement("div");
+        row.className = "bookmark-item";
+        row.innerHTML = `
+          <div>
+            <a class="quick" target="_blank" rel="noreferrer"></a>
+            <div class="bookmark-meta"></div>
+          </div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        const link = $("a", row);
+        link.textContent = b.title || b.url;
+        link.href = b.url;
+        $(".bookmark-meta", row).textContent = (b.tags || []).join(" · ");
+        $("button", row).addEventListener("click", () => {
+          data.bookmarks = data.bookmarks.filter(x => x.id !== b.id);
+          saveJson(key, data);
+          render();
+        });
+        list.appendChild(row);
+      }
+    };
+
+    const add = () => {
+      const title = titleIn.value.trim().slice(0, 40);
+      const url = urlIn.value.trim().slice(0, 300);
+      if (!/^https?:\/\//i.test(url)) {
+        toast("URL must start with http(s)://");
+        return;
+      }
+      const tags = tagsIn.value.split(",").map(t => t.trim()).filter(Boolean).slice(0, 5);
+      data.bookmarks.unshift({ id: uid(), title: title || url, url, tags });
+      titleIn.value = "";
+      urlIn.value = "";
+      tagsIn.value = "";
+      saveJson(key, data);
+      render();
+    };
+
+    addBtn.addEventListener("click", add);
+    filterIn.addEventListener("input", render);
 
     el.appendChild(editor);
     render();
@@ -1018,6 +1583,452 @@
     return el;
   }
 
+  function widgetAgenda(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:agenda:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "agenda")?.defaults);
+    const data = loadJson(key, { blocks: Array.isArray(opts.blocks) ? opts.blocks.map(b => ({ id: uid(), ...b })) : [] });
+
+    const editor = document.createElement("div");
+    editor.className = "agenda-editor";
+    editor.innerHTML = `
+      <div class="agenda-row">
+        <input class="input" data-a="time" type="time" />
+        <input class="input" data-a="title" type="text" placeholder="Meeting / focus block" />
+        <input class="input" data-a="note" type="text" placeholder="Notes" />
+        <button class="btn" data-a="add" type="button">Add</button>
+      </div>
+      <div class="agenda-list" data-a="list"></div>
+    `;
+
+    const timeIn = $('[data-a="time"]', editor);
+    const titleIn = $('[data-a="title"]', editor);
+    const noteIn = $('[data-a="note"]', editor);
+    const addBtn = $('[data-a="add"]', editor);
+    const list = $('[data-a="list"]', editor);
+
+    const render = () => {
+      list.innerHTML = "";
+      if (!data.blocks.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No agenda blocks yet.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const block of data.blocks) {
+        const row = document.createElement("div");
+        row.className = "agenda-item";
+        row.innerHTML = `
+          <div>
+            <div class="agenda-time"></div>
+            <div class="agenda-title"></div>
+            <div class="small agenda-note"></div>
+          </div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        $(".agenda-time", row).textContent = block.time || "—";
+        $(".agenda-title", row).textContent = block.title || "Untitled";
+        $(".agenda-note", row).textContent = block.note || "";
+        $("button", row).addEventListener("click", () => {
+          data.blocks = data.blocks.filter(x => x.id !== block.id);
+          saveJson(key, data);
+          render();
+        });
+        list.appendChild(row);
+      }
+    };
+
+    const add = () => {
+      const time = timeIn.value || "";
+      const title = titleIn.value.trim().slice(0, 60);
+      const note = noteIn.value.trim().slice(0, 80);
+      if (!title && !note) return;
+      data.blocks.push({ id: uid(), time, title: title || "Untitled", note });
+      saveJson(key, data);
+      titleIn.value = "";
+      noteIn.value = "";
+      render();
+    };
+
+    addBtn.addEventListener("click", add);
+    titleIn.addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
+
+    el.appendChild(editor);
+    render();
+    return el;
+  }
+
+  function widgetHabits(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:habits:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "habits")?.defaults);
+    const data = loadJson(key, { habits: Array.isArray(opts.habits) ? opts.habits.map(h => ({ id: uid(), done: false, ...h })) : [] });
+
+    const list = document.createElement("div");
+    list.className = "habit-list";
+
+    const controls = document.createElement("div");
+    controls.className = "row";
+    controls.innerHTML = `
+      <button class="btn" type="button" data-a="add">Add habit</button>
+      <button class="btn ghost" type="button" data-a="reset">Reset today</button>
+    `;
+
+    const render = () => {
+      list.innerHTML = "";
+      if (!data.habits.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No habits yet.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const habit of data.habits) {
+        const row = document.createElement("div");
+        row.className = "habit-item";
+        row.innerHTML = `
+          <div class="left">
+            <input class="chk" type="checkbox" ${habit.done ? "checked" : ""} />
+            <div>
+              <div class="habit-name"></div>
+              <div class="small habit-meta"></div>
+            </div>
+          </div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        $(".habit-name", row).textContent = habit.name;
+        $(".habit-meta", row).textContent = `Streak: ${habit.streak} days`;
+        $(".chk", row).addEventListener("change", (e) => {
+          habit.done = !!e.target.checked;
+          saveJson(key, data);
+        });
+        $("button", row).addEventListener("click", () => {
+          data.habits = data.habits.filter(x => x.id !== habit.id);
+          saveJson(key, data);
+          render();
+        });
+        list.appendChild(row);
+      }
+    };
+
+    $('[data-a="add"]', controls).addEventListener("click", () => {
+      const name = (prompt("Habit name") || "").trim().slice(0, 30);
+      if (!name) return;
+      data.habits.unshift({ id: uid(), name, streak: 1, done: false });
+      saveJson(key, data);
+      render();
+    });
+    $('[data-a="reset"]', controls).addEventListener("click", () => {
+      data.habits.forEach(h => { h.done = false; });
+      saveJson(key, data);
+      render();
+      toast("Habits reset for today");
+    });
+
+    el.appendChild(list);
+    el.appendChild(controls);
+    render();
+    return el;
+  }
+
+  function widgetPulse(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:pulse:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "pulse")?.defaults);
+    const data = loadJson(key, { metrics: Array.isArray(opts.metrics) ? opts.metrics.map(m => ({ id: uid(), ...m })) : [] });
+
+    const grid = document.createElement("div");
+    grid.className = "pulse-grid";
+
+    const controls = document.createElement("div");
+    controls.className = "row";
+    controls.innerHTML = `
+      <button class="btn ghost" type="button" data-a="add">Add metric</button>
+      <button class="btn" type="button" data-a="refresh">Refresh</button>
+    `;
+
+    const render = () => {
+      grid.innerHTML = "";
+      if (!data.metrics.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No metrics yet.";
+        grid.appendChild(empty);
+        return;
+      }
+      for (const metric of data.metrics) {
+        const card = document.createElement("div");
+        card.className = "pulse-card";
+        card.innerHTML = `
+          <div class="pulse-label"></div>
+          <div class="pulse-value"></div>
+          <div class="pulse-delta"></div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        $(".pulse-label", card).textContent = metric.label;
+        $(".pulse-value", card).textContent = metric.value;
+        $(".pulse-delta", card).textContent = metric.delta || "—";
+        $("button", card).addEventListener("click", () => {
+          data.metrics = data.metrics.filter(x => x.id !== metric.id);
+          saveJson(key, data);
+          render();
+        });
+        grid.appendChild(card);
+      }
+    };
+
+    $('[data-a="add"]', controls).addEventListener("click", () => {
+      const label = (prompt("Metric label") || "").trim().slice(0, 20);
+      if (!label) return;
+      const value = (prompt("Metric value") || "").trim().slice(0, 20);
+      const delta = (prompt("Metric delta (optional)") || "").trim().slice(0, 20);
+      data.metrics.unshift({ id: uid(), label, value: value || "—", delta: delta || "—" });
+      saveJson(key, data);
+      render();
+    });
+    $('[data-a="refresh"]', controls).addEventListener("click", () => {
+      toast("Metrics refreshed");
+    });
+
+    el.appendChild(grid);
+    el.appendChild(controls);
+    render();
+    return el;
+  }
+
+  function widgetFriends(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:friends:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "friends")?.defaults);
+    const data = loadJson(key, { friends: Array.isArray(opts.friends) ? opts.friends.map(f => ({ id: uid(), ...f })) : [] });
+
+    const list = document.createElement("div");
+    list.className = "friends-list";
+
+    const controls = document.createElement("div");
+    controls.className = "row";
+    controls.innerHTML = `
+      <button class="btn" type="button" data-a="add">Add friend</button>
+      <button class="btn ghost" type="button" data-a="shuffle">Shuffle statuses</button>
+    `;
+
+    const render = () => {
+      list.innerHTML = "";
+      if (!data.friends.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No friends added yet.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const friend of data.friends) {
+        const row = document.createElement("div");
+        row.className = "friend-item";
+        row.innerHTML = `
+          <div class="left">
+            <span class="status-dot"></span>
+            <div>
+              <div class="habit-name"></div>
+              <div class="small"></div>
+            </div>
+          </div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        const dot = $(".status-dot", row);
+        dot.classList.toggle("away", friend.status === "away");
+        dot.classList.toggle("offline", friend.status === "offline");
+        $(".habit-name", row).textContent = friend.name;
+        $(".small", row).textContent = friend.status;
+        $("button", row).addEventListener("click", () => {
+          data.friends = data.friends.filter(x => x.id !== friend.id);
+          saveJson(key, data);
+          render();
+        });
+        list.appendChild(row);
+      }
+    };
+
+    $('[data-a="add"]', controls).addEventListener("click", () => {
+      const name = (prompt("Friend name") || "").trim().slice(0, 20);
+      if (!name) return;
+      data.friends.unshift({ id: uid(), name, status: "online" });
+      saveJson(key, data);
+      render();
+    });
+    $('[data-a="shuffle"]', controls).addEventListener("click", () => {
+      const states = ["online", "away", "offline"];
+      data.friends.forEach(f => { f.status = states[Math.floor(Math.random() * states.length)]; });
+      saveJson(key, data);
+      render();
+    });
+
+    el.appendChild(list);
+    el.appendChild(controls);
+    render();
+    return el;
+  }
+
+  function widgetPet(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:pet:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "pet")?.defaults);
+    const data = loadJson(key, { name: opts.name || "Byte", mood: Number(opts.mood) || 70 });
+
+    const card = document.createElement("div");
+    card.className = "pet-card";
+    card.innerHTML = `
+      <div class="pet-face">🐾</div>
+      <div class="pet-meta">
+        <div class="habit-name"></div>
+        <div class="small" data-a="mood"></div>
+      </div>
+      <div class="row">
+        <button class="btn" type="button" data-a="feed">Feed</button>
+        <button class="btn ghost" type="button" data-a="play">Play</button>
+      </div>
+    `;
+
+    const nameEl = $(".habit-name", card);
+    const moodEl = $('[data-a="mood"]', card);
+    const update = () => {
+      nameEl.textContent = data.name;
+      moodEl.textContent = `Mood: ${data.mood}%`;
+    };
+
+    $('[data-a="feed"]', card).addEventListener("click", () => {
+      data.mood = Math.min(100, data.mood + 10);
+      saveJson(key, data);
+      update();
+    });
+    $('[data-a="play"]', card).addEventListener("click", () => {
+      data.mood = Math.min(100, data.mood + 6);
+      saveJson(key, data);
+      update();
+    });
+
+    update();
+    el.appendChild(card);
+    return el;
+  }
+
+  function widgetQuote(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "quote")?.defaults);
+    const quotes = Array.isArray(opts.quotes) ? opts.quotes : [];
+    const quote = quotes.length ? quotes[Math.floor(Math.random() * quotes.length)] : "Stay focused, stay kind.";
+
+    const box = document.createElement("div");
+    box.className = "quote-box";
+    box.innerHTML = `
+      <div class="quote-text"></div>
+      <div class="small quote-source"></div>
+    `;
+    $(".quote-text", box).textContent = `“${quote}”`;
+    $(".quote-source", box).textContent = `Source: ${opts.source || "Curated"}`;
+
+    const refresh = document.createElement("button");
+    refresh.className = "btn ghost";
+    refresh.type = "button";
+    refresh.textContent = "New quote";
+    refresh.addEventListener("click", () => {
+      if (!quotes.length) return;
+      const next = quotes[Math.floor(Math.random() * quotes.length)];
+      $(".quote-text", box).textContent = `“${next}”`;
+    });
+
+    el.appendChild(box);
+    el.appendChild(refresh);
+    return el;
+  }
+
+  function widgetAmbient(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "ambient")?.defaults);
+    const key = `livedash:ambient:${w.id}`;
+    const data = loadJson(key, { sound: opts.sound, durationMin: opts.durationMin, volume: opts.volume, playing: false });
+
+    const card = document.createElement("div");
+    card.className = "ambient-card";
+    card.innerHTML = `
+      <div>
+        <div class="ambient-title"></div>
+        <div class="small">Duration: <span data-a="dur"></span> min · Volume: <span data-a="vol"></span>%</div>
+      </div>
+      <div class="row">
+        <button class="btn" type="button" data-a="start">Start</button>
+        <button class="btn ghost" type="button" data-a="stop">Stop</button>
+      </div>
+    `;
+    $(".ambient-title", card).textContent = data.sound || "Ambient";
+    $('[data-a="dur"]', card).textContent = data.durationMin || 0;
+    $('[data-a="vol"]', card).textContent = data.volume || 0;
+
+    $('[data-a="start"]', card).addEventListener("click", () => {
+      data.playing = true;
+      saveJson(key, data);
+      toast(`Ambient: ${data.sound} started`);
+    });
+    $('[data-a="stop"]', card).addEventListener("click", () => {
+      data.playing = false;
+      saveJson(key, data);
+      toast("Ambient stopped");
+    });
+
+    el.appendChild(card);
+
+    const hint = document.createElement("div");
+    hint.className = "small";
+    hint.textContent = "Settings → Options supports: sound, durationMin, volume.";
+    el.appendChild(hint);
+
+    return el;
+  }
+
+  function widgetPrivacy(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = "livedash:telemetry";
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "privacy")?.defaults);
+    const data = loadJson(key, { telemetry: !!opts.telemetry });
+
+    const card = document.createElement("div");
+    card.className = "privacy-card";
+    card.innerHTML = `
+      <div><strong>Telemetry</strong> helps improve LiveDash. It's opt-in and never sends notes or personal content.</div>
+      <label class="toggle">
+        <input type="checkbox" data-a="telemetry" />
+        <span>Enable anonymous usage metrics</span>
+      </label>
+      <div class="small">Data policy: stored locally unless opted in. You can export or delete anytime.</div>
+    `;
+    const toggle = $('[data-a="telemetry"]', card);
+    toggle.checked = !!data.telemetry;
+    toggle.addEventListener("change", () => {
+      data.telemetry = toggle.checked;
+      saveJson(key, data);
+      toast(data.telemetry ? "Telemetry enabled" : "Telemetry disabled");
+    });
+
+    el.appendChild(card);
+    return el;
+  }
+
   function normalizeOptions(w, defaults) {
     const d = structuredClone(defaults || {});
     const o = (w && w.options && typeof w.options === "object") ? w.options : {};
@@ -1043,11 +2054,25 @@
   }
 
   function bindUI() {
+    $("#workspaceSel").addEventListener("change", (e) => setWorkspace(e.target.value));
+    $("#btnWorkspaceAdd").addEventListener("click", () => {
+      const name = (prompt("Workspace name") || "").trim().slice(0, 20);
+      if (!name) return;
+      if (app.workspaces.includes(name)) {
+        toast("Workspace already exists");
+        return;
+      }
+      app.workspaces.push(name);
+      saveWorkspaceList();
+      setWorkspace(name);
+    });
+
     $("#btnAdd").addEventListener("click", () => openModal("gallery"));
     $("#btnLayout").addEventListener("click", () => openModal("layout"));
     $("#btnTheme").addEventListener("click", () => setTheme(app.state.theme === "dark" ? "light" : "dark"));
     $("#btnExport").addEventListener("click", exportDashboard);
     $("#btnImport").addEventListener("click", () => openModal("import"));
+    $("#btnUndo").addEventListener("click", undo);
     $("#btnReset").addEventListener("click", resetDashboard);
 
     $("#widgetSearch").addEventListener("input", () => app.modalMode === "gallery" && renderGallery());
@@ -1064,16 +2089,31 @@
     $("#btnDoImport").addEventListener("click", doImport);
 
     $("#densitySel").addEventListener("change", () => {
+      pushHistory();
       app.state.layout.density = $("#densitySel").value === "compact" ? "compact" : "comfortable";
       save();
       applyLayout();
     });
     $("#cardSel").addEventListener("change", () => {
+      pushHistory();
       app.state.layout.card = $("#cardSel").value === "solid" ? "solid" : "glass";
       save();
       applyLayout();
     });
+    $("#bgSel").addEventListener("change", () => {
+      pushHistory();
+      app.state.background = $("#bgSel").value || "aurora";
+      save();
+      applyBackground();
+    });
+    $("#lockToggle").addEventListener("change", () => {
+      pushHistory();
+      app.state.layout.locked = $("#lockToggle").checked;
+      save();
+      renderGrid();
+    });
     $("#colsRange").addEventListener("input", () => {
+      pushHistory();
       const v = Number($("#colsRange").value) || 4;
       $("#colsVal").textContent = String(v);
       app.state.layout.cols = Math.max(2, Math.min(6, v));
@@ -1136,6 +2176,7 @@
         accent: String(x.accent || "#7c5cff"),
         options: (x.options && typeof x.options === "object") ? x.options : {}
       }));
+    pushHistory();
     app.state = next;
     save();
     renderGrid();
@@ -1145,7 +2186,8 @@
   }
 
   function resetDashboard() {
-    localStorage.removeItem(STORAGE_KEY);
+    pushHistory();
+    localStorage.removeItem(getWorkspaceKey(app.workspace));
     app.state = defaultDashboard();
     save();
     renderGrid();
@@ -1159,16 +2201,21 @@
   }
 
   function boot() {
-    app.state = load();
+    app.workspaces = loadWorkspaceList();
+    app.workspace = localStorage.getItem(WORKSPACE_KEY) || app.workspaces[0];
+    app.state = loadWorkspace(app.workspace);
+    app.history = loadHistory(app.workspace);
     if (!app.state.widgets.length) {
       app.state = defaultDashboard();
       save();
     }
 
     setTheme(app.state.theme);
+    applyBackground();
     applyLayout();
 
     bindUI();
+    renderWorkspaceSelect();
     renderGrid();
     updateWeatherPill();
     initPWA();
