@@ -350,6 +350,18 @@ body{
 
 .row{display:flex; gap:10px; flex-wrap:wrap}
 .stack{display:flex; flex-direction:column; gap:10px}
+.widget-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.widget-updated{color:var(--muted); font-size:12px}
+.refresh-btn{
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:10px;
+}
 hr.sep2{border:0; border-top:1px solid var(--line); margin:10px 0}
 
 .todo{display:flex; gap:10px; margin-bottom:10px}

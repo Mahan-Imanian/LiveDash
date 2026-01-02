@@ -136,6 +136,7 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+  const SWR_TTL_MS = 20 * 60 * 1000;
 
   const app = {
     state: null,
@@ -747,14 +748,24 @@
 
     const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "prices")?.defaults);
     const key = `livedash:prices:${w.id}`;
-    const cached = loadJson(key, { data: {}, updatedAt: 0 });
+    const cached = loadCache(key, {});
+    let currentCache = cached;
 
     const grid = document.createElement("div");
     grid.className = "price-grid";
+    const metaRow = document.createElement("div");
+    metaRow.className = "widget-meta";
     const meta = document.createElement("div");
-    meta.className = "small";
+    meta.className = "widget-updated small";
+    const refreshBtn = document.createElement("button");
+    refreshBtn.type = "button";
+    refreshBtn.className = "mini refresh-btn";
+    refreshBtn.textContent = "Refresh";
+    refreshBtn.setAttribute("aria-label", "Refresh prices");
+    metaRow.appendChild(meta);
+    metaRow.appendChild(refreshBtn);
     el.appendChild(grid);
-    el.appendChild(meta);
+    el.appendChild(metaRow);
 
     const render = (data, updatedAt) => {
       grid.innerHTML = "";
@@ -792,9 +803,16 @@
       meta.textContent = updatedAt ? `Last updated ${new Date(updatedAt).toLocaleTimeString()}` : "Last updated —";
     };
 
-    render(cached.data || {}, cached.updatedAt || 0);
+    const applyCache = (cache) => {
+      const data = cache && cache.data ? cache.data : {};
+      render(data, cache && cache.updatedAt ? cache.updatedAt : 0);
+      currentCache = cache;
+    };
 
-    const fetchPrices = async () => {
+    applyCache(cached);
+
+    const fetchPrices = async (force = false) => {
+      if (!force && !isStale(currentCache)) return;
       const assets = Array.isArray(opts.assets) ? opts.assets : [];
       const fx = Array.isArray(opts.fx) ? opts.fx : [];
       try {
@@ -811,15 +829,17 @@
         const crypto = cryptoResp && cryptoResp.ok ? await cryptoResp.json() : {};
         const fxJson = fxResp && fxResp.ok ? await fxResp.json() : {};
         const data = { crypto, fx: fxJson.rates || {} };
-        const updatedAt = Date.now();
-        saveJson(key, { data, updatedAt });
-        render(data, updatedAt);
+        const nextCache = saveCache(key, data);
+        applyCache(nextCache);
       } catch {
-        render(cached.data || {}, cached.updatedAt || 0);
+        if (currentCache) {
+          applyCache(currentCache);
+        }
       }
     };
 
     fetchPrices();
+    refreshBtn.addEventListener("click", () => fetchPrices(true));
     return el;
   }
 
@@ -835,6 +855,10 @@
       <hr class="sep2" />
       <div class="small" data-w="loc">—</div>
       <div class="small" data-w="hint">Tip: open Settings → Options to disable autoLocation or change city.</div>
+      <div class="widget-meta">
+        <div class="widget-updated small" data-w="updated">Last updated —</div>
+        <button class="mini refresh-btn" type="button" data-w="refresh" aria-label="Refresh weather">Refresh</button>
+      </div>
     `;
 
     const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "weather")?.defaults);
@@ -842,6 +866,8 @@
     const tEl = $('[data-w="t"]', el);
     const wEl = $('[data-w="w"]', el);
     const cEl = $('[data-w="c"]', el);
+    const updatedEl = $('[data-w="updated"]', el);
+    const refreshBtn = $('[data-w="refresh"]', el);
 
     const units = opts.units === "imperial" ? "imperial" : "metric";
     const unitTemp = units === "imperial" ? "°F" : "°C";
@@ -862,23 +888,45 @@
     };
 
     const cacheKey = `livedash:weather:${w.id}`;
-    const cached = loadJson(cacheKey, null);
-    if (cached && cached.data) {
-      setData(cached.data);
-    }
+    const cached = loadCache(cacheKey, null);
+    let currentCache = cached;
 
-    try {
-      const place = await resolveWeatherPlace(opts);
-      if (!place) throw new Error("no place");
-      const data = await fetchWeather(place.lat, place.lon, units);
-      const full = { ...data, place: place.label };
-      setData(full);
-      saveJson(cacheKey, { data: full, updatedAt: Date.now() });
-      updateWeatherPillWithData(data, place.label);
-    } catch {
-      fail("Weather unavailable (blocked or offline)");
-      $("#pillWeather").textContent = "Weather: —";
-    }
+    const setUpdated = (updatedAt) => {
+      updatedEl.textContent = updatedAt ? `Last updated ${new Date(updatedAt).toLocaleTimeString()}` : "Last updated —";
+    };
+
+    const applyCache = (cache) => {
+      if (cache && cache.data) {
+        setData(cache.data);
+        if (cache.data.place) updateWeatherPillWithData(cache.data, cache.data.place);
+      }
+      setUpdated(cache && cache.updatedAt ? cache.updatedAt : 0);
+      currentCache = cache;
+    };
+
+    applyCache(cached);
+
+    const refreshWeather = async (force = false) => {
+      if (!force && !isStale(currentCache)) return;
+      try {
+        const place = await resolveWeatherPlace(opts);
+        if (!place) throw new Error("no place");
+        const data = await fetchWeather(place.lat, place.lon, units);
+        const full = { ...data, place: place.label };
+        const nextCache = saveCache(cacheKey, full);
+        applyCache(nextCache);
+        updateWeatherPillWithData(data, place.label);
+      } catch {
+        if (!currentCache || !currentCache.data) {
+          fail("Weather unavailable (blocked or offline)");
+          setUpdated(0);
+          $("#pillWeather").textContent = "Weather: —";
+        }
+      }
+    };
+
+    refreshWeather();
+    refreshBtn.addEventListener("click", () => refreshWeather(true));
 
     return el;
   }
@@ -1870,6 +1918,27 @@
     } catch {
       return structuredClone(fallback);
     }
+  }
+
+  function loadCache(key, fallback) {
+    const cached = loadJson(key, null);
+    if (!cached || typeof cached !== "object") {
+      return { data: structuredClone(fallback), updatedAt: 0 };
+    }
+    const data = cached.data === undefined ? structuredClone(fallback) : cached.data;
+    const updatedAt = Number(cached.updatedAt) || 0;
+    return { data, updatedAt };
+  }
+
+  function saveCache(key, data) {
+    const payload = { data, updatedAt: Date.now() };
+    saveJson(key, payload);
+    return payload;
+  }
+
+  function isStale(cache, ttl = SWR_TTL_MS) {
+    if (!cache || !cache.updatedAt) return true;
+    return (Date.now() - cache.updatedAt) > ttl;
   }
 
   function saveJson(key, value) {
