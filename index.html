@@ -1,137 +1,140 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0f1a" />
+  <meta name="description" content="A fast, customizable daily dashboard." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
   <title>LiveDash</title>
-  <meta name="description" content="LiveDash is a fast, flexible dashboard of widgets that stays in sync with your day." />
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
+        <span class="logo" aria-hidden="true"></span>
         <div class="brand-text">
           <div class="title">LiveDash</div>
-          <div class="subtitle">A living canvas for the day ahead</div>
+          <div class="subtitle">Your daily dashboard</div>
         </div>
       </div>
+
       <div class="top-actions">
-        <button class="btn" id="btnAdd" type="button">
-          <span class="btn-ic">＋</span>
-          <span class="btn-tx">Add widget</span>
+        <button class="btn ghost" id="btnAdd" type="button" title="Add widget">
+          <span class="btn-ic" aria-hidden="true">＋</span>
+          <span class="btn-tx">Add</span>
         </button>
-        <button class="btn ghost" id="btnLayout" type="button">
-          <span class="btn-ic">▦</span>
+        <button class="btn ghost" id="btnLayout" type="button" title="Layout">
+          <span class="btn-ic" aria-hidden="true">▦</span>
           <span class="btn-tx">Layout</span>
         </button>
-        <div class="sep" aria-hidden="true"></div>
-        <button class="btn ghost" id="btnTheme" type="button">
-          <span class="btn-ic">◐</span>
+        <button class="btn ghost" id="btnTheme" type="button" title="Theme">
+          <span class="btn-ic" aria-hidden="true">◐</span>
           <span class="btn-tx">Theme</span>
         </button>
-        <button class="btn ghost" id="btnExport" type="button">
-          <span class="btn-ic">⤓</span>
+        <div class="sep" aria-hidden="true"></div>
+        <button class="btn" id="btnExport" type="button" title="Export">
+          <span class="btn-ic" aria-hidden="true">⤓</span>
           <span class="btn-tx">Export</span>
         </button>
-        <button class="btn ghost" id="btnImport" type="button">
-          <span class="btn-ic">⤒</span>
+        <button class="btn" id="btnImport" type="button" title="Import">
+          <span class="btn-ic" aria-hidden="true">⤒</span>
           <span class="btn-tx">Import</span>
         </button>
-        <button class="btn danger" id="btnReset" type="button">
-          <span class="btn-ic">↺</span>
+        <button class="btn danger" id="btnReset" type="button" title="Reset">
+          <span class="btn-ic" aria-hidden="true">↺</span>
           <span class="btn-tx">Reset</span>
         </button>
       </div>
     </header>
 
     <main class="main">
-      <section class="statusbar">
+      <section class="statusbar" aria-live="polite">
         <div class="status-left">
-          <div class="pill" id="pillNow">Loading time…</div>
-          <div class="pill" id="pillWeather">Weather: —</div>
-          <div class="pill" id="pillFocus">Focus: off</div>
+          <span class="pill" id="pillNow">—</span>
+          <span class="pill" id="pillFocus">Focus: off</span>
+          <span class="pill" id="pillWeather">Weather: —</span>
         </div>
         <div class="status-right">
-          <div class="hint">Tip: drag cards to reorder · edit titles inline · customize options</div>
+          <span class="hint">Drag widgets to reorder. Edit titles. Everything saves locally.</span>
         </div>
       </section>
 
       <section class="grid-wrap">
-        <div class="grid" id="grid" aria-live="polite"></div>
+        <div id="grid" class="grid" aria-label="Dashboard widgets"></div>
       </section>
     </main>
 
     <footer class="footer">
       <div class="footer-left">
-        <div class="dot" aria-hidden="true"></div>
-        <div>LiveDash is running locally</div>
+        <span class="dot"></span>
+        <span id="footerNet">—</span>
       </div>
       <div class="footer-right">
-        <span class="muted">Status:</span>
-        <span id="footerNet">Online</span>
-        <span class="muted">·</span>
-        <a class="link" href="https://github.com/Mahan-Imanian/LiveDash" target="_blank" rel="noreferrer">Docs</a>
+        <a class="link" href="https://github.com/Mahan-Imanian/LiveDash" target="_blank" rel="noreferrer">Repo</a>
+        <span class="muted">•</span>
+        <span class="muted">PWA-ready • Offline cache • Local-first</span>
       </div>
     </footer>
   </div>
 
   <div class="modal" id="modal" hidden>
-    <div class="modal-backdrop" data-close="true"></div>
-    <div class="modal-panel" role="dialog" aria-modal="true" aria-label="Widget manager">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-head">
-        <div class="modal-title">Widgets &amp; Layout</div>
-        <button class="iconbtn" type="button" data-close="true" aria-label="Close">✕</button>
+        <div class="modal-title" id="modalTitle">Add widgets</div>
+        <button class="iconbtn" type="button" data-close="1" aria-label="Close">✕</button>
       </div>
+
       <div class="modal-body">
-        <div id="gallery">
-          <div class="toolbar">
-            <input class="input" id="widgetSearch" type="search" placeholder="Search widgets" />
-            <select class="select" id="widgetFilter">
-              <option value="all">All</option>
-              <option value="daily">Daily</option>
-              <option value="info">Info</option>
-              <option value="tools">Tools</option>
-              <option value="focus">Focus</option>
-            </select>
-          </div>
-          <div class="gallery" id="galleryGrid" aria-label="Widget gallery"></div>
+        <div class="toolbar">
+          <input class="input" id="widgetSearch" type="search" placeholder="Search widgets…" autocomplete="off" />
+          <select class="select" id="widgetFilter" aria-label="Filter widgets">
+            <option value="all">All</option>
+            <option value="daily">Daily</option>
+            <option value="focus">Focus</option>
+            <option value="info">Info</option>
+            <option value="tools">Tools</option>
+          </select>
         </div>
+
+        <div class="gallery" id="gallery"></div>
 
         <div class="importbox" id="importBox" hidden>
           <div class="import-title">Import dashboard JSON</div>
-          <textarea class="textarea" id="importText" placeholder="Paste your LiveDash export here"></textarea>
+          <textarea class="textarea" id="importText" placeholder='Paste exported JSON here'></textarea>
           <div class="import-actions">
-            <button class="btn ghost" type="button" data-close="true">Cancel</button>
             <button class="btn" id="btnDoImport" type="button">Import</button>
+            <button class="btn ghost" data-close="1" type="button">Cancel</button>
           </div>
         </div>
 
         <div class="layoutbox" id="layoutBox" hidden>
-          <div class="import-title">Layout controls</div>
+          <div class="import-title">Layout</div>
           <div class="layout-row">
-            <div class="lab">Density</div>
+            <label class="lab">Density</label>
             <select class="select" id="densitySel">
               <option value="comfortable">Comfortable</option>
               <option value="compact">Compact</option>
             </select>
           </div>
           <div class="layout-row">
-            <div class="lab">Card style</div>
+            <label class="lab">Columns (desktop)</label>
+            <input class="range" id="colsRange" type="range" min="2" max="6" step="1" />
+            <span class="pill" id="colsVal">—</span>
+          </div>
+          <div class="layout-row">
+            <label class="lab">Card style</label>
             <select class="select" id="cardSel">
               <option value="glass">Glass</option>
               <option value="solid">Solid</option>
             </select>
           </div>
-          <div class="layout-row">
-            <div class="lab">Columns</div>
-            <input class="range" id="colsRange" type="range" min="2" max="6" step="1" />
-            <div class="pill" id="colsVal">4</div>
+          <div class="import-actions">
+            <button class="btn" data-close="1" type="button">Done</button>
           </div>
-          <div class="settings-hint">LiveDash automatically scales for smaller screens.</div>
         </div>
       </div>
     </div>
@@ -140,17 +143,17 @@
   <template id="tplWidget">
     <article class="card" draggable="true">
       <div class="card-head">
-        <input class="card-title" type="text" placeholder="Widget title" />
+        <input class="card-title" type="text" value="" spellcheck="false" />
         <div class="card-actions">
           <select class="mini" data-act="size" aria-label="Size">
             <option value="1">S</option>
-            <option value="2">M</option>
+            <option value="2" selected>M</option>
             <option value="3">L</option>
           </select>
-          <button class="iconbtn" data-act="refresh" type="button" aria-label="Refresh">⟳</button>
-          <button class="iconbtn" data-act="settings" type="button" aria-label="Settings">⚙</button>
-          <button class="iconbtn danger" data-act="remove" type="button" aria-label="Remove">✕</button>
-          <span class="drag" aria-hidden="true">⋮⋮</span>
+          <button class="iconbtn" data-act="refresh" type="button" title="Refresh" aria-label="Refresh">⟳</button>
+          <button class="iconbtn" data-act="settings" type="button" title="Settings" aria-label="Settings">⚙</button>
+          <button class="iconbtn danger" data-act="remove" type="button" title="Remove" aria-label="Remove">🗑</button>
+          <span class="drag" title="Drag" aria-label="Drag handle">⋮⋮</span>
         </div>
       </div>
       <div class="card-body"></div>
@@ -160,25 +163,27 @@
   <template id="tplSettings">
     <div class="settings">
       <div class="settings-row">
-        <label class="lab" for="setTitle">Title</label>
-        <input class="input" id="setTitle" data-k="title" type="text" />
+        <label class="lab">Title</label>
+        <input class="input" data-k="title" type="text" />
       </div>
       <div class="settings-row">
-        <label class="lab" for="setAccent">Accent</label>
-        <input class="input" id="setAccent" data-k="accent" type="text" placeholder="#7c5cff" />
+        <label class="lab">Accent</label>
+        <input class="input" data-k="accent" type="text" placeholder="#7c5cff or any CSS color" />
       </div>
       <div class="settings-row">
-        <label class="lab" for="setOptions">Options (JSON)</label>
-        <textarea class="textarea" id="setOptions" data-k="options"></textarea>
+        <label class="lab">Options (JSON)</label>
+        <textarea class="textarea" data-k="options" placeholder='{"example": true}'></textarea>
       </div>
       <div class="settings-actions">
-        <button class="btn ghost" data-act="cancel" type="button">Cancel</button>
         <button class="btn" data-act="save" type="button">Save</button>
+        <button class="btn ghost" data-act="cancel" type="button">Cancel</button>
       </div>
-      <div class="settings-hint">Use JSON to tailor each widget. Example: {"seconds":true}</div>
+      <div class="settings-hint">
+        Options are widget-specific. Invalid JSON is rejected.
+      </div>
     </div>
   </template>
 
-  <script src="app.js"></script>
+  <script src="./app.js" defer></script>
 </body>
 </html>
