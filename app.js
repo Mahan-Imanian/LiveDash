@@ -3,6 +3,7 @@
   const WORKSPACE_KEY = "livedash:workspace";
   const WORKSPACE_LIST_KEY = "livedash:workspaces";
   const HISTORY_KEY = "livedash:history";
+  const FIRST_LOAD_KEY = "livedash:first-load";
   const DEFAULTS = {
     version: 3,
     theme: "dark",
@@ -449,6 +450,11 @@
     const grid = $("#grid");
     grid.innerHTML = "";
 
+    if (!app.state.widgets.length) {
+      renderEmptyState();
+      return;
+    }
+
     for (const w of app.state.widgets) {
       const node = $("#tplWidget").content.firstElementChild.cloneNode(true);
       node.dataset.id = w.id;
@@ -487,6 +493,26 @@
 
       grid.appendChild(node);
     }
+  }
+
+  function renderEmptyState() {
+    const grid = $("#grid");
+    grid.innerHTML = "";
+    const card = document.createElement("div");
+    card.className = "empty-card";
+    card.innerHTML = `
+      <div class="empty-card__content">
+        <h3>Build your dashboard</h3>
+        <p>Add widgets like clocks, weather, focus timers, and more to personalize LiveDash.</p>
+      </div>
+    `;
+    const cta = document.createElement("button");
+    cta.type = "button";
+    cta.className = "btn empty-cta";
+    cta.textContent = "Add your first widget";
+    cta.addEventListener("click", () => openModal("gallery"));
+    card.appendChild(cta);
+    grid.appendChild(card);
   }
 
   function refreshWidget(id) {
@@ -2097,10 +2123,6 @@
     app.workspace = localStorage.getItem(WORKSPACE_KEY) || app.workspaces[0];
     app.state = loadWorkspace(app.workspace);
     app.history = loadHistory(app.workspace);
-    if (!app.state.widgets.length) {
-      app.state = defaultDashboard();
-      save();
-    }
 
     setTheme(app.state.theme);
     applyBackground();
@@ -2108,6 +2130,10 @@
 
     bindUI();
     renderWorkspaceSelect();
+    if (!app.state.widgets.length && !localStorage.getItem(FIRST_LOAD_KEY)) {
+      openModal("gallery");
+      localStorage.setItem(FIRST_LOAD_KEY, "true");
+    }
     renderGrid();
     updateWeatherPill();
     initPWA();
