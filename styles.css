@@ -127,8 +127,6 @@ body{
 @media (max-width: 980px){
   .grid{grid-template-columns: repeat(2, minmax(0, 1fr))}
   .btn-tx{display:none}
-  .topbar{gap:12px; flex-wrap:wrap}
-  .top-actions{flex-wrap:wrap}
 }
 @media (max-width: 560px){
   .grid{grid-template-columns: 1fr}
