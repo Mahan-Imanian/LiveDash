@@ -9,6 +9,8 @@
     theme: "dark",
     background: "aurora",
     layout: { cols: 4, density: "comfortable", card: "glass", locked: false },
+    permissions: ["network:weather", "network:prices", "network:search"],
+    resources: ["geolocation"],
     widgets: []
   };
 
@@ -18,6 +20,8 @@
       title: "Clock",
       tags: ["daily", "info"],
       desc: "Local time + date with seconds.",
+      permissions: [],
+      resources: [],
       defaults: { tz: "local", seconds: true, format24: false }
     },
     {
@@ -25,6 +29,8 @@
       title: "Calendar",
       tags: ["daily", "info"],
       desc: "Month view with quick highlights.",
+      permissions: [],
+      resources: [],
       defaults: { highlightWeekends: true }
     },
     {
@@ -32,6 +38,8 @@
       title: "Timezones",
       tags: ["daily", "info"],
       desc: "Track multiple cities at a glance.",
+      permissions: [],
+      resources: [],
       defaults: { zones: [{ label: "San Francisco", zone: "America/Los_Angeles" }, { label: "London", zone: "Europe/London" }, { label: "Tokyo", zone: "Asia/Tokyo" }] }
     },
     {
@@ -39,6 +47,8 @@
       title: "Weather",
       tags: ["daily", "info"],
       desc: "Current conditions via Open-Meteo.",
+      permissions: ["network:weather"],
+      resources: ["geolocation"],
       defaults: { city: "New York", units: "metric", autoLocation: true }
     },
     {
@@ -46,6 +56,8 @@
       title: "Prices",
       tags: ["info", "daily"],
       desc: "Crypto + currency tickers with caching.",
+      permissions: ["network:prices"],
+      resources: [],
       defaults: { assets: ["bitcoin", "ethereum"], fx: ["USD", "EUR"] }
     },
     {
@@ -53,6 +65,8 @@
       title: "Focus Timer",
       tags: ["focus", "tools"],
       desc: "Pomodoro-style timer with ambient mode.",
+      permissions: [],
+      resources: [],
       defaults: { workMin: 25, breakMin: 5, longBreakMin: 15, every: 4 }
     },
     {
@@ -60,6 +74,8 @@
       title: "Tasks",
       tags: ["daily", "tools"],
       desc: "Fast todo list that persists locally.",
+      permissions: [],
+      resources: [],
       defaults: { showCompleted: true }
     },
     {
@@ -67,6 +83,8 @@
       title: "Notes",
       tags: ["daily", "tools"],
       desc: "Quick notes with autosave.",
+      permissions: [],
+      resources: [],
       defaults: { placeholder: "Write anything…" }
     },
     {
@@ -74,6 +92,8 @@
       title: "Smart Search",
       tags: ["daily", "tools"],
       desc: "Search the web or jump to apps fast.",
+      permissions: ["network:search"],
+      resources: [],
       defaults: { provider: "duckduckgo" }
     },
     {
@@ -81,6 +101,8 @@
       title: "Quick Links",
       tags: ["daily", "tools"],
       desc: "Launch your daily sites fast.",
+      permissions: [],
+      resources: [],
       defaults: { links: [{ name: "Gmail", url: "https://mail.google.com" }, { name: "Calendar", url: "https://calendar.google.com" }] }
     },
     {
@@ -88,6 +110,8 @@
       title: "Bookmarks",
       tags: ["daily", "tools"],
       desc: "Taggable bookmarks with quick filter.",
+      permissions: [],
+      resources: [],
       defaults: { bookmarks: [{ title: "Docs", url: "https://developer.mozilla.org", tags: ["docs"] }] }
     },
     {
@@ -95,6 +119,8 @@
       title: "Today",
       tags: ["daily", "info"],
       desc: "Simple daily KPIs you can reset.",
+      permissions: [],
+      resources: [],
       defaults: { counters: [{ k: "Water", v: 0 }, { k: "Steps", v: 0 }, { k: "Deep work", v: 0 }] }
     },
     {
@@ -102,6 +128,8 @@
       title: "Agenda",
       tags: ["daily", "tools"],
       desc: "Today’s schedule with time blocks.",
+      permissions: [],
+      resources: [],
       defaults: { blocks: [{ time: "09:00", title: "Team standup", note: "Zoom" }, { time: "13:00", title: "Deep work", note: "Roadmap" }] }
     },
     {
@@ -109,6 +137,8 @@
       title: "Habits",
       tags: ["daily", "focus"],
       desc: "Track daily habits with streaks.",
+      permissions: [],
+      resources: [],
       defaults: { habits: [{ name: "Workout", streak: 3 }, { name: "Reading", streak: 7 }, { name: "Meditation", streak: 5 }] }
     },
     {
@@ -116,6 +146,8 @@
       title: "Pulse Metrics",
       tags: ["info", "daily"],
       desc: "High-level business metrics to update daily.",
+      permissions: [],
+      resources: [],
       defaults: { metrics: [{ label: "MRR", value: "$24.3k", delta: "+4.2%" }, { label: "Active users", value: "12,480", delta: "+1.8%" }, { label: "Churn", value: "2.1%", delta: "-0.3%" }] }
     },
     {
@@ -123,6 +155,8 @@
       title: "Daily Inspiration",
       tags: ["info", "daily"],
       desc: "Motivational quote and focus mantra.",
+      permissions: [],
+      resources: [],
       defaults: { source: "Curated", quotes: ["Stay curious.", "Progress over perfection.", "Do the hard thing first."] }
     },
     {
@@ -130,9 +164,47 @@
       title: "Ambient Focus",
       tags: ["focus", "tools"],
       desc: "Play ambient soundscapes and set focus mode.",
+      permissions: [],
+      resources: [],
       defaults: { sound: "Rain", durationMin: 45, volume: 60 }
     }
   ];
+
+  const WIDGET_REGISTRY = new Map();
+
+  function registerWidget(type, renderer, meta = {}) {
+    if (!type || typeof renderer !== "function") return;
+    WIDGET_REGISTRY.set(type, { renderer, meta });
+    if (meta && Object.keys(meta).length) {
+      const existing = WIDGET_CATALOG.find(item => item.type === type);
+      if (existing) {
+        Object.assign(existing, meta);
+      } else {
+        WIDGET_CATALOG.push({ type, ...meta });
+      }
+    }
+  }
+
+  function getWidgetMeta(type) {
+    const catalog = WIDGET_CATALOG.find(item => item.type === type) || {};
+    const registered = WIDGET_REGISTRY.get(type)?.meta || {};
+    return { ...catalog, ...registered };
+  }
+
+  function getWidgetAccess(type) {
+    const meta = getWidgetMeta(type);
+    const requiredPermissions = Array.isArray(meta.permissions) ? meta.permissions : [];
+    const requiredResources = Array.isArray(meta.resources) ? meta.resources : [];
+    const allowedPermissions = new Set(app.state?.permissions || []);
+    const allowedResources = new Set(app.state?.resources || []);
+    const missingPermissions = requiredPermissions.filter(item => !allowedPermissions.has(item));
+    const missingResources = requiredResources.filter(item => !allowedResources.has(item));
+    return {
+      allowed: missingPermissions.length === 0 && missingResources.length === 0,
+      missingPermissions,
+      missingResources
+    };
+  }
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -195,6 +267,8 @@
       if (!s.theme) s.theme = "dark";
       if (!s.background) s.background = "aurora";
       if (!s.version) s.version = 3;
+      if (!Array.isArray(s.permissions)) s.permissions = structuredClone(DEFAULTS.permissions);
+      if (!Array.isArray(s.resources)) s.resources = structuredClone(DEFAULTS.resources);
       return s;
     } catch {
       return structuredClone(DEFAULTS);
@@ -609,24 +683,31 @@
 
   function renderWidgetBody(w) {
     const type = w.type;
-    if (type === "clock") return widgetClock(w);
-    if (type === "calendar") return widgetCalendar(w);
-    if (type === "timezone") return widgetTimezone(w);
-    if (type === "weather") return widgetWeather(w);
-    if (type === "prices") return widgetPrices(w);
-    if (type === "focus") return widgetFocus(w);
-    if (type === "todos") return widgetTodos(w);
-    if (type === "notes") return widgetNotes(w);
-    if (type === "search") return widgetSearch(w);
-    if (type === "links") return widgetLinks(w);
-    if (type === "bookmarks") return widgetBookmarks(w);
-    if (type === "stats") return widgetStats(w);
-    if (type === "agenda") return widgetAgenda(w);
-    if (type === "habits") return widgetHabits(w);
-    if (type === "pulse") return widgetPulse(w);
-    if (type === "quote") return widgetQuote(w);
-    if (type === "ambient") return widgetAmbient(w);
-    return widgetUnknown(w);
+    const access = getWidgetAccess(type);
+    if (!access.allowed) return widgetBlocked(w, access);
+    const entry = WIDGET_REGISTRY.get(type);
+    if (!entry || typeof entry.renderer !== "function") return widgetUnknown(w);
+    return entry.renderer(w);
+  }
+
+  function widgetBlocked(w, access) {
+    const el = document.createElement("div");
+    el.className = "stack";
+    const missing = [];
+    if (access.missingPermissions.length) {
+      missing.push(`Missing permissions: ${access.missingPermissions.join(", ")}`);
+    }
+    if (access.missingResources.length) {
+      missing.push(`Missing resources: ${access.missingResources.join(", ")}`);
+    }
+    el.innerHTML = `
+      <div class="kpi">
+        <div class="k">Widget blocked by permissions</div>
+        <div class="v">${escapeHtml(w.title || w.type)}</div>
+      </div>
+      <div class="small">${escapeHtml(missing.join(" • ") || "Update workspace permissions to allow this widget.")}</div>
+    `;
+    return el;
   }
 
   function widgetUnknown(w) {
@@ -1035,6 +1116,11 @@
     const wx = app.state.widgets.find(x => x.type === "weather");
     if (!wx) {
       $("#pillWeather").textContent = "Weather: —";
+      return;
+    }
+    const access = getWidgetAccess("weather");
+    if (!access.allowed) {
+      $("#pillWeather").textContent = "Weather: blocked";
       return;
     }
     try {
@@ -1925,6 +2011,24 @@
 
     return el;
   }
+
+  registerWidget("clock", widgetClock);
+  registerWidget("calendar", widgetCalendar);
+  registerWidget("timezone", widgetTimezone);
+  registerWidget("weather", widgetWeather);
+  registerWidget("prices", widgetPrices);
+  registerWidget("focus", widgetFocus);
+  registerWidget("todos", widgetTodos);
+  registerWidget("notes", widgetNotes);
+  registerWidget("search", widgetSearch);
+  registerWidget("links", widgetLinks);
+  registerWidget("bookmarks", widgetBookmarks);
+  registerWidget("stats", widgetStats);
+  registerWidget("agenda", widgetAgenda);
+  registerWidget("habits", widgetHabits);
+  registerWidget("pulse", widgetPulse);
+  registerWidget("quote", widgetQuote);
+  registerWidget("ambient", widgetAmbient);
 
   function normalizeOptions(w, defaults) {
     const d = structuredClone(defaults || {});
