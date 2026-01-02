@@ -2219,6 +2219,13 @@
 
   function initPWA() {
     if (!("serviceWorker" in navigator)) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("sw") === "unregister") {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => reg.unregister());
+      });
+      return;
+    }
     navigator.serviceWorker.register("./service-worker.js").catch(() => {});
   }
 
@@ -2235,7 +2242,11 @@
     bindUI();
     renderWorkspaceSelect();
     if (!app.state.widgets.length && !localStorage.getItem(FIRST_LOAD_KEY)) {
-      openModal("gallery");
+      app.state = defaultDashboard();
+      save();
+      setTheme(app.state.theme);
+      applyBackground();
+      applyLayout();
       localStorage.setItem(FIRST_LOAD_KEY, "true");
     }
     renderGrid();
