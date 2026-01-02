@@ -187,7 +187,7 @@
         return inText && inFilter;
       });
 
-    const g = $("#gallery");
+    const g = $("#galleryGrid");
     g.innerHTML = "";
     for (const w of items) {
       const card = document.createElement("div");
