@@ -56,6 +56,41 @@
       tags: ["daily", "info"],
       desc: "Simple daily KPIs you can reset.",
       defaults: { counters: [{ k: "Water", v: 0 }, { k: "Steps", v: 0 }, { k: "Deep work", v: 0 }] }
+    },
+    {
+      type: "agenda",
+      title: "Agenda",
+      tags: ["daily", "tools"],
+      desc: "Today’s schedule with time blocks.",
+      defaults: { blocks: [{ time: "09:00", title: "Team standup", note: "Zoom" }, { time: "13:00", title: "Deep work", note: "Roadmap" }] }
+    },
+    {
+      type: "habits",
+      title: "Habits",
+      tags: ["daily", "focus"],
+      desc: "Track daily habits with streaks.",
+      defaults: { habits: [{ name: "Workout", streak: 3 }, { name: "Reading", streak: 7 }, { name: "Meditation", streak: 5 }] }
+    },
+    {
+      type: "pulse",
+      title: "Pulse Metrics",
+      tags: ["info", "daily"],
+      desc: "High-level business metrics to update daily.",
+      defaults: { metrics: [{ label: "MRR", value: "$24.3k", delta: "+4.2%" }, { label: "Active users", value: "12,480", delta: "+1.8%" }, { label: "Churn", value: "2.1%", delta: "-0.3%" }] }
+    },
+    {
+      type: "quote",
+      title: "Daily Inspiration",
+      tags: ["info", "daily"],
+      desc: "Motivational quote and focus mantra.",
+      defaults: { source: "Curated", quotes: ["Stay curious.", "Progress over perfection.", "Do the hard thing first."] }
+    },
+    {
+      type: "ambient",
+      title: "Ambient Focus",
+      tags: ["focus", "tools"],
+      desc: "Play ambient soundscapes and set focus mode.",
+      defaults: { sound: "Rain", durationMin: 45, volume: 60 }
     }
   ];
 
@@ -133,10 +168,15 @@
         mk("clock", 1),
         mk("weather", 2),
         mk("focus", 2),
+        mk("pulse", 2),
         mk("todos", 2),
         mk("notes", 2),
         mk("links", 2),
-        mk("stats", 1)
+        mk("stats", 1),
+        mk("agenda", 2),
+        mk("habits", 2),
+        mk("quote", 1),
+        mk("ambient", 1)
       ]
     };
   }
@@ -389,6 +429,11 @@
     if (type === "notes") return widgetNotes(w);
     if (type === "links") return widgetLinks(w);
     if (type === "stats") return widgetStats(w);
+    if (type === "agenda") return widgetAgenda(w);
+    if (type === "habits") return widgetHabits(w);
+    if (type === "pulse") return widgetPulse(w);
+    if (type === "quote") return widgetQuote(w);
+    if (type === "ambient") return widgetAmbient(w);
     return widgetUnknown(w);
   }
 
@@ -1013,6 +1058,303 @@
     const hint = document.createElement("div");
     hint.className = "small";
     hint.textContent = "This widget is local-only by design.";
+    el.appendChild(hint);
+
+    return el;
+  }
+
+  function widgetAgenda(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:agenda:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "agenda")?.defaults);
+    const data = loadJson(key, { blocks: Array.isArray(opts.blocks) ? opts.blocks.map(b => ({ id: uid(), ...b })) : [] });
+
+    const editor = document.createElement("div");
+    editor.className = "agenda-editor";
+    editor.innerHTML = `
+      <div class="agenda-row">
+        <input class="input" data-a="time" type="time" />
+        <input class="input" data-a="title" type="text" placeholder="Meeting / focus block" />
+        <input class="input" data-a="note" type="text" placeholder="Notes" />
+        <button class="btn" data-a="add" type="button">Add</button>
+      </div>
+      <div class="agenda-list" data-a="list"></div>
+    `;
+
+    const timeIn = $('[data-a="time"]', editor);
+    const titleIn = $('[data-a="title"]', editor);
+    const noteIn = $('[data-a="note"]', editor);
+    const addBtn = $('[data-a="add"]', editor);
+    const list = $('[data-a="list"]', editor);
+
+    const render = () => {
+      list.innerHTML = "";
+      if (!data.blocks.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No agenda blocks yet.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const block of data.blocks) {
+        const row = document.createElement("div");
+        row.className = "agenda-item";
+        row.innerHTML = `
+          <div>
+            <div class="agenda-time"></div>
+            <div class="agenda-title"></div>
+            <div class="small agenda-note"></div>
+          </div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        $(".agenda-time", row).textContent = block.time || "—";
+        $(".agenda-title", row).textContent = block.title || "Untitled";
+        $(".agenda-note", row).textContent = block.note || "";
+        $("button", row).addEventListener("click", () => {
+          data.blocks = data.blocks.filter(x => x.id !== block.id);
+          saveJson(key, data);
+          render();
+        });
+        list.appendChild(row);
+      }
+    };
+
+    const add = () => {
+      const time = timeIn.value || "";
+      const title = titleIn.value.trim().slice(0, 60);
+      const note = noteIn.value.trim().slice(0, 80);
+      if (!title && !note) return;
+      data.blocks.push({ id: uid(), time, title: title || "Untitled", note });
+      saveJson(key, data);
+      titleIn.value = "";
+      noteIn.value = "";
+      render();
+    };
+
+    addBtn.addEventListener("click", add);
+    titleIn.addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
+
+    el.appendChild(editor);
+    render();
+    return el;
+  }
+
+  function widgetHabits(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:habits:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "habits")?.defaults);
+    const data = loadJson(key, { habits: Array.isArray(opts.habits) ? opts.habits.map(h => ({ id: uid(), done: false, ...h })) : [] });
+
+    const list = document.createElement("div");
+    list.className = "habit-list";
+
+    const controls = document.createElement("div");
+    controls.className = "row";
+    controls.innerHTML = `
+      <button class="btn" type="button" data-a="add">Add habit</button>
+      <button class="btn ghost" type="button" data-a="reset">Reset today</button>
+    `;
+
+    const render = () => {
+      list.innerHTML = "";
+      if (!data.habits.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No habits yet.";
+        list.appendChild(empty);
+        return;
+      }
+      for (const habit of data.habits) {
+        const row = document.createElement("div");
+        row.className = "habit-item";
+        row.innerHTML = `
+          <div class="left">
+            <input class="chk" type="checkbox" ${habit.done ? "checked" : ""} />
+            <div>
+              <div class="habit-name"></div>
+              <div class="small habit-meta"></div>
+            </div>
+          </div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        $(".habit-name", row).textContent = habit.name;
+        $(".habit-meta", row).textContent = `Streak: ${habit.streak} days`;
+        $(".chk", row).addEventListener("change", (e) => {
+          habit.done = !!e.target.checked;
+          saveJson(key, data);
+        });
+        $("button", row).addEventListener("click", () => {
+          data.habits = data.habits.filter(x => x.id !== habit.id);
+          saveJson(key, data);
+          render();
+        });
+        list.appendChild(row);
+      }
+    };
+
+    $('[data-a="add"]', controls).addEventListener("click", () => {
+      const name = (prompt("Habit name") || "").trim().slice(0, 30);
+      if (!name) return;
+      data.habits.unshift({ id: uid(), name, streak: 1, done: false });
+      saveJson(key, data);
+      render();
+    });
+    $('[data-a="reset"]', controls).addEventListener("click", () => {
+      data.habits.forEach(h => { h.done = false; });
+      saveJson(key, data);
+      render();
+      toast("Habits reset for today");
+    });
+
+    el.appendChild(list);
+    el.appendChild(controls);
+    render();
+    return el;
+  }
+
+  function widgetPulse(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const key = `livedash:pulse:${w.id}`;
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "pulse")?.defaults);
+    const data = loadJson(key, { metrics: Array.isArray(opts.metrics) ? opts.metrics.map(m => ({ id: uid(), ...m })) : [] });
+
+    const grid = document.createElement("div");
+    grid.className = "pulse-grid";
+
+    const controls = document.createElement("div");
+    controls.className = "row";
+    controls.innerHTML = `
+      <button class="btn ghost" type="button" data-a="add">Add metric</button>
+      <button class="btn" type="button" data-a="refresh">Refresh</button>
+    `;
+
+    const render = () => {
+      grid.innerHTML = "";
+      if (!data.metrics.length) {
+        const empty = document.createElement("div");
+        empty.className = "small";
+        empty.textContent = "No metrics yet.";
+        grid.appendChild(empty);
+        return;
+      }
+      for (const metric of data.metrics) {
+        const card = document.createElement("div");
+        card.className = "pulse-card";
+        card.innerHTML = `
+          <div class="pulse-label"></div>
+          <div class="pulse-value"></div>
+          <div class="pulse-delta"></div>
+          <button class="iconbtn danger" type="button" aria-label="Delete">✕</button>
+        `;
+        $(".pulse-label", card).textContent = metric.label;
+        $(".pulse-value", card).textContent = metric.value;
+        $(".pulse-delta", card).textContent = metric.delta || "—";
+        $("button", card).addEventListener("click", () => {
+          data.metrics = data.metrics.filter(x => x.id !== metric.id);
+          saveJson(key, data);
+          render();
+        });
+        grid.appendChild(card);
+      }
+    };
+
+    $('[data-a="add"]', controls).addEventListener("click", () => {
+      const label = (prompt("Metric label") || "").trim().slice(0, 20);
+      if (!label) return;
+      const value = (prompt("Metric value") || "").trim().slice(0, 20);
+      const delta = (prompt("Metric delta (optional)") || "").trim().slice(0, 20);
+      data.metrics.unshift({ id: uid(), label, value: value || "—", delta: delta || "—" });
+      saveJson(key, data);
+      render();
+    });
+    $('[data-a="refresh"]', controls).addEventListener("click", () => {
+      toast("Metrics refreshed");
+    });
+
+    el.appendChild(grid);
+    el.appendChild(controls);
+    render();
+    return el;
+  }
+
+  function widgetQuote(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "quote")?.defaults);
+    const quotes = Array.isArray(opts.quotes) ? opts.quotes : [];
+    const quote = quotes.length ? quotes[Math.floor(Math.random() * quotes.length)] : "Stay focused, stay kind.";
+
+    const box = document.createElement("div");
+    box.className = "quote-box";
+    box.innerHTML = `
+      <div class="quote-text"></div>
+      <div class="small quote-source"></div>
+    `;
+    $(".quote-text", box).textContent = `“${quote}”`;
+    $(".quote-source", box).textContent = `Source: ${opts.source || "Curated"}`;
+
+    const refresh = document.createElement("button");
+    refresh.className = "btn ghost";
+    refresh.type = "button";
+    refresh.textContent = "New quote";
+    refresh.addEventListener("click", () => {
+      if (!quotes.length) return;
+      const next = quotes[Math.floor(Math.random() * quotes.length)];
+      $(".quote-text", box).textContent = `“${next}”`;
+    });
+
+    el.appendChild(box);
+    el.appendChild(refresh);
+    return el;
+  }
+
+  function widgetAmbient(w) {
+    const el = document.createElement("div");
+    el.className = "stack";
+
+    const opts = normalizeOptions(w, WIDGET_CATALOG.find(x => x.type === "ambient")?.defaults);
+    const key = `livedash:ambient:${w.id}`;
+    const data = loadJson(key, { sound: opts.sound, durationMin: opts.durationMin, volume: opts.volume, playing: false });
+
+    const card = document.createElement("div");
+    card.className = "ambient-card";
+    card.innerHTML = `
+      <div>
+        <div class="ambient-title"></div>
+        <div class="small">Duration: <span data-a="dur"></span> min · Volume: <span data-a="vol"></span>%</div>
+      </div>
+      <div class="row">
+        <button class="btn" type="button" data-a="start">Start</button>
+        <button class="btn ghost" type="button" data-a="stop">Stop</button>
+      </div>
+    `;
+    $(".ambient-title", card).textContent = data.sound || "Ambient";
+    $('[data-a="dur"]', card).textContent = data.durationMin || 0;
+    $('[data-a="vol"]', card).textContent = data.volume || 0;
+
+    $('[data-a="start"]', card).addEventListener("click", () => {
+      data.playing = true;
+      saveJson(key, data);
+      toast(`Ambient: ${data.sound} started`);
+    });
+    $('[data-a="stop"]', card).addEventListener("click", () => {
+      data.playing = false;
+      saveJson(key, data);
+      toast("Ambient stopped");
+    });
+
+    el.appendChild(card);
+
+    const hint = document.createElement("div");
+    hint.className = "small";
+    hint.textContent = "Settings → Options supports: sound, durationMin, volume.";
     el.appendChild(hint);
 
     return el;
