@@ -842,4 +842,296 @@ function wireUi(){
     if(e.key==="Enter"){
       e.preventDefault()
       const q = palInput.value.trim().toLowerCase()
-      const a = buildPalette().find(x=> x.k.includes(q)) || buildPalette().fin
+      const a = buildPalette().find(x=> x.k.includes(q)) || buildPalette().find(x=> x.k.startsWith(q))
+      if(a) a.run()
+    }
+  })
+
+  document.addEventListener("keydown",(e)=>{
+    const tag = (document.activeElement && document.activeElement.tagName || "").toLowerCase()
+    const inInput = ["input","textarea","select"].includes(tag)
+    if(e.key==="/" && !inInput){
+      e.preventDefault()
+      elSearch.focus()
+      return
+    }
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="k"){
+      e.preventDefault()
+      dlgPalette.showModal()
+      palInput.value = ""
+      renderPalette("")
+      palInput.focus()
+      return
+    }
+  })
+
+  btnWeatherRefresh.addEventListener("click", ()=> fetchWeather())
+
+  elIcsFile.addEventListener("change", async ()=>{
+    const f = elIcsFile.files && elIcsFile.files[0]
+    if(!f) return
+    const text = await f.text()
+    const events = parseIcsText(text)
+    state.agenda = events
+    await kv.set("agenda", state.agenda)
+    renderAgenda()
+    setStatus("Agenda imported")
+    setTimeout(()=> setStatus(""), 1200)
+    elIcsFile.value = ""
+  })
+
+  btnAgendaClear.addEventListener("click", async ()=>{
+    state.agenda = []
+    await kv.set("agenda", state.agenda)
+    renderAgenda()
+  })
+
+  elAgendaList.addEventListener("click", async (e)=>{
+    const id = e.target && e.target.dataset && e.target.dataset.evdel
+    if(!id) return
+    deleteAgenda(id)
+    await kv.set("agenda", state.agenda)
+    renderAgenda()
+  })
+
+  elTaskInput.addEventListener("keydown", async (e)=>{
+    if(e.key!=="Enter") return
+    const t = parseTaskLine(elTaskInput.value)
+    if(!t) return
+    state.tasks.push(t)
+    elTaskInput.value = ""
+    await kv.set("tasks", state.tasks)
+    renderTasks()
+  })
+
+  elTaskList.addEventListener("click", async (e)=>{
+    const doneId = e.target && e.target.dataset && e.target.dataset.done
+    const delId = e.target && e.target.dataset && e.target.dataset.del
+    if(doneId){
+      toggleTaskDone(doneId)
+      await kv.set("tasks", state.tasks)
+      renderTasks()
+    }
+    if(delId){
+      deleteTask(delId)
+      await kv.set("tasks", state.tasks)
+      renderTasks()
+    }
+  })
+
+  for(const b of taskFilterButtons){
+    b.addEventListener("click", ()=> setTaskFilter(b.dataset.filter))
+  }
+
+  btnNotesMode.addEventListener("click", ()=>{
+    notesPreviewMode = !notesPreviewMode
+    renderNotes()
+  })
+
+  elNotesInput.addEventListener("input", async ()=>{
+    state.notes = elNotesInput.value
+    await kv.set("notes", state.notes)
+    if(notesPreviewMode) renderNotes()
+  })
+
+  btnNotesClear.addEventListener("click", async ()=>{
+    state.notes = ""
+    elNotesInput.value = ""
+    await kv.set("notes", state.notes)
+    renderNotes()
+  })
+
+  btnLinkAdd.addEventListener("click", ()=> openLinkDialog(null))
+
+  btnLinksExport.addEventListener("click", ()=>{
+    exportJson("links.json", state.links)
+  })
+
+  elLinksImport.addEventListener("change", async ()=>{
+    const f = elLinksImport.files && elLinksImport.files[0]
+    if(!f) return
+    const text = await f.text()
+    let j = null
+    try{ j = JSON.parse(text) }catch{}
+    if(Array.isArray(j)){
+      const cleaned = j
+        .filter(x=> x && typeof x.name==="string" && typeof x.url==="string")
+        .map(x=> ({id: x.id || crypto.randomUUID(), name: x.name, url: normalizeUrl(x.url), group: x.group || "General"}))
+      state.links = cleaned
+      await kv.set("links", state.links)
+      renderLinks()
+    }
+    elLinksImport.value = ""
+  })
+
+  dlgLink.addEventListener("close", async ()=>{
+    linkEditingId = null
+  })
+
+  dlgLink.querySelector("form").addEventListener("submit", async (e)=>{
+    const name = linkName.value.trim()
+    const url = normalizeUrl(linkUrl.value)
+    const group = (linkGroup.value || "General").trim() || "General"
+    const del = btnLinkDelete.matches(":focus") || e.submitter === btnLinkDelete
+
+    if(linkEditingId && del){
+      state.links = state.links.filter(x=> x.id !== linkEditingId)
+      await kv.set("links", state.links)
+      renderLinks()
+      return
+    }
+
+    if(!name || !url) return
+
+    if(!linkEditingId){
+      state.links.push({id: crypto.randomUUID(), name, url, group})
+    }else{
+      const l = state.links.find(x=> x.id===linkEditingId)
+      if(l){
+        l.name = name
+        l.url = url
+        l.group = group
+      }
+    }
+    await kv.set("links", state.links)
+    renderLinks()
+  })
+
+  btnLinkDelete.addEventListener("click", ()=>{
+    btnLinkDelete.dataset.delete = "1"
+  })
+
+  setTheme.addEventListener("change", async ()=>{
+    state.settings.theme = setTheme.value
+    applyTheme()
+    await persistSettings()
+  })
+  setAccent.addEventListener("change", async ()=>{
+    state.settings.accent = setAccent.value.trim() || "#7c5cff"
+    applyTheme()
+    await persistSettings()
+  })
+  setClock.addEventListener("change", async ()=>{
+    state.settings.clock = setClock.value
+    await persistSettings()
+    renderTime()
+  })
+  setTempUnit.addEventListener("change", async ()=>{
+    state.settings.tempUnit = setTempUnit.value
+    await persistSettings()
+    fetchWeather()
+  })
+
+  btnPlaceFind.addEventListener("click", async ()=>{
+    const q = setPlaceQuery.value.trim()
+    if(!q) return
+    placeResult.textContent = "Searching..."
+    try{
+      const p = await forwardPlace(q)
+      if(!p){
+        placeResult.textContent = "No match."
+        return
+      }
+      state.settings.place = p
+      await persistSettings()
+      placeResult.textContent = `Set: ${p.name}`
+      fetchWeather()
+    }catch{
+      placeResult.textContent = "Failed."
+    }
+  })
+
+  btnPlaceGeo.addEventListener("click", async ()=>{
+    placeResult.textContent = "Locating..."
+    try{
+      const g = await geolocate()
+      const p = await reversePlace(g.lat, g.lon)
+      state.settings.place = p
+      await persistSettings()
+      placeResult.textContent = `Set: ${p.name}`
+      fetchWeather()
+    }catch{
+      placeResult.textContent = "Blocked or failed."
+    }
+  })
+
+  btnDataExport.addEventListener("click", ()=>{
+    exportJson("startpage-data.json", state)
+  })
+
+  dataImport.addEventListener("change", async ()=>{
+    const f = dataImport.files && dataImport.files[0]
+    if(!f) return
+    const text = await f.text()
+    let j = null
+    try{ j = JSON.parse(text) }catch{}
+    if(j && typeof j==="object"){
+      state.settings = {...DEFAULTS.settings, ...(j.settings||{})}
+      state.tasks = Array.isArray(j.tasks) ? j.tasks : []
+      state.links = Array.isArray(j.links) ? j.links : []
+      state.notes = typeof j.notes==="string" ? j.notes : ""
+      state.agenda = Array.isArray(j.agenda) ? j.agenda : []
+      state.focus = j.focus && typeof j.focus==="object" ? {...DEFAULTS.focus, ...j.focus} : structuredClone(DEFAULTS.focus)
+      await persistAll()
+      applyTheme()
+      elEngine.value = state.settings.engine || "ddg"
+      elNotesInput.value = state.notes || ""
+      renderNotes()
+      renderTasks()
+      renderLinks()
+      renderAgenda()
+      setFocusDisplay()
+      fetchWeather()
+      setStatus("Imported")
+      setTimeout(()=> setStatus(""), 1200)
+    }
+    dataImport.value = ""
+  })
+
+  btnDataReset.addEventListener("click", async ()=>{
+    state = structuredClone(DEFAULTS)
+    await persistAll()
+    applyTheme()
+    elEngine.value = state.settings.engine
+    elNotesInput.value = state.notes
+    notesPreviewMode = false
+    renderNotes()
+    setTaskFilter("today")
+    renderLinks()
+    renderAgenda()
+    await resetFocus()
+    fetchWeather()
+    setStatus("Reset")
+    setTimeout(()=> setStatus(""), 1200)
+  })
+
+  btnFocusStart.addEventListener("click", ()=> startFocus())
+  btnFocusPause.addEventListener("click", ()=> pauseFocus())
+  btnFocusSkip.addEventListener("click", ()=> skipFocus())
+  btnFocusReset.addEventListener("click", ()=> resetFocus())
+}
+
+async function boot(){
+  await loadState()
+  applyTheme()
+  renderTime()
+  setInterval(renderTime, 1000)
+  renderNotes()
+  renderLinks()
+  setTaskFilter("today")
+  renderAgenda()
+  setFocusDisplay()
+  startFocusTick()
+  wireUi()
+  fetchWeather()
+  registerSw()
+}
+
+async function registerSw(){
+  if(!("serviceWorker" in navigator)) return
+  try{
+    await navigator.serviceWorker.register("./service-worker.js", {scope:"./"})
+  }catch{}
+}
+
+boot()
