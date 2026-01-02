@@ -1,0 +1,21 @@
+{
+  "name": "LiveDash",
+  "description": "A customizable new tab dashboard with live widgets.",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.open-meteo.com/*",
+    "https://geocoding-api.open-meteo.com/*",
+    "https://api.coingecko.com/*",
+    "https://api.exchangerate.host/*"
+  ],
+  "action": {
+    "default_title": "LiveDash"
+  }
+}
