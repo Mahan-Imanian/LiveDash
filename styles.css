@@ -61,6 +61,11 @@ body{
 [data-theme="light"] .topbar{
   background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.72));
 }
+.brand-text .title{font-weight:800; letter-spacing:.2px}
+.brand-text .subtitle{color:var(--muted); font-size:12px; margin-top:2px}
+
+.top-actions{display:flex; align-items:center; gap:10px}
+.sep{width:1px; height:26px; background:var(--line); margin:0 2px}
 
 .brand{display:flex; align-items:center; gap:12px}
 .logo{
