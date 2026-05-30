@@ -1,19 +1,19 @@
 {
-  "name": "livedash-v3-premium",
-  "version": "3.0.0",
+  "name": "livedash-v4-chrome-extension",
+  "version": "4.0.0",
   "private": true,
-  "description": "LiveDash v3: a premium local-first personal operations dashboard.",
+  "description": "LiveDash v4 Chrome extension new tab command center.",
   "scripts": {
-    "start": "node server.js",
-    "serve": "node server.js",
-    "check": "node --check app.js && node --check server.js",
-    "build": "npm run check"
+    "check": "node --check scripts/default-state.js && node --check scripts/storage.js && node --check scripts/app.js && node --check scripts/popup.js && node --check scripts/options.js && node --check background.js && node scripts/validate-extension.js",
+    "build": "npm run check",
+    "package": "npm run build && node scripts/package-extension.js"
   },
   "keywords": [
+    "chrome-extension",
+    "new-tab",
     "dashboard",
-    "pwa",
-    "productivity",
-    "local-first"
+    "local-first",
+    "productivity"
   ],
   "license": "MIT"
 }
