@@ -10,123 +10,75 @@
 </head>
 <body data-surface="newtab">
   <a class="skip-link" href="#dashboardRoot">Skip to dashboard</a>
+  <div class="wallpaper-layer" aria-hidden="true"><span></span><span></span><span></span></div>
   <div class="app-shell" id="appShell">
     <header class="command-bar" role="banner">
       <div class="brand-lockup" aria-label="LiveDash product identity">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-copy">
-          <span class="brand-name">LiveDash</span>
-          <span class="brand-line">Operations Command Center</span>
-        </span>
+        <span class="brand-copy"><span class="brand-name">LiveDash</span><span class="brand-line">Personal Operations Command Center</span></span>
       </div>
-
       <div class="command-controls" aria-label="Global dashboard controls">
-        <label class="field compact" for="savedViewSelect">
-          <span>View</span>
-          <select id="savedViewSelect"></select>
-        </label>
-        <button class="command-button" id="openCommandButton" type="button" aria-haspopup="dialog" aria-controls="commandPalette">
-          <span class="key-icon" aria-hidden="true">⌕</span>
-          <span>Command</span>
-          <kbd>⌘K</kbd>
-        </button>
-        <label class="field compact" for="timeRangeSelect">
-          <span>Range</span>
-          <select id="timeRangeSelect">
-            <option value="today">Today</option>
-            <option value="7d">7 days</option>
-            <option value="30d">30 days</option>
-            <option value="90d">90 days</option>
-          </select>
-        </label>
+        <label class="field compact" for="savedViewSelect"><span>View</span><select id="savedViewSelect"></select></label>
+        <button class="command-button" id="openCommandButton" type="button" aria-haspopup="dialog" aria-controls="commandPalette"><span class="key-icon" aria-hidden="true">⌘</span><span>Command</span><kbd>Ctrl K</kbd></button>
+        <label class="field compact" for="timeRangeSelect"><span>Range</span><select id="timeRangeSelect"><option value="today">Today</option><option value="7d">7 days</option><option value="30d">30 days</option><option value="90d">90 days</option></select></label>
         <button class="icon-button" id="filterToggle" type="button" aria-label="Toggle dashboard filters" aria-expanded="false" aria-controls="filterBar">Filters</button>
         <button class="mode-toggle" id="editModeToggle" type="button" aria-pressed="false">View mode</button>
-        <button class="icon-button status-button" id="notificationButton" type="button" aria-label="Open notifications" aria-haspopup="dialog" aria-controls="notificationDrawer">
-          <span>Signals</span>
-          <span class="badge-dot" id="notificationCount">0</span>
-        </button>
+        <button class="icon-button status-button" id="notificationButton" type="button" aria-label="Open notifications" aria-haspopup="dialog" aria-controls="notificationDrawer"><span>Signals</span><span class="badge-dot" id="notificationCount">0</span></button>
         <button class="icon-button" id="settingsButton" type="button" aria-label="Open settings">Settings</button>
         <span class="freshness-pill" id="freshnessPill" aria-live="polite">Ready</span>
       </div>
     </header>
 
-    <div class="workbench">
-      <aside class="sidebar" aria-label="Global navigation">
-        <nav class="main-nav" id="mainNav"></nav>
-        <div class="sidebar-card">
-          <span class="section-eyebrow">Local state</span>
-          <strong id="storageHealth">Chrome storage active</strong>
-          <span id="storageMeta">Offline-ready extension state</span>
+    <main class="home-stage" id="dashboardRoot" tabindex="-1">
+      <section class="hero-console" aria-labelledby="pageTitle">
+        <div class="hero-copy">
+          <span class="section-eyebrow">Chrome new tab dashboard</span>
+          <h1 id="pageTitle">Operate the day from one calm surface.</h1>
+          <p id="pageSubtitle">Search, launch, focus, capture notes, manage priorities, and inspect local signals without leaving the new tab.</p>
         </div>
-        <div class="sidebar-card slim">
-          <span class="section-eyebrow">Model</span>
-          <strong>English global defaults</strong>
-          <span>No regional service lock-in</span>
+        <div class="hero-actions">
+          <button class="button secondary" id="quickTaskButton" type="button">Add task</button>
+          <button class="button secondary" id="quickNoteButton" type="button">Add note</button>
+          <button class="button primary" id="startFocusButton" type="button">Start focus</button>
         </div>
-      </aside>
+      </section>
 
-      <main class="content" id="dashboardRoot" tabindex="-1">
-        <section class="page-header" aria-labelledby="pageTitle">
-          <div>
-            <span class="section-eyebrow">Chrome new tab dashboard</span>
-            <h1 id="pageTitle">Operational overview</h1>
-            <p id="pageSubtitle">A local-first command surface for priorities, metrics, signals, notes, and activity.</p>
-          </div>
-          <div class="header-actions">
-            <button class="button secondary" id="quickTaskButton" type="button">Add task</button>
-            <button class="button secondary" id="quickNoteButton" type="button">Add note</button>
-            <button class="button primary" id="startFocusButton" type="button">Start focus</button>
-          </div>
-        </section>
+      <section class="search-hub" aria-label="Search and quick launcher">
+        <div class="search-orb" aria-hidden="true"></div>
+        <label class="quick-search" for="quickSearchInput"><span aria-hidden="true">⌕</span><input id="quickSearchInput" type="search" placeholder="Search Google, type / for commands, or paste a URL" autocomplete="off"></label>
+        <div class="quick-launch-row" id="quickLaunchRow" aria-label="Quick launch shortcuts"></div>
+      </section>
 
-        <section class="quick-command-surface" aria-label="Quick search and launch">
-          <label class="quick-search" for="quickSearchInput">
-            <span aria-hidden="true">⌕</span>
-            <input id="quickSearchInput" type="search" placeholder="Search the web, add a task, or open a command" autocomplete="off">
-          </label>
-          <div class="quick-launch-row" id="quickLaunchRow" aria-label="Quick launch shortcuts"></div>
-        </section>
+      <nav class="section-dock" id="mainNav" aria-label="Dashboard sections"></nav>
 
-        <section class="filter-bar" id="filterBar" aria-label="Dashboard filters" hidden>
-          <label class="field" for="priorityFilter"><span>Priority</span><select id="priorityFilter"><option value="all">All</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label>
-          <label class="field" for="statusFilter"><span>Status</span><select id="statusFilter"><option value="all">All</option><option value="open">Open</option><option value="blocked">Blocked</option><option value="done">Done</option></select></label>
-          <label class="field" for="signalFilter"><span>Signal</span><select id="signalFilter"><option value="all">All</option><option value="warning">Warning</option><option value="success">Healthy</option><option value="info">Info</option></select></label>
-          <label class="field search-field" for="globalFilter"><span>Search</span><input id="globalFilter" type="search" placeholder="Filter tasks, notes, activity"></label>
-        </section>
+      <section class="filter-bar" id="filterBar" aria-label="Dashboard filters" hidden>
+        <label class="field" for="priorityFilter"><span>Priority</span><select id="priorityFilter"><option value="all">All</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label>
+        <label class="field" for="statusFilter"><span>Status</span><select id="statusFilter"><option value="all">All</option><option value="open">Open</option><option value="blocked">Blocked</option><option value="done">Done</option></select></label>
+        <label class="field" for="signalFilter"><span>Signal</span><select id="signalFilter"><option value="all">All</option><option value="warning">Warning</option><option value="success">Healthy</option><option value="info">Info</option></select></label>
+        <label class="field search-field" for="globalFilter"><span>Search</span><input id="globalFilter" type="search" placeholder="Filter tasks, notes, activity"></label>
+      </section>
 
-        <section class="edit-panel" id="editPanel" aria-label="Edit mode tools" hidden>
-          <div>
-            <strong>Edit mode active</strong>
-            <span>Widget controls, module library, and restore actions are visible.</span>
-          </div>
-          <div class="edit-actions">
-            <button class="button secondary" id="moduleLibraryButton" type="button">Module library</button>
-            <button class="button secondary" id="restoreWidgetsButton" type="button">Restore defaults</button>
-            <button class="button primary" id="saveEditButton" type="button">Save view</button>
-          </div>
-        </section>
+      <section class="edit-panel" id="editPanel" aria-label="Edit mode tools" hidden>
+        <div><strong>Edit mode active</strong><span>Widget controls, launcher editing, and module visibility are enabled.</span></div>
+        <div class="edit-actions"><button class="button secondary" id="moduleLibraryButton" type="button">Module library</button><button class="button secondary" id="restoreWidgetsButton" type="button">Restore defaults</button><button class="button primary" id="saveEditButton" type="button">Save view</button></div>
+      </section>
 
-        <div class="dashboard-grid" id="dashboardGrid" aria-live="polite"></div>
-      </main>
-    </div>
+      <div class="dashboard-grid" id="dashboardGrid" aria-live="polite"></div>
+    </main>
   </div>
 
-  <nav class="floating-dock" aria-label="Quick actions">
-    <button id="dockCommand" type="button">Command</button>
-    <button id="dockFocus" type="button">Focus</button>
-    <button id="dockTask" type="button">Task</button>
-    <button id="dockNote" type="button">Note</button>
-    <button id="dockSettings" type="button">Settings</button>
+  <nav class="floating-dock" id="floatingDock" aria-label="LiveDash navigation">
+    <button id="dockCommand" type="button">⌘<span>Command</span></button>
+    <button id="dockFocus" type="button">◎<span>Focus</span></button>
+    <button id="dockTask" type="button">✓<span>Task</span></button>
+    <button id="dockNote" type="button">✎<span>Note</span></button>
+    <button id="dockSettings" type="button">⚙<span>Settings</span></button>
   </nav>
 
   <section class="command-palette" id="commandPalette" role="dialog" aria-modal="true" aria-labelledby="commandTitle" hidden>
     <div class="dialog-backdrop" data-close="palette"></div>
     <div class="command-panel">
-      <div class="command-input-wrap">
-        <span class="command-symbol" aria-hidden="true">⌕</span>
-        <label class="sr-only" for="commandInput">Search commands</label>
-        <input id="commandInput" type="search" autocomplete="off" placeholder="Search commands, views, modules, actions">
-      </div>
+      <div class="command-input-wrap"><span class="command-symbol" aria-hidden="true">⌘</span><label class="sr-only" for="commandInput">Search commands</label><input id="commandInput" type="search" autocomplete="off" placeholder="Search commands, views, modules, and actions"></div>
       <h2 id="commandTitle" class="sr-only">Command palette</h2>
       <div class="command-list" id="commandList" role="listbox"></div>
     </div>
@@ -135,10 +87,7 @@
   <aside class="drawer" id="notificationDrawer" role="dialog" aria-modal="true" aria-labelledby="notificationTitle" hidden>
     <div class="dialog-backdrop" data-close="notifications"></div>
     <div class="drawer-panel">
-      <div class="drawer-header">
-        <div><span class="section-eyebrow">Signals</span><h2 id="notificationTitle">Notification center</h2></div>
-        <button class="icon-only" id="closeNotifications" type="button" aria-label="Close notifications">×</button>
-      </div>
+      <div class="drawer-header"><div><span class="section-eyebrow">Signals</span><h2 id="notificationTitle">Notification center</h2></div><button class="icon-only" id="closeNotifications" type="button" aria-label="Close notifications">×</button></div>
       <div id="notificationList" class="drawer-body"></div>
       <div class="drawer-footer"><button class="button secondary" id="clearNotifications" type="button">Mark all read</button></div>
     </div>
@@ -146,17 +95,17 @@
 
   <aside class="drawer" id="settingsDrawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
     <div class="dialog-backdrop" data-close="settings"></div>
-    <div class="drawer-panel">
-      <div class="drawer-header">
-        <div><span class="section-eyebrow">Preferences</span><h2 id="settingsTitle">Dashboard settings</h2></div>
-        <button class="icon-only" id="closeSettings" type="button" aria-label="Close settings">×</button>
-      </div>
+    <div class="drawer-panel wide">
+      <div class="drawer-header"><div><span class="section-eyebrow">Preferences</span><h2 id="settingsTitle">Dashboard settings</h2></div><button class="icon-only" id="closeSettings" type="button" aria-label="Close settings">×</button></div>
       <div class="drawer-body settings-stack">
-        <label class="field"><span>Theme</span><select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></label>
-        <label class="field"><span>Density</span><select id="densitySelect"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></label>
-        <label class="field"><span>Default view</span><select id="defaultViewSelect"></select></label>
+        <div class="settings-grid-inline">
+          <label class="field"><span>Theme</span><select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></label>
+          <label class="field"><span>Density</span><select id="densitySelect"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></label>
+          <label class="field"><span>Background</span><select id="backgroundSelect"><option value="aurora">Aurora Command</option><option value="graphite">Graphite</option><option value="midnight">Midnight Blue</option><option value="paper">Light Paper</option></select></label>
+          <label class="field"><span>Default view</span><select id="defaultViewSelect"></select></label>
+        </div>
         <div class="settings-card"><strong>Data management</strong><p>Export creates a versioned backup. Import validates schema and keeps a pre-import restore point.</p><div class="button-row"><button class="button secondary" id="settingsExport" type="button">Export backup</button><button class="button secondary" id="settingsImport" type="button">Import backup</button><button class="button danger" id="settingsReset" type="button">Reset safely</button></div></div>
-        <div class="settings-card"><strong>Keyboard</strong><p>Command palette: Cmd+K or Ctrl+K. Escape closes overlays. Tab moves through controls.</p></div>
+        <div class="settings-card"><strong>Keyboard</strong><p>Command palette: Cmd+K or Ctrl+K. Escape closes overlays. Type / in search to open commands.</p></div>
         <button class="button primary" id="openOptionsPage" type="button">Open full options</button>
       </div>
     </div>
@@ -166,16 +115,16 @@
     <div class="dialog-backdrop" data-close="modal"></div>
     <div class="modal-panel">
       <div class="modal-header"><h2 id="modalTitle"></h2><button class="icon-only" id="modalClose" type="button" aria-label="Close dialog">×</button></div>
-      <div id="modalBody" class="modal-body"></div>
-      <div id="modalFooter" class="modal-footer"></div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter"></div>
     </div>
   </section>
 
-  <input id="importFileInput" type="file" accept="application/json,.json" hidden>
+  <input id="importFileInput" class="sr-only" type="file" accept="application/json">
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="scripts/default-state.js" defer></script>
-  <script src="scripts/storage.js" defer></script>
-  <script src="scripts/app.js" defer></script>
+  <script src="scripts/default-state.js"></script>
+  <script src="scripts/storage.js"></script>
+  <script src="scripts/app.js"></script>
 </body>
 </html>
