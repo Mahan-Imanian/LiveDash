@@ -6,58 +6,51 @@
   <title>LiveDash Options</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body data-surface="options">
+<body data-page="options">
+  <div class="wallpaper" aria-hidden="true"><div class="wallpaper-noise"></div><div class="wallpaper-glow one"></div><div class="wallpaper-glow two"></div></div>
   <main class="options-shell">
     <section class="options-hero">
-      <span class="section-eyebrow">Extension settings</span>
-      <h1>LiveDash preferences and data management</h1>
-      <p>Configure the new tab dashboard, popup behavior, local data, keyboard shortcuts, import/export, reset, and globally usable defaults.</p>
+      <span class="eyebrow">LiveDash</span>
+      <h1>Extension options</h1>
+      <p>Configure the new tab command center, appearance, storage, shortcuts, and local data.</p>
     </section>
     <section class="options-grid">
-      <article class="widget-card option-panel span-6">
-        <header class="widget-header"><div><span class="section-eyebrow">Appearance</span><h2>Visual system</h2></div></header>
-        <div class="widget-body settings-stack">
-          <label class="field"><span>Theme</span><select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></label>
-          <label class="field"><span>Density</span><select id="densitySelect"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></label>
-          <label class="field"><span>Background</span><select id="backgroundSelect"><option value="aurora">Aurora Command</option><option value="graphite">Graphite</option><option value="midnight">Midnight Blue</option><option value="paper">Light Paper</option></select></label>
-          <label class="check-row"><input id="reducedMotionCheck" type="checkbox">Reduce motion</label>
+      <article class="options-card">
+        <h2>Appearance</h2>
+        <label>Theme<select id="optTheme"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></label>
+        <label>Wallpaper<select id="optWallpaper"></select></label>
+        <label>Density<select id="optDensity"><option value="balanced">Balanced</option><option value="compact">Compact</option><option value="spacious">Spacious</option></select></label>
+        <label>Glass<select id="optGlass"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+      </article>
+      <article class="options-card">
+        <h2>Dashboard</h2>
+        <label>Default view<select id="optDefaultView"></select></label>
+        <label>Name<input id="optName" type="text"></label>
+        <label>Weather location<input id="optWeather" type="text"></label>
+        <label>Time format<select id="optTimeFormat"><option value="auto">Auto</option><option value="12h">12 hour</option><option value="24h">24 hour</option></select></label>
+      </article>
+      <article class="options-card">
+        <h2>Data management</h2>
+        <p>Export a versioned backup, import a backup with validation, or reset to defaults with a restore point.</p>
+        <div class="button-row"><button id="optExport" type="button">Export backup</button><button id="optImport" type="button">Import backup</button><button id="optRestore" type="button">Restore backup</button><button id="optReset" class="danger" type="button">Reset</button></div>
+        <input id="optImportFile" class="sr-only" type="file" accept="application/json">
+      </article>
+      <article class="options-card">
+        <h2>Shortcuts</h2>
+        <div class="list-stack">
+          <div class="list-item"><span class="status-dot success"></span><div><strong>Command palette</strong><small>Cmd+K or Ctrl+K</small></div><kbd>K</kbd></div>
+          <div class="list-item"><span class="status-dot success"></span><div><strong>Close overlays</strong><small>Escape</small></div><kbd>Esc</kbd></div>
+          <div class="list-item"><span class="status-dot success"></span><div><strong>Search commands</strong><small>Type / in the new tab search box</small></div><kbd>/</kbd></div>
         </div>
       </article>
-      <article class="widget-card option-panel span-6">
-        <header class="widget-header"><div><span class="section-eyebrow">Dashboard</span><h2>Defaults</h2></div></header>
-        <div class="widget-body settings-stack">
-          <label class="field"><span>Default view</span><select id="defaultViewSelect"></select></label>
-          <label class="field"><span>Default time range</span><select id="timeRangeSelect"><option value="today">Today</option><option value="7d">7 days</option><option value="30d">30 days</option><option value="90d">90 days</option></select></label>
-          <label class="field"><span>Time format</span><select id="timeFormatSelect"><option value="auto">Use locale</option><option value="12h">12-hour</option><option value="24h">24-hour</option></select></label>
-          <label class="field"><span>Weather label</span><input id="weatherLocationInput" placeholder="New York"></label>
-          <label class="check-row"><input id="showSignalsCheck" type="checkbox">Show signal notices</label>
-        </div>
-      </article>
-      <article class="widget-card option-panel full-span">
-        <header class="widget-header"><div><span class="section-eyebrow">Data</span><h2>Storage management</h2></div></header>
-        <div class="widget-body settings-stack">
-          <div class="settings-grid-inline">
-            <div class="settings-card"><strong>Schema</strong><p id="schemaValue">v6</p></div>
-            <div class="settings-card"><strong>Tasks</strong><p id="taskCount">0</p></div>
-            <div class="settings-card"><strong>Notes</strong><p id="noteCount">0</p></div>
-            <div class="settings-card"><strong>Activity records</strong><p id="activityCount">0</p></div>
-          </div>
-          <div class="button-row wrap"><button class="button secondary" id="exportButton" type="button">Export backup</button><button class="button secondary" id="importButton" type="button">Import backup</button><button class="button danger" id="resetButton" type="button">Reset safely</button></div>
-          <input id="importFileInput" class="sr-only" type="file" accept="application/json">
-        </div>
-      </article>
-      <article class="widget-card option-panel full-span">
-        <header class="widget-header"><div><span class="section-eyebrow">Keyboard</span><h2>Shortcuts</h2></div></header>
-        <div class="widget-body shortcut-grid">
-          <div><kbd>Cmd</kbd><kbd>K</kbd><span>Open command palette on macOS</span></div>
-          <div><kbd>Ctrl</kbd><kbd>K</kbd><span>Open command palette on Windows and Linux</span></div>
-          <div><kbd>/</kbd><span>Open commands from the search hub</span></div>
-          <div><kbd>Esc</kbd><span>Close dialogs, drawers, and command palette</span></div>
-        </div>
+      <article class="options-card">
+        <h2>About</h2>
+        <p>LiveDash v7 is a local-first Chrome new tab dashboard inspired by Widgetify-style utility surfaces and command-driven workflows.</p>
+        <div id="storageHealth" class="list-stack"></div>
       </article>
     </section>
   </main>
-  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
   <script src="scripts/default-state.js"></script>
   <script src="scripts/storage.js"></script>
   <script src="scripts/options.js"></script>
