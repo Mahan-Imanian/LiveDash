@@ -26,13 +26,17 @@
   }
 
   function storageSet(value){
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       if(!hasChromeStorage()){
         Object.keys(value).forEach((key) => localStorage.setItem(key, JSON.stringify(value[key])));
         resolve();
         return;
       }
-      chrome.storage.local.set(value, () => resolve());
+      chrome.storage.local.set(value, () => {
+        const err = chrome.runtime && chrome.runtime.lastError;
+        if(err) reject(new Error(err.message));
+        else resolve();
+      });
     });
   }
 
@@ -51,19 +55,20 @@
   async function getState(){
     const keys = [KEY].concat(LEGACY_KEYS);
     const result = await storageGet(keys);
-    let state = result[KEY];
+    let source = result[KEY];
     let migrated = false;
-    if(!state){
+    if(!source){
       for(const legacyKey of LEGACY_KEYS){
         if(result[legacyKey]){
-          state = result[legacyKey];
+          source = result[legacyKey];
           migrated = true;
           break;
         }
       }
     }
-    const merged = defaults.mergeState(state);
-    if(!state || migrated || merged.schemaVersion !== defaults.VERSION){
+    const merged = defaults.mergeState(source);
+    if(!source || migrated || merged.schemaVersion !== defaults.VERSION){
+      appendActivity(merged, "migration", migrated ? "Storage migrated" : "Storage initialized", migrated ? "Older LiveDash data was upgraded to v7." : "Default LiveDash v7 state created.");
       await saveState(merged);
       if(migrated) await storageRemove(LEGACY_KEYS);
     }
@@ -87,31 +92,33 @@
   function appendActivity(state, type, title, detail){
     state.activity = Array.isArray(state.activity) ? state.activity : [];
     state.activity.unshift({ id: defaults.uid("activity"), type, title, detail: detail || "", createdAt: new Date().toISOString() });
-    state.activity = state.activity.slice(0, 120);
+    state.activity = state.activity.slice(0, 160);
   }
 
   function appendNotification(state, title, body, severity){
     state.notifications = Array.isArray(state.notifications) ? state.notifications : [];
     state.notifications.unshift({ id: defaults.uid("notice"), title, body, severity: severity || "info", read: false, createdAt: new Date().toISOString() });
-    state.notifications = state.notifications.slice(0, 80);
+    state.notifications = state.notifications.slice(0, 100);
   }
 
   function validateImport(payload){
-    if(!payload || typeof payload !== "object") throw new Error("Import file is not valid dashboard data.");
+    if(!payload || typeof payload !== "object") throw new Error("Import file is not valid LiveDash data.");
     const state = payload.state || payload;
-    if(!state || typeof state !== "object") throw new Error("Import file does not contain a dashboard state object.");
+    if(!state || typeof state !== "object") throw new Error("Import file does not contain dashboard state.");
     if(state.schemaVersion && Number(state.schemaVersion) > defaults.VERSION) throw new Error("Import file uses a newer schema than this extension supports.");
+    if(state.links && !Array.isArray(state.links)) throw new Error("Links must be an array.");
     if(state.tasks && !Array.isArray(state.tasks)) throw new Error("Tasks must be an array.");
     if(state.notes && !Array.isArray(state.notes)) throw new Error("Notes must be an array.");
-    if(state.metrics && !Array.isArray(state.metrics)) throw new Error("Metrics must be an array.");
     return defaults.mergeState(state);
   }
 
   async function exportState(){
     const state = await getState();
+    appendActivity(state, "export", "Dashboard backup exported", "A versioned LiveDash backup was created.");
+    await saveState(state);
     return {
       product: "LiveDash",
-      format: "livedash-dashboard-backup",
+      format: "livedash-v7-backup",
       schemaVersion: defaults.VERSION,
       exportedAt: new Date().toISOString(),
       state
@@ -122,7 +129,7 @@
     const current = await getState();
     const next = validateImport(payload);
     next.lastBackup = current;
-    appendActivity(next, "import", "Dashboard data imported", "Validated backup imported with pre-import restore point.");
+    appendActivity(next, "import", "Dashboard data imported", "Validated backup imported with a pre-import restore point.");
     appendNotification(next, "Import complete", "Dashboard data was imported successfully.", "success");
     return saveState(next);
   }
@@ -131,9 +138,19 @@
     const current = await getState();
     const next = defaults.createDefaultState();
     next.lastBackup = current;
-    appendActivity(next, "reset", "Dashboard reset", "Default extension dashboard restored with restore point.");
-    appendNotification(next, "Dashboard reset", "Default v6 dashboard restored. Previous state is available as a restore point.", "warning");
+    appendActivity(next, "reset", "Dashboard reset", "Default LiveDash v7 dashboard restored with a restore point.");
+    appendNotification(next, "Dashboard reset", "Default dashboard restored. Previous data is retained as a restore point.", "warning");
     return saveState(next);
+  }
+
+  async function restoreBackup(){
+    const current = await getState();
+    if(!current.lastBackup) throw new Error("No restore point is available.");
+    const backup = defaults.mergeState(current.lastBackup);
+    backup.lastBackup = current;
+    appendActivity(backup, "restore", "Restore point loaded", "Previous dashboard backup restored.");
+    appendNotification(backup, "Restore complete", "The previous dashboard state was restored.", "success");
+    return saveState(backup);
   }
 
   function downloadJson(payload, filename){
@@ -148,5 +165,5 @@
     setTimeout(() => URL.revokeObjectURL(url), 250);
   }
 
-  global.LiveDashStorage = { getState, saveState, updateState, appendActivity, appendNotification, exportState, importState, resetState, validateImport, downloadJson, hasChromeStorage };
+  global.LiveDashStorage = { getState, saveState, updateState, appendActivity, appendNotification, exportState, importState, resetState, restoreBackup, validateImport, downloadJson, hasChromeStorage };
 })(globalThis);
