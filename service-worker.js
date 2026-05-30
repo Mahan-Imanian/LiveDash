@@ -1,4 +1,4 @@
-const CACHE = "livedash-cache-v3";
+const CACHE = "livedash-cache-v5";
 const BASE_URL = new URL("./", self.location);
 const ASSETS = [
   BASE_URL.href,

@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0b0f1a" />
-  <meta name="description" content="A fast, customizable daily dashboard." />
+  <meta name="theme-color" content="#080b12" />
+  <meta name="description" content="LiveDash is a local-first command center for time, weather, focus, notes, tasks, links, metrics, and daily planning." />
+  <meta name="color-scheme" content="dark light" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./styles.css" />
@@ -17,12 +18,17 @@
         <span class="logo" aria-hidden="true"></span>
         <div class="brand-text">
           <div class="title">LiveDash</div>
-          <div class="subtitle">Your daily dashboard</div>
+          <div class="subtitle">Local-first command center</div>
         </div>
       </div>
 
       <div class="top-actions">
-        <button class="btn ghost" id="btnCatalog" type="button" title="Widget catalog" aria-expanded="true">
+        <div class="workspace-switcher" aria-label="Workspace controls">
+          <label class="sr-only" for="workspaceSel">Workspace</label>
+          <select class="select workspace-select" id="workspaceSel" aria-label="Workspace"></select>
+          <button class="iconbtn ghost workspace-add" id="btnWorkspaceAdd" type="button" title="Create workspace" aria-label="Create workspace">＋</button>
+        </div>
+        <button class="btn ghost" id="btnCatalog" type="button" title="Widget catalog" aria-expanded="true" aria-controls="catalogPanel">
           <span class="btn-ic" aria-hidden="true">☰</span>
           <span class="btn-tx">Catalog</span>
         </button>
@@ -33,6 +39,10 @@
         <button class="btn ghost" id="btnLayout" type="button" title="Layout">
           <span class="btn-ic" aria-hidden="true">▦</span>
           <span class="btn-tx">Layout</span>
+        </button>
+        <button class="btn ghost" id="btnUndo" type="button" title="Undo last dashboard edit">
+          <span class="btn-ic" aria-hidden="true">↶</span>
+          <span class="btn-tx">Undo</span>
         </button>
         <button class="btn ghost" id="btnTheme" type="button" title="Theme">
           <span class="btn-ic" aria-hidden="true">◐</span>
@@ -95,13 +105,19 @@
 
         <section class="content">
           <section class="statusbar" aria-live="polite">
-            <div class="status-left">
-              <span class="pill" id="pillNow">—</span>
-              <span class="pill" id="pillFocus">Focus: off</span>
-              <span class="pill" id="pillWeather">Weather: —</span>
+            <div class="status-copy">
+              <div class="eyebrow">Live workspace</div>
+              <h1>Design your day in one calm surface.</h1>
             </div>
-            <div class="status-right">
-              <span class="hint">Drag widgets to reorder. Edit titles. Everything saves locally.</span>
+            <div class="status-meta">
+              <div class="status-left">
+                <span class="pill" id="pillNow">—</span>
+                <span class="pill" id="pillFocus">Focus: off</span>
+                <span class="pill" id="pillWeather">Weather: —</span>
+              </div>
+              <div class="status-right">
+                <span class="hint">Drag widgets, tune layout, and export a portable local setup.</span>
+              </div>
             </div>
           </section>
 
@@ -120,7 +136,7 @@
       <div class="footer-right">
         <a class="link" href="https://github.com/Mahan-Imanian/LiveDash" target="_blank" rel="noreferrer">Repo</a>
         <span class="muted">•</span>
-        <span class="muted">PWA-ready • Offline cache • Local-first</span>
+        <span class="muted">PWA-ready • Offline cache • Local-first storage</span>
       </div>
     </footer>
   </div>

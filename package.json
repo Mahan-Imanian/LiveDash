@@ -1,0 +1,19 @@
+{
+  "name": "livedash-premium",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A premium local-first dashboard for time, weather, focus, notes, tasks, links, and daily planning.",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js",
+    "check": "node --check app.js && node --check server.js",
+    "build": "npm run check"
+  },
+  "keywords": [
+    "dashboard",
+    "pwa",
+    "productivity",
+    "local-first"
+  ],
+  "license": "MIT"
+}
