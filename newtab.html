@@ -16,7 +16,7 @@
         <span class="brand-mark" aria-hidden="true"></span>
         <span class="brand-copy">
           <span class="brand-name">LiveDash</span>
-          <span class="brand-line">Personal Operations Command Center</span>
+          <span class="brand-line">Operations Command Center</span>
         </span>
       </div>
 
@@ -26,7 +26,7 @@
           <select id="savedViewSelect"></select>
         </label>
         <button class="command-button" id="openCommandButton" type="button" aria-haspopup="dialog" aria-controls="commandPalette">
-          <span class="key-icon" aria-hidden="true">K</span>
+          <span class="key-icon" aria-hidden="true">⌕</span>
           <span>Command</span>
           <kbd>⌘K</kbd>
         </button>
@@ -39,10 +39,10 @@
             <option value="90d">90 days</option>
           </select>
         </label>
-        <button class="icon-button" id="filterToggle" type="button" aria-label="Toggle dashboard filters" aria-expanded="false" aria-controls="filterBar">Filter</button>
+        <button class="icon-button" id="filterToggle" type="button" aria-label="Toggle dashboard filters" aria-expanded="false" aria-controls="filterBar">Filters</button>
         <button class="mode-toggle" id="editModeToggle" type="button" aria-pressed="false">View mode</button>
         <button class="icon-button status-button" id="notificationButton" type="button" aria-label="Open notifications" aria-haspopup="dialog" aria-controls="notificationDrawer">
-          <span>Alerts</span>
+          <span>Signals</span>
           <span class="badge-dot" id="notificationCount">0</span>
         </button>
         <button class="icon-button" id="settingsButton" type="button" aria-label="Open settings">Settings</button>
@@ -54,16 +54,21 @@
       <aside class="sidebar" aria-label="Global navigation">
         <nav class="main-nav" id="mainNav"></nav>
         <div class="sidebar-card">
-          <span class="section-eyebrow">System</span>
-          <strong id="storageHealth">Local storage active</strong>
+          <span class="section-eyebrow">Local state</span>
+          <strong id="storageHealth">Chrome storage active</strong>
           <span id="storageMeta">Offline-ready extension state</span>
+        </div>
+        <div class="sidebar-card slim">
+          <span class="section-eyebrow">Model</span>
+          <strong>English global defaults</strong>
+          <span>No regional service lock-in</span>
         </div>
       </aside>
 
       <main class="content" id="dashboardRoot" tabindex="-1">
         <section class="page-header" aria-labelledby="pageTitle">
           <div>
-            <span class="section-eyebrow">Chrome extension new tab</span>
+            <span class="section-eyebrow">Chrome new tab dashboard</span>
             <h1 id="pageTitle">Operational overview</h1>
             <p id="pageSubtitle">A local-first command surface for priorities, metrics, signals, notes, and activity.</p>
           </div>
@@ -72,6 +77,14 @@
             <button class="button secondary" id="quickNoteButton" type="button">Add note</button>
             <button class="button primary" id="startFocusButton" type="button">Start focus</button>
           </div>
+        </section>
+
+        <section class="quick-command-surface" aria-label="Quick search and launch">
+          <label class="quick-search" for="quickSearchInput">
+            <span aria-hidden="true">⌕</span>
+            <input id="quickSearchInput" type="search" placeholder="Search the web, add a task, or open a command" autocomplete="off">
+          </label>
+          <div class="quick-launch-row" id="quickLaunchRow" aria-label="Quick launch shortcuts"></div>
         </section>
 
         <section class="filter-bar" id="filterBar" aria-label="Dashboard filters" hidden>
@@ -97,6 +110,14 @@
       </main>
     </div>
   </div>
+
+  <nav class="floating-dock" aria-label="Quick actions">
+    <button id="dockCommand" type="button">Command</button>
+    <button id="dockFocus" type="button">Focus</button>
+    <button id="dockTask" type="button">Task</button>
+    <button id="dockNote" type="button">Note</button>
+    <button id="dockSettings" type="button">Settings</button>
+  </nav>
 
   <section class="command-palette" id="commandPalette" role="dialog" aria-modal="true" aria-labelledby="commandTitle" hidden>
     <div class="dialog-backdrop" data-close="palette"></div>

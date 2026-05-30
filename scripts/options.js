@@ -23,6 +23,8 @@
     $("timeRangeSelect").value = state.settings.timeRange;
     $("reducedMotionCheck").checked = Boolean(state.settings.reducedMotion);
     $("showSignalsCheck").checked = Boolean(state.settings.showSignals);
+    $("timeFormatSelect").value = state.settings.timeFormat || "auto";
+    $("weatherLocationInput").value = state.settings.weatherLocation || "";
     $("schemaValue").textContent = `v${state.schemaVersion}`;
     $("taskCount").textContent = String(state.tasks.length);
     $("noteCount").textContent = String(state.notes.length);
@@ -35,7 +37,7 @@
   }
   async function exportDashboard(){
     const payload = await S.exportState();
-    S.downloadJson(payload, `livedash-v4-backup-${new Date().toISOString().slice(0,10)}.json`);
+    S.downloadJson(payload, `livedash-v5-backup-${new Date().toISOString().slice(0,10)}.json`);
     await mutate((draft) => { S.appendActivity(draft, "export", "Dashboard data exported", "Backup created from options page."); S.appendNotification(draft, "Export complete", "Dashboard backup downloaded.", "success"); }, "Export complete");
   }
   async function importDashboard(){
@@ -53,7 +55,7 @@
     }
   }
   async function resetDashboard(){
-    const ok = confirm("Reset LiveDash to the default v4 dashboard? A restore point will be saved in Chrome storage.");
+    const ok = confirm("Reset LiveDash to the default v5 dashboard? A restore point will be saved in Chrome storage.");
     if(!ok) return;
     state = await S.resetState();
     render();
@@ -68,6 +70,8 @@
     $("timeRangeSelect").addEventListener("change", () => mutate((draft) => { draft.settings.timeRange = $("timeRangeSelect").value; S.appendActivity(draft, "settings", "Default time range changed", $("timeRangeSelect").value); }, "Time range updated"));
     $("reducedMotionCheck").addEventListener("change", () => mutate((draft) => { draft.settings.reducedMotion = $("reducedMotionCheck").checked; S.appendActivity(draft, "settings", "Reduced motion changed", String($("reducedMotionCheck").checked)); }, "Motion preference updated"));
     $("showSignalsCheck").addEventListener("change", () => mutate((draft) => { draft.settings.showSignals = $("showSignalsCheck").checked; S.appendActivity(draft, "settings", "Signal visibility changed", String($("showSignalsCheck").checked)); }, "Signal preference updated"));
+    $("timeFormatSelect").addEventListener("change", () => mutate((draft) => { draft.settings.timeFormat = $("timeFormatSelect").value; S.appendActivity(draft, "settings", "Time format changed", $("timeFormatSelect").value); }, "Time format updated"));
+    $("weatherLocationInput").addEventListener("change", () => mutate((draft) => { const value = $("weatherLocationInput").value.trim() || "New York"; draft.settings.weatherLocation = value; draft.weather.location = value; draft.weather.updatedAt = new Date().toISOString(); S.appendActivity(draft, "settings", "Weather location changed", value); }, "Weather location updated"));
     $("exportButton").addEventListener("click", exportDashboard);
     $("importButton").addEventListener("click", () => $("importFileInput").click());
     $("importFileInput").addEventListener("change", importDashboard);

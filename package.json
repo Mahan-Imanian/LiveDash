@@ -1,8 +1,8 @@
 {
-  "name": "livedash-v4-chrome-extension",
-  "version": "4.0.0",
+  "name": "livedash-v5-chrome-extension",
+  "version": "5.0.0",
   "private": true,
-  "description": "LiveDash v4 Chrome extension new tab command center.",
+  "description": "LiveDash v5 Chrome extension personal operations command center.",
   "scripts": {
     "check": "node --check scripts/default-state.js && node --check scripts/storage.js && node --check scripts/app.js && node --check scripts/popup.js && node --check scripts/options.js && node --check background.js && node scripts/validate-extension.js",
     "build": "npm run check",
