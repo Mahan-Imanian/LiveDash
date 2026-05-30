@@ -70,9 +70,22 @@
     $("popupNote").value = "";
   }
   function openDashboard(){
-    const url = chrome && chrome.runtime ? chrome.runtime.getURL("newtab.html") : "newtab.html";
-    if(chrome && chrome.tabs && chrome.tabs.create) chrome.tabs.create({ url });
+    const hasChrome = typeof chrome !== "undefined" && chrome.runtime;
+    const url = hasChrome ? chrome.runtime.getURL("newtab.html") : "newtab.html";
+    if(hasChrome && chrome.tabs && chrome.tabs.create) chrome.tabs.create({ url });
     else window.open(url, "_blank", "noopener");
+  }
+  function openOptions(){
+    if(typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.openOptionsPage) chrome.runtime.openOptionsPage();
+    else window.open("options.html", "_blank", "noopener");
+  }
+  function runPopupSearch(){
+    const query = $("popupSearch").value.trim();
+    if(!query){ openDashboard(); return; }
+    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    if(typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.create) chrome.tabs.create({ url });
+    else window.open(url, "_blank", "noopener");
+    S.updateState((draft) => { S.appendActivity(draft, "search", "Popup search launched", query); });
   }
   async function init(){
     state = await S.getState();
@@ -81,6 +94,8 @@
     $("popupAddTask").addEventListener("click", addTask);
     $("popupSaveNote").addEventListener("click", saveNote);
     $("popupOpenDashboard").addEventListener("click", openDashboard);
+    $("popupOpenOptions").addEventListener("click", openOptions);
+    $("popupSearch").addEventListener("keydown", (event) => { if(event.key === "Enter") runPopupSearch(); });
     setInterval(render, 1000);
   }
   document.addEventListener("DOMContentLoaded", init);

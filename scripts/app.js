@@ -56,14 +56,20 @@
     const active = state.settings.activeSection;
     if(active && active !== "overview"){
       if(active === "settings") return ["settings"];
+      if(active === "focus") return ["clock", "focusTimer", "priorities", "notes", "activity"];
+      if(active === "tasks") return ["priorities"];
+      if(active === "metrics") return ["metrics", "trend", "distribution"];
+      if(active === "calendar") return ["clock", "timezones", "weather", "schedule"];
+      if(active === "notes") return ["notes"];
+      if(active === "activity") return ["signals", "activity"];
       return [active];
     }
     const view = state.settings.selectedView;
-    if(view === "focus") return ["summary", "focus", "tasks", "notes", "activity"];
-    if(view === "operations") return ["summary", "calendar", "signals", "activity", "tasks"];
-    if(view === "metrics") return ["summary", "metrics", "activity"];
-    if(view === "minimal") return ["summary", "focus", "tasks"];
-    return ["summary", "tasks", "metrics", "calendar", "signals", "notes", "activity"];
+    if(view === "focus") return ["clock", "focusTimer", "priorities", "notes", "activity"];
+    if(view === "operations") return ["summary", "weather", "timezones", "links", "schedule", "signals", "activity", "priorities"];
+    if(view === "metrics") return ["summary", "metrics", "trend", "distribution", "activity"];
+    if(view === "minimal") return ["clock", "search", "focusTimer", "priorities", "notes"];
+    return ["summary", "clock", "search", "weather", "timezones", "metrics", "priorities", "schedule", "signals", "notes", "activity"];
   }
   function filteredTasks(){
     const f = state.filters;
@@ -141,6 +147,8 @@
     el.modalBody = $("modalBody");
     el.modalFooter = $("modalFooter");
     el.importFileInput = $("importFileInput");
+    el.quickSearchInput = $("quickSearchInput");
+    el.quickLaunchRow = $("quickLaunchRow");
   }
 
   function bindEvents(){
@@ -166,7 +174,7 @@
     $("restoreWidgetsButton").addEventListener("click", async () => {
       await mutate((draft) => {
         draft.settings.hiddenModules = [];
-        S.appendActivity(draft, "layout", "Default modules restored", "All default v4 dashboard modules are visible.");
+        S.appendActivity(draft, "layout", "Default modules restored", "All default v5 dashboard modules are visible.");
       }, "Default modules restored");
     });
     $("quickTaskButton").addEventListener("click", () => openTaskDialog());
@@ -197,6 +205,19 @@
     document.addEventListener("click", onDocumentClick);
     document.addEventListener("keydown", onKeyDown);
     el.commandInput.addEventListener("input", renderCommands);
+    if(el.quickSearchInput){
+      el.quickSearchInput.addEventListener("keydown", onQuickSearchKeydown);
+    }
+    const dockCommand = $("dockCommand");
+    const dockFocus = $("dockFocus");
+    const dockTask = $("dockTask");
+    const dockNote = $("dockNote");
+    const dockSettings = $("dockSettings");
+    if(dockCommand) dockCommand.addEventListener("click", openPalette);
+    if(dockFocus) dockFocus.addEventListener("click", () => toggleFocus());
+    if(dockTask) dockTask.addEventListener("click", () => openTaskDialog());
+    if(dockNote) dockNote.addEventListener("click", () => openNoteDialog());
+    if(dockSettings) dockSettings.addEventListener("click", () => openSettings());
     setInterval(updateClockSurface, 1000);
   }
 
@@ -209,6 +230,40 @@
     });
     state = await S.getState();
     render();
+  }
+
+  function renderQuickLaunch(){
+    if(!el.quickLaunchRow) return;
+    const visible = (state.links || []).slice(0, 4);
+    el.quickLaunchRow.innerHTML = visible.map((link) => `<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"><span>${esc(link.title.slice(0,1))}</span>${esc(link.title)}</a>`).join("");
+  }
+
+  function onQuickSearchKeydown(event){
+    if(event.key === "Enter"){
+      event.preventDefault();
+      const value = el.quickSearchInput.value.trim();
+      if(!value) return openPalette();
+      if(value.startsWith("/")){
+        el.commandInput.value = value.slice(1);
+        openPalette();
+        renderCommands();
+        return;
+      }
+      runWebSearch(value);
+    }
+  }
+
+  function runWebSearch(value){
+    const query = String(value || "").trim();
+    if(!query){
+      openPalette();
+      return;
+    }
+    const target = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    window.open(target, "_blank", "noopener");
+    S.updateState((draft) => {
+      S.appendActivity(draft, "search", "Search launched", query);
+    }).then((next) => { state = next; render(); });
   }
 
   function onDocumentClick(event){
@@ -320,17 +375,25 @@
   function renderDashboard(){
     const sections = viewSections();
     const pieces = [];
+    renderQuickLaunch();
     if(sections.includes("settings")){
       pieces.push(renderSettingsSection());
     } else {
       if(sections.includes("summary")) pieces.push(renderSummary());
-      if(sections.includes("focus")) pieces.push(renderFocusPanel());
-      if(sections.includes("tasks")) pieces.push(renderTasksSection());
+      if(sections.includes("clock")) pieces.push(renderClockSection());
+      if(sections.includes("search")) pieces.push(renderSearchSection());
+      if(sections.includes("weather")) pieces.push(renderWeatherSection());
+      if(sections.includes("timezones")) pieces.push(renderTimezonesSection());
+      if(sections.includes("focusTimer")) pieces.push(renderFocusPanel());
+      if(sections.includes("priorities")) pieces.push(renderTasksSection());
       if(sections.includes("metrics")) pieces.push(renderMetricsSection());
-      if(sections.includes("calendar")) pieces.push(renderScheduleSection());
+      if(sections.includes("trend")) pieces.push(renderTrendSection());
+      if(sections.includes("distribution")) pieces.push(renderDistributionSection());
+      if(sections.includes("schedule")) pieces.push(renderScheduleSection());
       if(sections.includes("signals")) pieces.push(renderSignalsSection());
       if(sections.includes("notes")) pieces.push(renderNotesSection());
       if(sections.includes("activity")) pieces.push(renderActivitySection());
+      if(sections.includes("links")) pieces.push(renderLinksSection());
       if(state.settings.editMode) pieces.push(renderModuleLibraryInline());
     }
     el.dashboardGrid.innerHTML = pieces.join("");
@@ -344,8 +407,8 @@
         <div><span class="section-eyebrow">${esc(kicker || "Module")}</span><h2>${esc(title)}</h2></div>
         <div class="widget-toolbar" aria-label="${esc(title)} controls">
           ${meta ? `<span class="source-chip">${esc(meta)}</span>` : ""}
-          <button class="icon-only" type="button" data-module-detail="${esc(id)}" aria-label="Open ${esc(title)} details">Inspect</button>
-          ${edit ? `<button class="icon-only danger-text" type="button" data-module-hide="${esc(id)}" aria-label="Hide ${esc(title)}">Hide</button>` : ""}
+          <button class="icon-only widget-action" type="button" data-module-detail="${esc(id)}" aria-label="Open ${esc(title)} details">Inspect</button>
+          ${edit ? `<button class="icon-only widget-action danger-text" type="button" data-module-hide="${esc(id)}" aria-label="Hide ${esc(title)}">Hide</button>` : ""}
         </div>
       </header>
       <div class="widget-body">${body}</div>
@@ -370,6 +433,46 @@
 
   function summaryCell(label, value, detail, tone){
     return `<div class="summary-cell ${tone}"><span>${esc(label)}</span><strong>${esc(value)}</strong><small>${esc(detail)}</small></div>`;
+  }
+
+  function renderClockSection(){
+    const now = new Date();
+    const hour12 = state.settings.timeFormat === "12h" ? true : state.settings.timeFormat === "24h" ? false : undefined;
+    const time = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12 }).format(now);
+    const date = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric" }).format(now);
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local timezone";
+    const body = `<div class="clock-panel"><span class="clock-time" id="liveClockValue">${esc(time)}</span><span class="clock-date">${esc(date)}</span><div class="clock-meta"><span>${esc(tz)}</span><span>${esc(state.settings.timeFormat === "auto" ? "Locale format" : state.settings.timeFormat)}</span></div></div>`;
+    return widgetFrame("clock", "Clock", "Now", 3, body, "Local device");
+  }
+
+  function renderSearchSection(){
+    const body = `<div class="search-card"><label class="field search-field large"><span>Universal launch</span><input id="widgetSearchInput" type="search" placeholder="Search the web or type a command"></label><div class="search-actions"><button class="button primary" id="widgetSearchButton" type="button">Search</button><button class="button secondary" id="widgetCommandButton" type="button">Open command palette</button></div><p class="muted-copy">Keyboard first: Cmd/Ctrl+K for commands, Enter for search.</p></div>`;
+    setTimeout(() => {
+      const input = $("widgetSearchInput");
+      const search = $("widgetSearchButton");
+      const command = $("widgetCommandButton");
+      if(input) input.addEventListener("keydown", (event) => { if(event.key === "Enter") runWebSearch(input.value); });
+      if(search) search.addEventListener("click", () => runWebSearch(input ? input.value : ""));
+      if(command) command.addEventListener("click", openPalette);
+    }, 0);
+    return widgetFrame("search", "Command Search", "Launch", 5, body, "Global");
+  }
+
+  function renderWeatherSection(){
+    const weather = state.weather || {};
+    const location = state.settings.weatherLocation || weather.location || "Local";
+    const temp = `${weather.temperature || 68}°${weather.unit || "F"}`;
+    const body = `<div class="weather-panel"><div><span class="weather-value">${esc(temp)}</span><strong>${esc(weather.condition || "Offline-ready")}</strong><small>${esc(location)} · ${esc(weather.source || "Local fallback")}</small></div><div class="weather-range"><span>High ${esc(weather.high || 72)}°</span><span>Low ${esc(weather.low || 61)}°</span><span class="source-chip">${esc(weather.status || "offline-safe")}</span></div></div>`;
+    return widgetFrame("weather", "Weather Readiness", "Signals", 4, body, relFresh(12));
+  }
+
+  function renderTimezonesSection(){
+    const zones = (state.timezones || []).map((zone) => {
+      let value = "—";
+      try { value = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", timeZone: zone.timezone }).format(new Date()); } catch { value = "Unavailable"; }
+      return `<div class="timezone-row"><span>${esc(zone.label)}</span><strong>${esc(value)}</strong><small>${esc(zone.timezone.replace("_", " "))}</small></div>`;
+    }).join("");
+    return widgetFrame("timezones", "Global Timezones", "Operations", 4, `<div class="timezone-list">${zones}</div>`, "US/EU defaults");
   }
 
   function renderFocusPanel(){
@@ -422,13 +525,21 @@
   function renderMetricsSection(){
     const cards = state.metrics.map((metric) => `<div class="metric-card">
       <div class="metric-head"><span>${esc(metric.label)}</span><span class="delta ${metric.delta >= 0 ? "positive" : "negative"}">${metric.delta >= 0 ? "+" : ""}${esc(metric.delta)}</span></div>
-      <div class="metric-value">${esc(metric.value)}${esc(metric.suffix)}</div>
-      ${sparkline(metric.series)}
-      <div class="metric-meta"><span>Target ${esc(metric.target)}${esc(metric.suffix)}</span><span>${esc(metric.source)}</span><span>${relFresh(metric.freshnessMin)}</span></div>
+      <div class="metric-value"><strong>${esc(metric.value)}${esc(metric.suffix)}</strong>${sparkline(metric.series)}</div>
+      <div class="metric-meta"><span>Target ${esc(metric.target)}${esc(metric.suffix)}</span><span>${esc(metric.period)}</span><span>${esc(metric.source)}</span><span>${relFresh(metric.freshnessMin)}</span></div>
+      <button class="table-action" type="button" data-module-detail="${esc(metric.id)}">Drill down</button>
     </div>`).join("");
-    const trend = `<div class="trend-panel"><div class="trend-head"><strong>Readiness trend</strong><span>${labelForRange(state.settings.timeRange)}</span></div>${lineChart(state.metrics[0].series, "Readiness")}</div>`;
-    const distribution = statusDistribution();
-    return widgetFrame("metrics", "Operational Metrics", "Metrics", 12, `<div class="metric-card-grid">${cards}</div><div class="chart-grid">${trend}${distribution}</div>`, `Range: ${labelForRange(state.settings.timeRange)}`);
+    return widgetFrame("metrics", "Operational Metrics", "Metrics", 12, `<div class="metric-card-grid">${cards}</div>`, `Range: ${labelForRange(state.settings.timeRange)}`);
+  }
+
+  function renderTrendSection(){
+    const metric = state.metrics[0] || { series: [0, 1], label: "Trend" };
+    const body = `<div class="trend-panel"><div class="trend-head"><strong>${esc(metric.label)} trend</strong><span>${labelForRange(state.settings.timeRange)} · ${esc(metric.source || "Local")}</span></div>${lineChart(metric.series, metric.label)}<div class="chart-foot"><span>Target ${esc(metric.target)}${esc(metric.suffix)}</span><span>${relFresh(metric.freshnessMin || 1)}</span></div></div>`;
+    return widgetFrame("trend", "Trend Analysis", "Analytics", 8, body, `Source: ${metric.source || "Local"}`);
+  }
+
+  function renderDistributionSection(){
+    return widgetFrame("distribution", "Status Distribution", "Analytics", 4, statusDistribution(), "Tasks");
   }
 
   function sparkline(values){
@@ -496,6 +607,11 @@
     return widgetFrame("activity", "Activity / History", "Audit", 6, body, `${state.activity.length} records`);
   }
 
+  function renderLinksSection(){
+    const links = (state.links || []).map((link) => `<a class="launch-link" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"><span>${esc(link.title.slice(0, 1))}</span><div><strong>${esc(link.title)}</strong><small>${esc(link.category || "Link")}</small></div></a>`).join("");
+    return widgetFrame("links", "Launchpad", "Tools", 4, `<div class="launch-grid">${links}</div>`, "Global links");
+  }
+
   function renderSettingsSection(){
     return widgetFrame("settings", "Settings", "Preferences", 12, `<div class="settings-grid-inline"><div class="settings-card"><strong>Appearance</strong><p>Theme: ${esc(state.settings.theme)} · Density: ${esc(state.settings.density)}</p><button class="button secondary" type="button" id="settingsInlineOpen">Open settings drawer</button></div><div class="settings-card"><strong>Data management</strong><p>Use validated import/export and reset with backup protection.</p><div class="button-row"><button class="button secondary" data-export-now type="button">Export</button><button class="button danger" type="button" id="inlineResetButton">Reset</button></div></div></div>`, "Extension options");
   }
@@ -554,6 +670,11 @@
   }
   function updateClockSurface(){
     if(!state) return;
+    const clockNode = $("liveClockValue");
+    if(clockNode){
+      const hour12 = state.settings.timeFormat === "12h" ? true : state.settings.timeFormat === "24h" ? false : undefined;
+      clockNode.textContent = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12 }).format(new Date());
+    }
     const focusNode = $("focusCountdown");
     if(focusNode){
       const value = focusRemaining();
@@ -577,6 +698,7 @@
       { id: "add-note", title: "Add note", detail: "Capture a tagged follow-up", run: () => openNoteDialog() },
       { id: "toggle-edit", title: "Toggle edit mode", detail: "Show or hide widget controls", run: () => toggleEditMode() },
       { id: "start-focus", title: state.focus.active ? "Stop focus session" : "Start focus session", detail: "Control the local focus timer", run: () => toggleFocus() },
+      { id: "quick-actions", title: "Open quick actions", detail: "Popup-style task, note, focus, and launch controls", run: () => openQuickActions() },
       { id: "open-settings", title: "Open settings", detail: "Theme, import, export, reset", run: () => openSettings() },
       { id: "export", title: "Export dashboard data", detail: "Download a versioned backup", run: () => exportDashboard() },
       { id: "import", title: "Import dashboard data", detail: "Validate and restore a backup", run: () => el.importFileInput.click() },
@@ -612,6 +734,20 @@
   }
   function openNotifications(){ el.notificationDrawer.hidden = false; }
   function openSettings(){ el.settingsDrawer.hidden = false; }
+
+  function openQuickActions(){
+    openModal("Quick actions", `<div class="quick-action-grid"><button class="button primary" type="button" id="qaFocus">${state.focus.active ? "Stop focus" : "Start focus"}</button><button class="button secondary" type="button" id="qaTask">Add task</button><button class="button secondary" type="button" id="qaNote">Add note</button><button class="button secondary" type="button" id="qaExport">Export backup</button></div>`, `<button class="button primary" type="button" data-close="modal">Done</button>`);
+    setTimeout(() => {
+      const focus = $("qaFocus");
+      const task = $("qaTask");
+      const note = $("qaNote");
+      const exportBtn = $("qaExport");
+      if(focus) focus.addEventListener("click", () => { closeOverlays(); toggleFocus(); });
+      if(task) task.addEventListener("click", () => { closeOverlays(); openTaskDialog(); });
+      if(note) note.addEventListener("click", () => { closeOverlays(); openNoteDialog(); });
+      if(exportBtn) exportBtn.addEventListener("click", () => { closeOverlays(); exportDashboard(); });
+    }, 0);
+  }
 
   function openTaskDialog(id){
     const task = state.tasks.find((item) => item.id === id) || { title: "", priority: "medium", status: "open", due: new Date().toISOString().slice(0,10), source: "Manual", owner: "You" };
@@ -680,7 +816,7 @@
     }, 0);
   }
   function openResetDialog(){
-    openModal("Reset dashboard safely", `<div class="confirm-copy"><p>Reset restores the default v4 dashboard, tasks, notes, metrics, notifications, and settings. A restore point is saved automatically before reset.</p><p>Export a backup first if you want a separate file outside Chrome storage.</p></div>`, `<button class="button secondary" data-backup-first type="button">Export backup first</button><button class="button danger" data-reset-confirm type="button">Reset dashboard</button>`);
+    openModal("Reset dashboard safely", `<div class="confirm-copy"><p>Reset restores the default v5 dashboard, tasks, notes, metrics, notifications, and settings. A restore point is saved automatically before reset.</p><p>Export a backup first if you want a separate file outside Chrome storage.</p></div>`, `<button class="button secondary" data-backup-first type="button">Export backup first</button><button class="button danger" data-reset-confirm type="button">Reset dashboard</button>`);
   }
   async function resetDashboard(){
     state = await S.resetState();
@@ -702,7 +838,7 @@
 
   async function exportDashboard(){
     const payload = await S.exportState();
-    S.downloadJson(payload, `livedash-v4-backup-${new Date().toISOString().slice(0,10)}.json`);
+    S.downloadJson(payload, `livedash-v5-backup-${new Date().toISOString().slice(0,10)}.json`);
     await mutate((draft) => { S.appendActivity(draft, "export", "Dashboard data exported", "Versioned backup file downloaded."); S.appendNotification(draft, "Export complete", "Dashboard backup downloaded.", "success"); }, "Export complete");
   }
   async function importFromFile(){
