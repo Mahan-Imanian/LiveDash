@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>LiveDash Quick Panel</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body data-surface="popup">
+  <main class="popup-shell" aria-labelledby="popupTitle">
+    <header class="popup-header">
+      <span class="brand-mark small" aria-hidden="true"></span>
+      <div><h1 id="popupTitle">LiveDash</h1><p id="popupClock">Ready</p></div>
+    </header>
+    <section class="popup-status"><div><span>Focus</span><strong id="popupFocus">Off</strong></div><div><span>View</span><strong id="popupView">Overview</strong></div></section>
+    <section class="popup-section"><div class="popup-section-title">Top tasks</div><div id="popupTasks" class="popup-list"></div></section>
+    <section class="popup-section"><label class="field"><span>Quick note</span><textarea id="popupNote" rows="3" placeholder="Capture a follow-up"></textarea></label><button class="button primary full" id="popupSaveNote" type="button">Save note</button></section>
+    <section class="popup-actions"><button class="button secondary" id="popupToggleFocus" type="button">Start focus</button><button class="button secondary" id="popupAddTask" type="button">Add task</button><button class="button primary" id="popupOpenDashboard" type="button">Open dashboard</button></section>
+    <div class="toast-region compact" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+  </main>
+  <script src="scripts/default-state.js" defer></script>
+  <script src="scripts/storage.js" defer></script>
+  <script src="scripts/popup.js" defer></script>
+</body>
+</html>
