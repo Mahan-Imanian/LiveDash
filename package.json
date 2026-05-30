@@ -1,8 +1,8 @@
 {
-  "name": "livedash-premium",
-  "version": "1.0.0",
+  "name": "livedash-v3-premium",
+  "version": "3.0.0",
   "private": true,
-  "description": "A premium local-first dashboard for time, weather, focus, notes, tasks, links, and daily planning.",
+  "description": "LiveDash v3: a premium local-first personal operations dashboard.",
   "scripts": {
     "start": "node server.js",
     "serve": "node server.js",
