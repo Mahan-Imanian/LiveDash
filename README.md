@@ -4,7 +4,7 @@ LiveDash is a Manifest V3 Chrome extension that replaces the Chrome New Tab page
 
 ## Install locally
 
-1. Unzip `updated-premium-project-v7.zip`.
+1. Unzip `LiveDash-v7.zip`.
 2. Open Chrome and go to `chrome://extensions`.
 3. Enable Developer Mode.
 4. Select **Load unpacked**.
