@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#0b0f1a",
   "theme_color": "#0b0f1a",
-  "description": "A fast, customizable daily dashboard.",
+  "description": "A premium local-first command center for daily planning, focus, notes, tasks, metrics, and live widgets.",
   "icons": [
     { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]

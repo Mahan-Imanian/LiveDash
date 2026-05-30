@@ -1,6 +1,6 @@
 {
   "name": "LiveDash",
-  "description": "A customizable new tab dashboard with live widgets.",
+  "description": "A premium local-first command center for daily planning, focus, notes, tasks, metrics, and live widgets.",
   "version": "0.1.0",
   "manifest_version": 3,
   "chrome_url_overrides": {
