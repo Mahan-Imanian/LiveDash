@@ -12,7 +12,7 @@
     <header class="options-hero">
       <div class="brand-lockup"><span class="brand-mark" aria-hidden="true"></span><span class="brand-copy"><span class="brand-name">LiveDash</span><span class="brand-line">Extension options</span></span></div>
       <h1 id="optionsTitle">Settings, storage, and operating preferences</h1>
-      <p>Structured controls for the local-first Chrome new tab dashboard.</p>
+      <p>Structured controls for the English-first, local-first Chrome new tab command center.</p>
     </header>
 
     <section class="options-grid">
@@ -30,6 +30,14 @@
         <label class="field"><span>Default saved view</span><select id="defaultViewSelect"></select></label>
         <label class="field"><span>Default time range</span><select id="timeRangeSelect"><option value="today">Today</option><option value="7d">7 days</option><option value="30d">30 days</option><option value="90d">90 days</option></select></label>
         <label class="check-row"><input id="showSignalsCheck" type="checkbox"><span>Show stale-data warnings</span></label>
+      </article>
+
+      <article class="option-panel">
+        <span class="section-eyebrow">Global defaults</span>
+        <h2>Regional behavior</h2>
+        <label class="field"><span>Time format</span><select id="timeFormatSelect"><option value="auto">Use browser locale</option><option value="12h">12-hour</option><option value="24h">24-hour</option></select></label>
+        <label class="field"><span>Weather location label</span><input id="weatherLocationInput" type="text" placeholder="New York, London, Berlin"></label>
+        <p class="muted-copy">LiveDash uses browser locale, global timezones, and offline-safe weather context by default.</p>
       </article>
 
       <article class="option-panel">

@@ -132,7 +132,7 @@
     const next = defaults.createDefaultState();
     next.lastBackup = current;
     appendActivity(next, "reset", "Dashboard reset", "Default extension dashboard restored with restore point.");
-    appendNotification(next, "Dashboard reset", "Default v4 dashboard restored. Previous state is available as a restore point.", "warning");
+    appendNotification(next, "Dashboard reset", "Default v5 dashboard restored. Previous state is available as a restore point.", "warning");
     return saveState(next);
   }
 

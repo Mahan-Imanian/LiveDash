@@ -1,20 +1,17 @@
 # Changelog
 
-## 4.0.0
+## 5.0.0
 
-- Converted LiveDash from a local/GitHub Pages dashboard into a Manifest V3 Chrome extension.
-- Added Chrome new tab override, popup quick panel, options page, service worker, extension icons, and Chrome storage persistence.
-- Repositioned the product as LiveDash — Personal Operations Command Center for Chrome.
-- Rebuilt the app shell with top command bar, saved view selector, time range selector, filters, edit mode, notifications, settings, and sync/freshness indicator.
-- Added global navigation for Overview, Focus, Tasks, Metrics, Calendar, Notes, Activity, and Settings.
-- Added Cmd/Ctrl+K command palette with actions for tasks, notes, views, edit mode, focus, theme, import, export, reset, and modules.
-- Added saved views: Executive Overview, Personal Focus, Operations, Metrics, and Minimal.
-- Replaced generic widget board with structured dashboard sections: Command Summary, Today’s Priorities, Operational Metrics, Schedule / Commitments, Signals / Alerts, Notes / Follow-ups, and Activity / History.
-- Added production-style task table with priority, due date, status, source, filtering, sorting, completion, edit, delete, and persisted storage.
-- Added searchable tagged notes with timestamps, edit/delete actions, and persisted storage.
-- Added metric cards with deltas, sparklines, targets, periods, sources, and freshness metadata.
-- Added trend chart and status distribution chart using local SVG rendering.
-- Added local notification center and activity/audit history.
-- Productized import, export, and reset with schema validation, backup files, restore points, and confirmation flow.
-- Added structured options page for theme, density, default view, time range, reduced motion, signals, data management, health, and shortcuts.
-- Added restrained motion, reduced-motion support, keyboard-accessible dialogs/drawers, aria labels, visible focus states, and responsive layouts.
+- Inspected the current LiveDash v4 extension and the Widgetify reference project.
+- Kept the deployable vanilla Manifest V3 architecture instead of adding a heavy build pipeline.
+- Rebuilt the visual system with a more restrained command-center interface inspired by the reference extension's new-tab launcher, quick widgets, settings modal patterns, and compact extension UX.
+- Removed region-specific assumptions and kept all user-facing UI in English.
+- Added global-default modules: Clock, Command Search, Weather Readiness, Global Timezones, Launchpad, Metrics, Trends, Distribution, Tasks, Notes, Signals, Schedule, and Activity.
+- Added a quick command surface and floating quick-action dock to improve new-tab speed without copying the reference implementation.
+- Improved saved views so Executive Overview, Personal Focus, Operations, Metrics, and Minimal have materially different layouts.
+- Added popup quick search and settings access.
+- Added options controls for time format and weather location label.
+- Updated storage schema to v5 with safe migration from v4 and older local keys.
+- Updated import/export filenames and reset copy to v5.
+- Reworked CSS tokens, surfaces, focus states, responsive grids, card hierarchy, and motion.
+- Preserved Manifest V3 new tab override, popup, options page, background worker, local persistence, import/export, reset, activity feed, and notification center.
