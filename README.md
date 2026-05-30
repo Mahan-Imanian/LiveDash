@@ -1,26 +1,40 @@
-# LiveDash v3
+# LiveDash v4
 
-A production-grade local-first dashboard for time, weather, focus, notes, tasks, links, metrics, habits, agenda planning, and portable workspace management.
+LiveDash v4 is a Manifest V3 Chrome extension that turns the Chrome new tab page into a local-first personal operations command center.
 
-## Run
+## Install in Chrome
 
-```bash
-npm install
-npm run start
-```
+1. Unzip `updated-premium-project-v4.zip`.
+2. Open `chrome://extensions`.
+3. Enable Developer Mode.
+4. Choose **Load unpacked**.
+5. Select the `LiveDash-v4` folder.
+6. Open a new tab.
 
-Open `http://localhost:5173`.
+## Extension surfaces
 
-## Checks
+- `newtab.html`: main LiveDash dashboard through `chrome_url_overrides.newtab`.
+- `popup.html`: compact quick panel for current status, top tasks, focus timer, and quick notes.
+- `options.html`: structured preferences, import/export, reset, data health, and shortcuts.
+- `background.js`: Manifest V3 service worker for install migration, startup initialization, alarms, freshness updates, and local notices.
+
+## Data storage
+
+LiveDash stores dashboard state in `chrome.storage.local` using schema version 4. A fallback storage path exists for local file testing outside Chrome. Import validates backup shape and saves a restore point before replacing dashboard data. Reset saves a restore point before restoring defaults.
+
+## Keyboard
+
+- Cmd+K on macOS opens the command palette.
+- Ctrl+K on Windows/Linux opens the command palette.
+- Escape closes dialogs, drawers, and the command palette.
+- Tab navigation uses visible focus rings.
+
+## Validation
+
+Run static validation locally with:
 
 ```bash
 npm run build
 ```
 
-## v3 rebuild notes
-
-- Rebuilt the UI language into a deliberate personal operations OS with a command hero, module library, workspace state panel, and refined dashboard board.
-- Reworked the widget catalog into searchable, keyboard-accessible module cards with blueprint presets.
-- Added production-grade responsive behavior for desktop, tablet, and mobile without horizontal overflow.
-- Refined cards, dialogs, drawers, empty states, focus states, interaction feedback, animations, and theme materials.
-- Preserved local-first persistence, import/export, workspaces, layout controls, PWA files, and all original widget functionality.
+This checks JavaScript syntax and validates the extension manifest, required files, icons, CSP, and forbidden placeholder markers.

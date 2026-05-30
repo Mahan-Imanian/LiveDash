@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>LiveDash Options</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body data-surface="options">
+  <main class="options-shell" aria-labelledby="optionsTitle">
+    <header class="options-hero">
+      <div class="brand-lockup"><span class="brand-mark" aria-hidden="true"></span><span class="brand-copy"><span class="brand-name">LiveDash</span><span class="brand-line">Extension options</span></span></div>
+      <h1 id="optionsTitle">Settings, storage, and operating preferences</h1>
+      <p>Structured controls for the local-first Chrome new tab dashboard.</p>
+    </header>
+
+    <section class="options-grid">
+      <article class="option-panel">
+        <span class="section-eyebrow">Appearance</span>
+        <h2>Visual system</h2>
+        <label class="field"><span>Theme</span><select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></label>
+        <label class="field"><span>Density</span><select id="densitySelect"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></label>
+        <label class="check-row"><input id="reducedMotionCheck" type="checkbox"><span>Prefer reduced motion</span></label>
+      </article>
+
+      <article class="option-panel">
+        <span class="section-eyebrow">Dashboard</span>
+        <h2>Default behavior</h2>
+        <label class="field"><span>Default saved view</span><select id="defaultViewSelect"></select></label>
+        <label class="field"><span>Default time range</span><select id="timeRangeSelect"><option value="today">Today</option><option value="7d">7 days</option><option value="30d">30 days</option><option value="90d">90 days</option></select></label>
+        <label class="check-row"><input id="showSignalsCheck" type="checkbox"><span>Show stale-data warnings</span></label>
+      </article>
+
+      <article class="option-panel">
+        <span class="section-eyebrow">Data</span>
+        <h2>Import, export, reset</h2>
+        <p class="muted-copy">Backups include schema version, settings, tasks, notes, metrics, notifications, and activity history.</p>
+        <div class="button-row wrap"><button class="button secondary" id="exportButton" type="button">Export dashboard data</button><button class="button secondary" id="importButton" type="button">Import dashboard data</button><button class="button danger" id="resetButton" type="button">Reset with confirmation</button></div>
+        <input id="importFileInput" type="file" accept="application/json,.json" hidden>
+      </article>
+
+      <article class="option-panel">
+        <span class="section-eyebrow">Storage</span>
+        <h2>Local state health</h2>
+        <dl class="health-list"><div><dt>Schema</dt><dd id="schemaValue">—</dd></div><div><dt>Tasks</dt><dd id="taskCount">—</dd></div><div><dt>Notes</dt><dd id="noteCount">—</dd></div><div><dt>Activity</dt><dd id="activityCount">—</dd></div></dl>
+      </article>
+
+      <article class="option-panel full-span">
+        <span class="section-eyebrow">Keyboard</span>
+        <h2>Shortcuts</h2>
+        <div class="shortcut-grid"><div><kbd>Cmd</kbd><kbd>K</kbd><span>Open command palette on macOS</span></div><div><kbd>Ctrl</kbd><kbd>K</kbd><span>Open command palette on Windows/Linux</span></div><div><kbd>Esc</kbd><span>Close command palette, drawers, and dialogs</span></div><div><kbd>Tab</kbd><span>Move through controls with visible focus rings</span></div></div>
+      </article>
+    </section>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+  </main>
+  <script src="scripts/default-state.js" defer></script>
+  <script src="scripts/storage.js" defer></script>
+  <script src="scripts/options.js" defer></script>
+</body>
+</html>
