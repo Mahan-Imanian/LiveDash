@@ -1,5 +1,5 @@
 (() => {
-  const STORAGE_KEY = "livedash:v3";
+  const STORAGE_KEY = "livedash:v3-release";
   const WORKSPACE_KEY = "livedash:workspace";
   const WORKSPACE_LIST_KEY = "livedash:workspaces";
   const HISTORY_KEY = "livedash:history";
@@ -171,22 +171,42 @@
     }
   ];
 
+  const WIDGET_SKIN = {
+    clock: { icon: "◷", accent: "#d8b46a", size: 1 },
+    calendar: { icon: "▦", accent: "#8bd3ff", size: 2 },
+    timezone: { icon: "◴", accent: "#a78bfa", size: 1 },
+    weather: { icon: "☁", accent: "#67e8f9", size: 2 },
+    prices: { icon: "↗", accent: "#4ade80", size: 2 },
+    focus: { icon: "◎", accent: "#f59e0b", size: 2 },
+    todos: { icon: "✓", accent: "#c4b5fd", size: 2 },
+    notes: { icon: "✎", accent: "#f9a8d4", size: 2 },
+    search: { icon: "⌕", accent: "#93c5fd", size: 2 },
+    links: { icon: "↳", accent: "#5eead4", size: 2 },
+    bookmarks: { icon: "◇", accent: "#fb7185", size: 2 },
+    stats: { icon: "▤", accent: "#bef264", size: 1 },
+    agenda: { icon: "≡", accent: "#fcd34d", size: 2 },
+    habits: { icon: "◆", accent: "#86efac", size: 2 },
+    pulse: { icon: "∿", accent: "#7dd3fc", size: 3 },
+    quote: { icon: "“", accent: "#fda4af", size: 1 },
+    ambient: { icon: "≈", accent: "#99f6e4", size: 1 }
+  };
+
   const DASHBOARD_PRESETS = {
     daily: [
       ["clock", 1],
-      ["calendar", 2],
-      ["timezone", 1],
       ["weather", 2],
-      ["prices", 2],
       ["focus", 2],
-      ["pulse", 2],
+      ["pulse", 3],
+      ["agenda", 2],
       ["todos", 2],
       ["notes", 2],
+      ["calendar", 2],
       ["search", 2],
       ["links", 2],
-      ["stats", 1],
-      ["agenda", 2],
       ["habits", 2],
+      ["prices", 2],
+      ["timezone", 1],
+      ["stats", 1],
       ["quote", 1],
       ["ambient", 1]
     ],
@@ -489,6 +509,7 @@
     updateWeatherPill();
     syncFocusPill();
     renderWorkspaceSelect();
+    updateChrome();
     toast(`Workspace: ${name}`);
   }
 
@@ -505,6 +526,28 @@
     }
   }
 
+  function widgetSkin(type) {
+    return WIDGET_SKIN[type] || { icon: "◆", accent: "#d8b46a", size: 2 };
+  }
+
+  function updateChrome() {
+    const widgetCount = app.state?.widgets?.length || 0;
+    const workspace = app.workspace || "Work";
+    const focusWidget = app.state?.widgets?.find(w => w.type === "focus");
+    const lockState = app.state?.layout?.locked ? "Locked" : "Open";
+    const set = (id, value) => {
+      const el = $(id);
+      if (el) el.textContent = value;
+    };
+    set("#workspaceCount", workspace);
+    set("#widgetCount", String(widgetCount));
+    set("#focusState", focusWidget ? "Ready" : "Off");
+    set("#systemState", navigator.onLine ? "Online" : "Offline");
+    set("#boardMeta", `${lockState} board • ${widgetCount} modules • ${app.state?.layout?.cols || 4} desktop columns`);
+    document.body.dataset.ready = "true";
+    document.title = `${workspace} · LiveDash v3`;
+  }
+
   function defaultDashboard(preset = "daily") {
     const mk = (type, size = 2, overrides = {}) => {
       const cat = WIDGET_CATALOG.find(x => x.type === type);
@@ -513,8 +556,8 @@
         id: uid(),
         type,
         title: (cat?.title ?? type),
-        size,
-        accent: "#7c5cff",
+        size: size || widgetSkin(type).size,
+        accent: widgetSkin(type).accent,
         options: { ...structuredClone(base), ...overrides }
       };
     };
@@ -529,6 +572,7 @@
     $("#pillNow").textContent = nowString();
     $("#footerNet").textContent = navigator.onLine ? "Online" : "Offline";
     $(".dot").style.background = navigator.onLine ? "var(--ok)" : "var(--warn)";
+    updateChrome();
   }
 
   function toast(text) {
@@ -586,19 +630,36 @@
     if (!g) return;
     g.innerHTML = "";
     for (const w of items) {
+      const skin = widgetSkin(w.type);
       const card = document.createElement("div");
       card.className = "gcard";
       card.tabIndex = 0;
+      card.role = "button";
+      card.setAttribute("aria-label", `Add ${w.title}`);
+      card.style.setProperty("--gaccent", skin.accent);
       card.innerHTML = `
-        <div class="gtitle">${escapeHtml(w.title)}</div>
-        <div class="gmeta">${escapeHtml(w.desc)}</div>
-        <div class="gtags">${w.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+        <div class="gicon" aria-hidden="true">${escapeHtml(skin.icon)}</div>
+        <div class="gbody">
+          <div class="gtitle">${escapeHtml(w.title)}</div>
+          <div class="gmeta">${escapeHtml(w.desc)}</div>
+          <div class="gtags">${w.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+        </div>
       `;
-      card.addEventListener("click", () => addWidget(w.type));
+      const add = () => addWidget(w.type);
+      card.addEventListener("click", add);
       card.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") addWidget(w.type);
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          add();
+        }
       });
       g.appendChild(card);
+    }
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "settings-hint";
+      empty.textContent = "No modules match the current filter.";
+      g.appendChild(empty);
     }
   }
 
@@ -646,8 +707,8 @@
       id: uid(),
       type,
       title: cat?.title ?? type,
-      size: 2,
-      accent: "#7c5cff",
+      size: widgetSkin(type).size,
+      accent: widgetSkin(type).accent,
       options: structuredClone(cat?.defaults ?? {})
     };
     pushHistory();
@@ -655,8 +716,9 @@
     save();
     renderGrid();
     closeCatalog();
-    toast("Widget added");
+    toast("Module added");
     updateWeatherPill();
+    updateChrome();
   }
 
   function removeWidget(id) {
@@ -665,6 +727,7 @@
     save();
     renderGrid();
     updateWeatherPill();
+    updateChrome();
   }
 
   function moveWidget(fromId, toId) {
@@ -698,6 +761,10 @@
       node.draggable = !app.state.layout.locked;
       node.classList.toggle("is-locked", app.state.layout.locked);
 
+      const skin = widgetSkin(w.type);
+      const icon = $(".card-icon", node);
+      if (icon) icon.textContent = skin.icon;
+
       const title = $(".card-title", node);
       title.value = w.title || w.type;
       title.addEventListener("change", () => {
@@ -727,6 +794,7 @@
 
       grid.appendChild(node);
     }
+    updateChrome();
   }
 
   function renderEmptyState() {
@@ -736,25 +804,27 @@
     card.className = "empty-card";
     card.innerHTML = `
       <div class="empty-card__content">
-        <h3>Build your dashboard</h3>
-        <p>Add widgets like clocks, weather, focus timers, and more to personalize LiveDash. Or start from a preset.</p>
+        <div class="section-kicker">Empty workspace</div>
+        <h3>Compose a serious command center.</h3>
+        <p>Start from a blueprint or add individual modules. The board stays local-first, portable, and editable without accounts or servers.</p>
         <div class="preset-row">
-          <button class="btn ghost preset-btn" type="button" data-preset="daily">Daily preset</button>
-          <button class="btn ghost preset-btn" type="button" data-preset="focus">Focus preset</button>
-          <button class="btn ghost preset-btn" type="button" data-preset="minimal">Minimal preset</button>
+          <button class="preset-card" type="button" data-preset="daily"><span>Daily command</span><small>Time, focus, planning, metrics</small></button>
+          <button class="preset-card" type="button" data-preset="focus"><span>Deep work</span><small>Timer, notes, habits</small></button>
+          <button class="preset-card" type="button" data-preset="minimal"><span>Minimal</span><small>Essentials only</small></button>
         </div>
       </div>
     `;
     const cta = document.createElement("button");
     cta.type = "button";
-    cta.className = "btn empty-cta";
-    cta.textContent = "Add your first widget";
+    cta.className = "btn primary empty-cta";
+    cta.textContent = "Open module library";
     cta.addEventListener("click", () => openCatalog());
     card.appendChild(cta);
-    $$(".preset-btn", card).forEach(btn => {
+    $$("[data-preset]", card).forEach(btn => {
       btn.addEventListener("click", () => applyPreset(btn.dataset.preset));
     });
     grid.appendChild(card);
+    updateChrome();
   }
 
   function applyPreset(preset) {
@@ -769,8 +839,9 @@
     save();
     renderGrid();
     updateWeatherPill();
+    updateChrome();
     closeCatalog();
-    toast(`Preset applied: ${preset}`);
+    toast(`Blueprint applied: ${preset}`);
   }
 
   function refreshWidget(id) {
@@ -779,6 +850,7 @@
     renderGrid();
     updateWeatherPill();
     if (w.type === "focus") syncFocusPill();
+    updateChrome();
   }
 
   function wireDnD(node) {
@@ -2295,7 +2367,7 @@
       setCatalogFilter(btn.dataset.filter);
     });
 
-    $$(".preset-btn").forEach(btn => {
+    $$("[data-preset]").forEach(btn => {
       btn.addEventListener("click", () => applyPreset(btn.dataset.preset));
     });
 
@@ -2423,7 +2495,7 @@
         type: String(x.type),
         title: String(x.title || (WIDGET_CATALOG.find(w => w.type === x.type)?.title ?? x.type)),
         size: Number(x.size) || 2,
-        accent: String(x.accent || "#7c5cff"),
+        accent: String(x.accent || widgetSkin(x.type).accent),
         options: (x.options && typeof x.options === "object") ? x.options : {}
       }));
     pushHistory();
@@ -2445,7 +2517,8 @@
     save();
     renderGrid();
     updateWeatherPill();
-    toast("Reset done");
+    updateChrome();
+    toast("Workspace reset");
   }
 
   function initPWA() {
@@ -2485,6 +2558,7 @@
     setCatalogFilter(app.catalogFilter);
     renderGrid();
     updateWeatherPill();
+    updateChrome();
     initPWA();
   }
 

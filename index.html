@@ -3,38 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#080b12" />
-  <meta name="description" content="LiveDash is a local-first command center for time, weather, focus, notes, tasks, links, metrics, and daily planning." />
+  <meta name="theme-color" content="#070a12" />
+  <meta name="description" content="LiveDash v3 is a local-first operating surface for time, weather, focus, notes, tasks, links, metrics, and daily planning." />
   <meta name="color-scheme" content="dark light" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>LiveDash</title>
+  <title>LiveDash v3</title>
 </head>
 <body>
   <div id="app">
     <header class="topbar">
-      <div class="brand">
+      <div class="brand" aria-label="LiveDash">
         <span class="logo" aria-hidden="true"></span>
         <div class="brand-text">
           <div class="title">LiveDash</div>
-          <div class="subtitle">Local-first command center</div>
+          <div class="subtitle">v3 Personal Operations OS</div>
         </div>
       </div>
 
-      <div class="top-actions">
+      <div class="top-actions" aria-label="Primary controls">
         <div class="workspace-switcher" aria-label="Workspace controls">
+          <span class="control-label">Workspace</span>
           <label class="sr-only" for="workspaceSel">Workspace</label>
           <select class="select workspace-select" id="workspaceSel" aria-label="Workspace"></select>
           <button class="iconbtn ghost workspace-add" id="btnWorkspaceAdd" type="button" title="Create workspace" aria-label="Create workspace">＋</button>
         </div>
         <button class="btn ghost" id="btnCatalog" type="button" title="Widget catalog" aria-expanded="true" aria-controls="catalogPanel">
-          <span class="btn-ic" aria-hidden="true">☰</span>
+          <span class="btn-ic" aria-hidden="true">⌘</span>
           <span class="btn-tx">Catalog</span>
         </button>
-        <button class="btn ghost" id="btnAdd" type="button" title="Add widget">
+        <button class="btn primary" id="btnAdd" type="button" title="Add widget">
           <span class="btn-ic" aria-hidden="true">＋</span>
-          <span class="btn-tx">Add</span>
+          <span class="btn-tx">Add widget</span>
         </button>
         <button class="btn ghost" id="btnLayout" type="button" title="Layout">
           <span class="btn-ic" aria-hidden="true">▦</span>
@@ -49,11 +50,11 @@
           <span class="btn-tx">Theme</span>
         </button>
         <div class="sep" aria-hidden="true"></div>
-        <button class="btn" id="btnExport" type="button" title="Export">
+        <button class="btn quiet" id="btnExport" type="button" title="Export">
           <span class="btn-ic" aria-hidden="true">⤓</span>
           <span class="btn-tx">Export</span>
         </button>
-        <button class="btn" id="btnImport" type="button" title="Import">
+        <button class="btn quiet" id="btnImport" type="button" title="Import">
           <span class="btn-ic" aria-hidden="true">⤒</span>
           <span class="btn-tx">Import</span>
         </button>
@@ -70,58 +71,82 @@
         <aside class="catalog" id="catalogPanel" aria-label="Widget catalog">
           <div class="catalog-head">
             <div>
-              <div class="catalog-title">Widget catalog</div>
-              <div class="catalog-subtitle">Search, filter, and add widgets.</div>
+              <div class="section-kicker">Compose</div>
+              <div class="catalog-title">Widget library</div>
+              <div class="catalog-subtitle">Purpose-built modules for time, focus, planning, and operating rhythm.</div>
             </div>
             <button class="iconbtn ghost" id="btnCatalogClose" type="button" aria-label="Close catalog">✕</button>
           </div>
 
           <div class="catalog-controls">
             <label class="sr-only" for="widgetSearch">Search widgets</label>
-            <input class="input search" id="widgetSearch" type="search" placeholder="Search widgets…" autocomplete="off" />
+            <input class="input search" id="widgetSearch" type="search" placeholder="Find a module" autocomplete="off" />
             <div class="segmented" id="widgetFilters" role="tablist" aria-label="Widget filters">
               <button class="seg-btn is-active" type="button" role="tab" aria-selected="true" data-filter="all">All</button>
               <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="daily">Daily</button>
               <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="focus">Focus</button>
-              <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="info">Info</button>
+              <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="info">Intel</button>
               <button class="seg-btn" type="button" role="tab" aria-selected="false" data-filter="tools">Tools</button>
             </div>
           </div>
 
-          <div class="catalog-section">
-            <div class="section-title">Starter presets</div>
+          <div class="catalog-section preset-panel">
+            <div class="section-title">Workspace blueprints</div>
             <div class="preset-row">
-              <button class="btn ghost preset-btn" type="button" data-preset="daily">Daily</button>
-              <button class="btn ghost preset-btn" type="button" data-preset="focus">Focus</button>
-              <button class="btn ghost preset-btn" type="button" data-preset="minimal">Minimal</button>
+              <button class="preset-card" type="button" data-preset="daily">
+                <span>Daily command</span>
+                <small>Full operating surface</small>
+              </button>
+              <button class="preset-card" type="button" data-preset="focus">
+                <span>Deep work</span>
+                <small>Timer, notes, habits</small>
+              </button>
+              <button class="preset-card" type="button" data-preset="minimal">
+                <span>Minimal</span>
+                <small>Clean essentials</small>
+              </button>
             </div>
           </div>
 
           <div class="catalog-section">
-            <div class="section-title">Widgets</div>
+            <div class="section-title">Modules</div>
             <div class="gallery" id="galleryGrid"></div>
           </div>
         </aside>
 
         <section class="content">
-          <section class="statusbar" aria-live="polite">
-            <div class="status-copy">
-              <div class="eyebrow">Live workspace</div>
-              <h1>Design your day in one calm surface.</h1>
+          <section class="command" aria-live="polite">
+            <div class="command-copy">
+              <div class="eyebrow">Mission control</div>
+              <h1>One composed surface for the workday.</h1>
+              <p>LiveDash keeps critical context, daily systems, and personal operating loops in a deliberate local-first workspace.</p>
             </div>
-            <div class="status-meta">
-              <div class="status-left">
-                <span class="pill" id="pillNow">—</span>
-                <span class="pill" id="pillFocus">Focus: off</span>
-                <span class="pill" id="pillWeather">Weather: —</span>
+            <div class="command-card" aria-label="Workspace summary">
+              <div class="command-card-head">
+                <span>Workspace state</span>
+                <span class="live-dot" aria-hidden="true"></span>
               </div>
-              <div class="status-right">
-                <span class="hint">Drag widgets, tune layout, and export a portable local setup.</span>
+              <div class="metric-grid">
+                <div class="metric"><span id="workspaceCount">—</span><small>Workspace</small></div>
+                <div class="metric"><span id="widgetCount">—</span><small>Modules</small></div>
+                <div class="metric"><span id="focusState">—</span><small>Focus</small></div>
+                <div class="metric"><span id="systemState">—</span><small>Status</small></div>
               </div>
             </div>
           </section>
 
-          <section class="grid-wrap">
+          <section class="statusbar" aria-label="Live dashboard status">
+            <div class="status-left">
+              <span class="pill" id="pillNow">—</span>
+              <span class="pill" id="pillFocus">Focus: off</span>
+              <span class="pill" id="pillWeather">Weather: —</span>
+            </div>
+            <div class="status-right">
+              <span class="hint" id="boardMeta">Drag modules, tune density, and export a portable workspace.</span>
+            </div>
+          </section>
+
+          <section class="grid-wrap" aria-label="Dashboard board">
             <div id="grid" class="grid" aria-label="Dashboard widgets"></div>
           </section>
         </section>
@@ -134,9 +159,11 @@
         <span id="footerNet">—</span>
       </div>
       <div class="footer-right">
-        <a class="link" href="https://github.com/Mahan-Imanian/LiveDash" target="_blank" rel="noreferrer">Repo</a>
+        <span class="muted">Local-first</span>
         <span class="muted">•</span>
-        <span class="muted">PWA-ready • Offline cache • Local-first storage</span>
+        <span class="muted">Offline cache</span>
+        <span class="muted">•</span>
+        <span class="muted">Portable workspace JSON</span>
       </div>
     </footer>
   </div>
@@ -145,13 +172,16 @@
     <div class="modal-backdrop" data-close="1"></div>
     <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-head">
-        <div class="modal-title" id="modalTitle">Layout settings</div>
+        <div>
+          <div class="section-kicker">System</div>
+          <div class="modal-title" id="modalTitle">Layout settings</div>
+        </div>
         <button class="iconbtn" type="button" data-close="1" aria-label="Close">✕</button>
       </div>
 
       <div class="modal-body">
         <div class="layoutbox" id="layoutBox" hidden>
-          <div class="import-title">Layout</div>
+          <div class="import-title">Board composition</div>
           <div class="layout-row">
             <label class="lab">Density</label>
             <select class="select" id="densitySel">
@@ -160,19 +190,19 @@
             </select>
           </div>
           <div class="layout-row">
-            <label class="lab">Columns (desktop)</label>
+            <label class="lab">Desktop columns</label>
             <input class="range" id="colsRange" type="range" min="2" max="6" step="1" />
             <span class="pill" id="colsVal">—</span>
           </div>
           <div class="layout-row">
-            <label class="lab">Card style</label>
+            <label class="lab">Card material</label>
             <select class="select" id="cardSel">
               <option value="glass">Glass</option>
               <option value="solid">Solid</option>
             </select>
           </div>
           <div class="layout-row">
-            <label class="lab">Background</label>
+            <label class="lab">Atmosphere</label>
             <select class="select" id="bgSel">
               <option value="aurora">Aurora</option>
               <option value="noir">Noir</option>
@@ -184,7 +214,7 @@
             <input class="toggle" id="lockToggle" type="checkbox" />
           </div>
           <div class="import-actions">
-            <button class="btn" data-close="1" type="button">Done</button>
+            <button class="btn primary" data-close="1" type="button">Done</button>
           </div>
         </div>
       </div>
@@ -195,7 +225,10 @@
     <div class="drawer-backdrop" data-close="settings"></div>
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="drawer-head">
-        <div class="drawer-title" id="settingsTitle">Widget settings</div>
+        <div>
+          <div class="section-kicker">Module</div>
+          <div class="drawer-title" id="settingsTitle">Widget settings</div>
+        </div>
         <button class="iconbtn" type="button" data-close="settings" aria-label="Close settings">✕</button>
       </div>
       <div class="drawer-body" id="settingsBody"></div>
@@ -206,7 +239,10 @@
     <div class="drawer-backdrop" data-close="io"></div>
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="ioTitle">
       <div class="drawer-head">
-        <div class="drawer-title" id="ioTitle">Import &amp; export</div>
+        <div>
+          <div class="section-kicker">Portability</div>
+          <div class="drawer-title" id="ioTitle">Import &amp; export</div>
+        </div>
         <button class="iconbtn" type="button" data-close="io" aria-label="Close import/export">✕</button>
       </div>
       <div class="drawer-body">
@@ -216,19 +252,19 @@
         </div>
 
         <div class="io-panel" id="ioExport">
-          <div class="import-title">Export dashboard JSON</div>
+          <div class="import-title">Export workspace JSON</div>
           <textarea class="textarea" id="exportText" readonly></textarea>
           <div class="import-actions">
-            <button class="btn" id="btnDownloadExport" type="button">Download JSON</button>
+            <button class="btn primary" id="btnDownloadExport" type="button">Download JSON</button>
             <button class="btn ghost" id="btnCopyExport" type="button">Copy</button>
           </div>
         </div>
 
         <div class="io-panel" id="ioImport" hidden>
-          <div class="import-title">Import dashboard JSON</div>
+          <div class="import-title">Import workspace JSON</div>
           <textarea class="textarea" id="importText" placeholder='Paste exported JSON here'></textarea>
           <div class="import-actions">
-            <button class="btn" id="btnDoImport" type="button">Import</button>
+            <button class="btn primary" id="btnDoImport" type="button">Import</button>
             <button class="btn ghost" data-close="io" type="button">Cancel</button>
           </div>
         </div>
@@ -241,7 +277,10 @@
   <template id="tplWidget">
     <article class="card" draggable="true">
       <div class="card-head">
-        <input class="card-title" type="text" value="" spellcheck="false" />
+        <div class="card-identity">
+          <span class="card-icon" aria-hidden="true">◆</span>
+          <input class="card-title" type="text" value="" spellcheck="false" aria-label="Widget title" />
+        </div>
         <div class="card-actions">
           <select class="mini" data-act="size" aria-label="Size">
             <option value="1">S</option>
@@ -250,7 +289,7 @@
           </select>
           <button class="iconbtn" data-act="refresh" type="button" title="Refresh" aria-label="Refresh">⟳</button>
           <button class="iconbtn" data-act="settings" type="button" title="Settings" aria-label="Settings">⚙</button>
-          <button class="iconbtn danger" data-act="remove" type="button" title="Remove" aria-label="Remove">🗑</button>
+          <button class="iconbtn danger" data-act="remove" type="button" title="Remove" aria-label="Remove">×</button>
           <span class="drag" title="Drag" aria-label="Drag handle">⋮⋮</span>
         </div>
       </div>
@@ -266,18 +305,18 @@
       </div>
       <div class="settings-row">
         <label class="lab">Accent</label>
-        <input class="input" data-k="accent" type="text" placeholder="#7c5cff or any CSS color" />
+        <input class="input" data-k="accent" type="text" placeholder="#9d8cff or any CSS color" />
       </div>
       <div class="settings-row">
-        <label class="lab">Options (JSON)</label>
+        <label class="lab">Options JSON</label>
         <textarea class="textarea" data-k="options" placeholder='{"example": true}'></textarea>
       </div>
       <div class="settings-actions">
-        <button class="btn" data-act="save" type="button">Save</button>
+        <button class="btn primary" data-act="save" type="button">Save</button>
         <button class="btn ghost" data-act="cancel" type="button">Cancel</button>
       </div>
       <div class="settings-hint">
-        Options are widget-specific. Invalid JSON is rejected.
+        Widget-specific options are validated before saving. Invalid JSON is rejected.
       </div>
     </div>
   </template>
