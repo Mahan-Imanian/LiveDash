@@ -4,7 +4,7 @@ LiveDash v4 is a Manifest V3 Chrome extension that turns the Chrome new tab page
 
 ## Install in Chrome
 
-1. Unzip `updated-premium-project-v4.zip`.
+1. Unzip `LiveDash.zip`.
 2. Open `chrome://extensions`.
 3. Enable Developer Mode.
 4. Choose **Load unpacked**.
