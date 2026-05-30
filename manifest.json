@@ -2,9 +2,8 @@
   "manifest_version": 3,
   "name": "LiveDash",
   "short_name": "LiveDash",
-  "version": "5.0.0",
-  "description": "LiveDash \u2014 Personal Operations Command Center for Chrome. English-first, local-first, and extension-native.",
-  "minimum_chrome_version": "110",
+  "version": "6.0.0",
+  "description": "Personal Operations Command Center for Chrome.",
   "icons": {
     "16": "assets/icons/icon16.png",
     "32": "assets/icons/icon32.png",
@@ -13,20 +12,14 @@
   },
   "action": {
     "default_title": "LiveDash Quick Panel",
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "assets/icons/icon16.png",
-      "32": "assets/icons/icon32.png",
-      "48": "assets/icons/icon48.png",
-      "128": "assets/icons/icon128.png"
-    }
-  },
-  "chrome_url_overrides": {
-    "newtab": "newtab.html"
+    "default_popup": "popup.html"
   },
   "options_page": "options.html",
   "background": {
     "service_worker": "background.js"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
   },
   "permissions": [
     "storage",
