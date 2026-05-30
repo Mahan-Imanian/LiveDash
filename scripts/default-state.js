@@ -1,43 +1,48 @@
 (function(global){
-  const VERSION = 5;
-  const STORAGE_KEY = "livedash.v5.state";
-  const LEGACY_KEYS = ["livedash.v4.state", "livedashState", "LiveDashState", "livedash-v3-state", "livedash.v3.state"];
+  const VERSION = 6;
+  const STORAGE_KEY = "livedash.v6.state";
+  const LEGACY_KEYS = ["livedash.v5.state", "livedash.v4.state", "livedashState", "LiveDashState", "livedash-v3-state", "livedash.v3.state"];
 
   const savedViews = [
-    { id: "executive", name: "Executive Overview", description: "Command summary, metrics, priority risk, and schedule." },
-    { id: "focus", name: "Personal Focus", description: "Current time, focus timer, priority queue, notes, and activity." },
-    { id: "operations", name: "Operations", description: "Signals, agenda, weather readiness, links, and history." },
-    { id: "metrics", name: "Metrics", description: "KPI cards, trend panel, distribution, and source freshness." },
-    { id: "minimal", name: "Minimal", description: "Quiet operating surface with only essentials." }
+    { id: "executive", name: "Executive Overview", description: "High-signal overview with launcher, metrics, priority queue, schedule, and alerts." },
+    { id: "focus", name: "Personal Focus", description: "Calm work mode with timer, top tasks, notes, and time context." },
+    { id: "operations", name: "Operations", description: "Signals, schedule, weather readiness, timezones, links, and activity." },
+    { id: "metrics", name: "Metrics", description: "Trend analysis, KPI cards, status distribution, and source freshness." },
+    { id: "minimal", name: "Minimal", description: "Widgetify-style launcher with only clock, search, links, and focus." }
   ];
 
   const navItems = [
-    { id: "overview", label: "Overview" },
-    { id: "focus", label: "Focus" },
-    { id: "tasks", label: "Tasks" },
-    { id: "metrics", label: "Metrics" },
-    { id: "calendar", label: "Calendar" },
-    { id: "notes", label: "Notes" },
-    { id: "activity", label: "Activity" },
-    { id: "settings", label: "Settings" }
+    { id: "overview", label: "Overview", icon: "⌂" },
+    { id: "focus", label: "Focus", icon: "◎" },
+    { id: "tasks", label: "Tasks", icon: "✓" },
+    { id: "metrics", label: "Metrics", icon: "↗" },
+    { id: "calendar", label: "Calendar", icon: "□" },
+    { id: "notes", label: "Notes", icon: "✎" },
+    { id: "activity", label: "Activity", icon: "◌" },
+    { id: "settings", label: "Settings", icon: "⚙" }
   ];
 
   const moduleCatalog = [
-    { id: "summary", title: "Command Summary", category: "overview", span: 12, description: "Executive state, risk, and next operating move." },
-    { id: "clock", title: "Clock", category: "overview", span: 3, description: "Local time, date, and timezone-aware operating context." },
-    { id: "search", title: "Command Search", category: "tools", span: 5, description: "Quick web search and command entry point." },
-    { id: "weather", title: "Weather Readiness", category: "signals", span: 4, description: "Offline-safe weather context with explicit freshness." },
-    { id: "timezones", title: "Global Timezones", category: "operations", span: 4, description: "US and European business-hour awareness." },
-    { id: "priorities", title: "Today’s Priorities", category: "focus", span: 8, description: "Priority task table with due dates and status." },
-    { id: "focusTimer", title: "Focus Command", category: "focus", span: 4, description: "Local focus session and completion tracking." },
-    { id: "metrics", title: "Operational Metrics", category: "metrics", span: 12, description: "Metric cards with trends, targets, source, and freshness." },
-    { id: "trend", title: "Trend Analysis", category: "metrics", span: 8, description: "Primary trend panel for the selected time range." },
-    { id: "distribution", title: "Status Distribution", category: "metrics", span: 4, description: "Status distribution for tasks and alerts." },
-    { id: "schedule", title: "Schedule / Commitments", category: "calendar", span: 6, description: "Agenda and compact local calendar." },
-    { id: "signals", title: "Signals / Alerts", category: "operations", span: 6, description: "Local notification center and stale-data warnings." },
-    { id: "notes", title: "Notes / Follow-ups", category: "notes", span: 6, description: "Searchable notes with tags and timestamps." },
-    { id: "activity", title: "Activity / History", category: "activity", span: 6, description: "Persistent local activity and audit history." },
-    { id: "links", title: "Launchpad", category: "tools", span: 4, description: "Global quick links for daily work." }
+    { id: "launchpad", title: "Launcher Hub", category: "core", span: 8, description: "Search, command entry, and bookmark launch grid inspired by the reference extension." },
+    { id: "day", title: "Day Capsule", category: "core", span: 4, description: "Clock, local date, weather readiness, and timezone context." },
+    { id: "focusTimer", title: "Focus Command", category: "focus", span: 4, description: "Local focus timer with quick start and session tracking." },
+    { id: "priorities", title: "Priority Board", category: "focus", span: 8, description: "Production-grade task queue with status, due dates, priority, and filters." },
+    { id: "notes", title: "WigiPad Notes", category: "knowledge", span: 4, description: "Quick notes, tags, timestamps, and search." },
+    { id: "metrics", title: "Operating Metrics", category: "analytics", span: 8, description: "KPI cards with deltas, targets, sparklines, source, and freshness." },
+    { id: "trend", title: "Trend Console", category: "analytics", span: 8, description: "Large trend chart with target and freshness metadata." },
+    { id: "distribution", title: "Status Map", category: "analytics", span: 4, description: "Task and alert distribution chart." },
+    { id: "schedule", title: "Agenda", category: "calendar", span: 4, description: "Today’s commitments and compact calendar." },
+    { id: "signals", title: "Signals", category: "operations", span: 4, description: "Local notification center with reminders and warnings." },
+    { id: "activity", title: "Activity Trail", category: "history", span: 4, description: "Local audit history for dashboard actions." },
+    { id: "timezones", title: "World Clocks", category: "operations", span: 4, description: "US and Europe timezones for globally usable planning." },
+    { id: "weather", title: "Weather Readiness", category: "signals", span: 4, description: "Offline-safe weather context with explicit local fallback." }
+  ];
+
+  const backgrounds = [
+    { id: "aurora", name: "Aurora Command", from: "#07111f", mid: "#14273f", to: "#05070c" },
+    { id: "graphite", name: "Graphite", from: "#070707", mid: "#15171c", to: "#030304" },
+    { id: "midnight", name: "Midnight Blue", from: "#07142b", mid: "#0f2444", to: "#050811" },
+    { id: "paper", name: "Light Paper", from: "#f6f8fc", mid: "#e9eef7", to: "#ffffff" }
   ];
 
   function iso(offsetDays){
@@ -59,6 +64,7 @@
       settings: {
         theme: "dark",
         density: "comfortable",
+        background: "aurora",
         defaultView: "executive",
         selectedView: "executive",
         activeSection: "overview",
@@ -68,6 +74,8 @@
         editMode: false,
         reducedMotion: false,
         showSignals: true,
+        dockVisible: true,
+        searchEngine: "google",
         weatherLocation: "New York",
         hiddenModules: []
       },
@@ -85,20 +93,20 @@
         completedToday: 1
       },
       tasks: [
-        { id: uid("task"), title: "Review weekly operating plan", priority: "critical", status: "open", due: iso(0), source: "Manual", owner: "You" },
-        { id: uid("task"), title: "Prepare product review follow-ups", priority: "high", status: "open", due: iso(1), source: "Notes", owner: "You" },
-        { id: uid("task"), title: "Validate dashboard metrics targets", priority: "medium", status: "blocked", due: iso(2), source: "Metrics", owner: "You" },
-        { id: uid("task"), title: "Archive completed release checklist", priority: "low", status: "done", due: iso(-1), source: "Activity", owner: "You" }
+        { id: uid("task"), title: "Review operating plan", priority: "critical", status: "open", due: iso(0), source: "Manual", owner: "You" },
+        { id: uid("task"), title: "Prepare release follow-ups", priority: "high", status: "open", due: iso(1), source: "Notes", owner: "You" },
+        { id: uid("task"), title: "Validate metrics targets", priority: "medium", status: "blocked", due: iso(2), source: "Metrics", owner: "You" },
+        { id: uid("task"), title: "Archive shipped checklist", priority: "low", status: "done", due: iso(-1), source: "Activity", owner: "You" }
       ],
       notes: [
-        { id: uid("note"), title: "Release quality bar", body: "Validate install flow, storage persistence, keyboard access, responsive layout, and import/export before shipping.", tags: ["release", "qa"], createdAt: iso(-1), updatedAt: iso(-1) },
-        { id: uid("note"), title: "Metrics review", body: "Prioritize freshness, target variance, and drill-down clarity before adding more modules.", tags: ["metrics"], createdAt: iso(-2), updatedAt: iso(-2) }
+        { id: uid("note"), title: "Release quality bar", body: "Validate install flow, persistence, keyboard access, responsive layout, reset, and import/export before shipping.", tags: ["release", "qa"], createdAt: iso(-1), updatedAt: iso(-1) },
+        { id: uid("note"), title: "Dashboard direction", body: "Keep the launcher calm, make widgets useful, and hide editing controls until edit mode.", tags: ["product", "ux"], createdAt: iso(-2), updatedAt: iso(-2) }
       ],
       metrics: [
-        { id: "readiness", label: "Readiness", value: 92, suffix: "%", delta: 4.8, target: 95, period: "7d", source: "Local dashboard", freshnessMin: 3, series: [72, 76, 75, 81, 86, 89, 92] },
-        { id: "focus", label: "Focus hours", value: 14.5, suffix: "h", delta: 2.1, target: 18, period: "7d", source: "Focus timer", freshnessMin: 8, series: [6, 7.5, 8, 10, 11.5, 13, 14.5] },
-        { id: "completion", label: "Task completion", value: 78, suffix: "%", delta: -1.2, target: 85, period: "7d", source: "Task table", freshnessMin: 1, series: [67, 70, 73, 75, 81, 80, 78] },
-        { id: "signals", label: "Healthy signals", value: 11, suffix: "", delta: 3, target: 12, period: "today", source: "Extension runtime", freshnessMin: 5, series: [7, 8, 8, 9, 10, 10, 11] }
+        { id: "readiness", label: "Readiness", value: 94, suffix: "%", delta: 5.2, target: 95, period: "7d", source: "Local dashboard", freshnessMin: 3, series: [72, 76, 80, 84, 88, 91, 94] },
+        { id: "focus", label: "Focus hours", value: 15.5, suffix: "h", delta: 2.4, target: 18, period: "7d", source: "Focus timer", freshnessMin: 8, series: [6, 7.5, 9, 10.5, 12, 14, 15.5] },
+        { id: "completion", label: "Completion", value: 81, suffix: "%", delta: 1.8, target: 85, period: "7d", source: "Task board", freshnessMin: 1, series: [65, 69, 72, 75, 78, 80, 81] },
+        { id: "signals", label: "Healthy signals", value: 12, suffix: "", delta: 3, target: 12, period: "today", source: "Extension runtime", freshnessMin: 5, series: [7, 8, 8, 9, 10, 11, 12] }
       ],
       commitments: [
         { id: uid("commit"), time: "09:00", title: "Planning review", type: "Calendar", status: "confirmed" },
@@ -106,10 +114,14 @@
         { id: uid("commit"), time: "15:00", title: "Metrics checkpoint", type: "Review", status: "tentative" }
       ],
       links: [
-        { id: uid("link"), title: "Calendar", url: "https://calendar.google.com", category: "Work" },
-        { id: uid("link"), title: "Gmail", url: "https://mail.google.com", category: "Work" },
-        { id: uid("link"), title: "Docs", url: "https://docs.google.com", category: "Work" },
-        { id: uid("link"), title: "GitHub", url: "https://github.com", category: "Engineering" }
+        { id: uid("link"), title: "Calendar", url: "https://calendar.google.com", category: "Work", color: "blue" },
+        { id: uid("link"), title: "Gmail", url: "https://mail.google.com", category: "Work", color: "red" },
+        { id: uid("link"), title: "Docs", url: "https://docs.google.com", category: "Work", color: "green" },
+        { id: uid("link"), title: "GitHub", url: "https://github.com", category: "Engineering", color: "slate" },
+        { id: uid("link"), title: "Figma", url: "https://figma.com", category: "Design", color: "purple" },
+        { id: uid("link"), title: "Linear", url: "https://linear.app", category: "Planning", color: "indigo" },
+        { id: uid("link"), title: "Notion", url: "https://notion.so", category: "Knowledge", color: "gray" },
+        { id: uid("link"), title: "Vercel", url: "https://vercel.com", category: "Deploy", color: "slate" }
       ],
       weather: {
         location: "New York",
@@ -129,11 +141,11 @@
         { id: "la", label: "Los Angeles", timezone: "America/Los_Angeles" }
       ],
       notifications: [
-        { id: uid("notice"), title: "LiveDash is extension-native", body: "New tab, popup, options, and background refresh are active with local storage.", severity: "success", read: false, createdAt: now },
-        { id: uid("notice"), title: "Review blocked task", body: "One task is marked blocked and needs a decision.", severity: "warning", read: false, createdAt: iso(-1) }
+        { id: uid("notice"), title: "LiveDash v6 is ready", body: "New tab, popup, options, dock, storage, and command palette are active.", severity: "success", read: false, createdAt: now },
+        { id: uid("notice"), title: "Blocked task needs review", body: "One task is blocked and should be resolved before adding scope.", severity: "warning", read: false, createdAt: iso(-1) }
       ],
       activity: [
-        { id: uid("activity"), type: "system", title: "LiveDash v5 initialized", detail: "Chrome extension state created with English global defaults and command-center layout.", createdAt: now }
+        { id: uid("activity"), type: "system", title: "LiveDash v6 initialized", detail: "Widgetify-inspired English command center created with global defaults.", createdAt: now }
       ],
       lastBackup: null
     };
@@ -164,5 +176,5 @@
     return merged;
   }
 
-  global.LiveDashDefaults = { VERSION, STORAGE_KEY, LEGACY_KEYS, savedViews, navItems, moduleCatalog, createDefaultState, mergeState, clone, uid };
+  global.LiveDashDefaults = { VERSION, STORAGE_KEY, LEGACY_KEYS, savedViews, navItems, moduleCatalog, backgrounds, createDefaultState, mergeState, clone, uid };
 })(globalThis);

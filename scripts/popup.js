@@ -4,12 +4,13 @@
   let state;
   const $ = (id) => document.getElementById(id);
   function esc(value){ return String(value == null ? "" : value).replace(/[&<>'"]/g, (char) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" }[char])); }
-  function toast(message){ const node = document.createElement("div"); node.className = "toast success"; node.textContent = message; $("toastRegion").append(node); setTimeout(() => node.remove(), 2200); }
+  function toast(message, tone){ const node = document.createElement("div"); node.className = `toast ${tone || "success"}`; node.textContent = message; $("toastRegion").append(node); setTimeout(() => node.remove(), 2200); }
   function applyTheme(){
     const pref = state.settings.theme;
     const systemLight = matchMedia("(prefers-color-scheme: light)").matches;
     document.documentElement.dataset.theme = pref === "system" ? (systemLight ? "light" : "dark") : pref;
     document.documentElement.dataset.density = state.settings.density;
+    document.documentElement.dataset.background = state.settings.background || "aurora";
   }
   function viewName(){ return (D.savedViews.find((view) => view.id === state.settings.selectedView) || D.savedViews[0]).name; }
   function focusText(){
@@ -61,7 +62,7 @@
   }
   async function saveNote(){
     const body = $("popupNote").value.trim();
-    if(!body){ toast("Write a note first"); return; }
+    if(!body){ toast("Write a note first", "warning"); return; }
     await mutate((draft) => {
       draft.notes.unshift({ id: D.uid("note"), title: "Quick note", body, tags: ["popup"], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
       S.appendActivity(draft, "note", "Quick note created", body.slice(0, 80));
@@ -69,23 +70,24 @@
     }, "Note saved");
     $("popupNote").value = "";
   }
+  function runSearch(value){
+    const query = value.trim();
+    if(!query) return;
+    if(query.startsWith("/task")){ addTask(); return; }
+    if(query.startsWith("/note")){ $("popupNote").focus(); return; }
+    const url = /^https?:\/\//i.test(query) ? query : `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    if(typeof chrome !== "undefined" && chrome.tabs) chrome.tabs.create({ url });
+    else window.open(url, "_blank", "noopener");
+  }
   function openDashboard(){
     const hasChrome = typeof chrome !== "undefined" && chrome.runtime;
     const url = hasChrome ? chrome.runtime.getURL("newtab.html") : "newtab.html";
-    if(hasChrome && chrome.tabs && chrome.tabs.create) chrome.tabs.create({ url });
+    if(hasChrome && chrome.tabs) chrome.tabs.create({ url });
     else window.open(url, "_blank", "noopener");
   }
-  function openOptions(){
+  function openSettings(){
     if(typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.openOptionsPage) chrome.runtime.openOptionsPage();
     else window.open("options.html", "_blank", "noopener");
-  }
-  function runPopupSearch(){
-    const query = $("popupSearch").value.trim();
-    if(!query){ openDashboard(); return; }
-    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-    if(typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.create) chrome.tabs.create({ url });
-    else window.open(url, "_blank", "noopener");
-    S.updateState((draft) => { S.appendActivity(draft, "search", "Popup search launched", query); });
   }
   async function init(){
     state = await S.getState();
@@ -93,9 +95,9 @@
     $("popupToggleFocus").addEventListener("click", toggleFocus);
     $("popupAddTask").addEventListener("click", addTask);
     $("popupSaveNote").addEventListener("click", saveNote);
-    $("popupOpenDashboard").addEventListener("click", openDashboard);
-    $("popupOpenOptions").addEventListener("click", openOptions);
-    $("popupSearch").addEventListener("keydown", (event) => { if(event.key === "Enter") runPopupSearch(); });
+    $("openDashboard").addEventListener("click", openDashboard);
+    $("popupSettings").addEventListener("click", openSettings);
+    $("popupSearch").addEventListener("keydown", (event) => { if(event.key === "Enter") runSearch($("popupSearch").value); });
     setInterval(render, 1000);
   }
   document.addEventListener("DOMContentLoaded", init);

@@ -38,7 +38,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   const now = new Date();
   const blocked = state.tasks.filter((task) => task.status === "blocked").length;
   state.metrics = state.metrics.map((metric) => Object.assign({}, metric, { freshnessMin: Math.min(60, (metric.freshnessMin || 0) + 15) }));
-  state.activity.unshift({ id: D.uid("activity"), type: "system", title: "Scheduled refresh completed", detail: "Freshness metadata updated by background service worker.", createdAt: now.toISOString() });
+  state.activity.unshift({ id: D.uid("activity"), type: "system", title: "Scheduled refresh completed", detail: "Freshness metadata updated by the background service worker.", createdAt: now.toISOString() });
   if(blocked > 0 && state.settings.showSignals){
     state.notifications.unshift({ id: D.uid("notice"), title: "Blocked work needs review", body: `${blocked} task${blocked === 1 ? " is" : "s are"} blocked.`, severity: "warning", read: false, createdAt: now.toISOString() });
   }
