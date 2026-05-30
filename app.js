@@ -304,11 +304,16 @@
 
   function applyLayout() {
     const { cols, density, card } = app.state.layout;
-    document.documentElement.style.setProperty("--cols", String(cols));
-    document.documentElement.style.setProperty("--grid-max-cols", String(cols));
-    document.documentElement.style.setProperty("--density", density === "compact" ? "1.35" : "1");
-    document.documentElement.style.setProperty("--card", card === "solid" ? "solid" : "glass");
+    const safeCols = Math.max(2, Math.min(6, Number(cols) || 4));
+    const safeDensity = density === "compact" ? "compact" : "comfortable";
+    const safeCard = card === "solid" ? "solid" : "glass";
+    document.documentElement.style.setProperty("--cols", String(safeCols));
+    document.documentElement.style.setProperty("--grid-max-cols", String(safeCols));
+    document.documentElement.style.setProperty("--density", safeDensity === "compact" ? "1.35" : "1");
+    document.documentElement.style.setProperty("--card", safeCard);
     document.body.dataset.locked = app.state.layout.locked ? "true" : "false";
+    document.body.dataset.card = safeCard;
+    document.body.dataset.density = safeDensity;
   }
 
   function loadCatalogState() {
@@ -1129,7 +1134,7 @@
     return el;
   }
 
-  async function widgetWeather(w) {
+  function widgetWeather(w) {
     const el = document.createElement("div");
     el.className = "stack";
     el.innerHTML = `
@@ -2444,7 +2449,7 @@
   }
 
   function initPWA() {
-    if (!("serviceWorker" in navigator)) return;
+    if (!navigator.serviceWorker || typeof navigator.serviceWorker.register !== "function") return;
     const url = new URL(window.location.href);
     if (url.searchParams.get("sw") === "unregister") {
       navigator.serviceWorker.getRegistrations().then((regs) => {
