@@ -6,36 +6,34 @@
   <title>LiveDash Quick Panel</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body data-surface="popup">
-  <main class="popup-shell" aria-label="LiveDash quick panel">
-    <header class="popup-header">
-      <span class="brand-mark small" aria-hidden="true"></span>
-      <div><h1>LiveDash</h1><p>Quick command panel</p></div>
-    </header>
-    <section class="popup-status" aria-label="Current status">
-      <div><span>Time</span><strong id="popupClock">--:--</strong></div>
-      <div><span>Focus</span><strong id="popupFocus">Off</strong></div>
-      <div><span>View</span><strong id="popupView">Overview</strong></div>
+<body data-page="popup">
+  <main class="popup-shell">
+    <section class="popup-card popup-top">
+      <div><span class="eyebrow">LiveDash</span><div class="popup-time" id="popupTime">--:--</div><p id="popupDate">Loading</p></div>
+      <button id="openDashboard" type="button">Open</button>
     </section>
-    <section class="popup-section">
-      <label class="field" for="popupSearch"><span>Search or command</span><input id="popupSearch" type="search" placeholder="Search Google or type /task"></label>
+    <section class="popup-card">
+      <label class="sr-only" for="popupSearch">Search</label>
+      <input id="popupSearch" class="popup-search" type="search" placeholder="Search or paste URL">
     </section>
-    <section class="popup-section">
-      <div class="popup-section-title">Top tasks</div>
-      <div class="popup-list" id="popupTasks"></div>
+    <section class="popup-card">
+      <div class="section-title-row"><div><span class="eyebrow">Focus</span><h2>Timer</h2></div><strong id="popupFocus">25:00</strong></div>
+      <div class="popup-actions"><button id="popupStartFocus" type="button">Start focus</button><button id="popupStopFocus" type="button">Stop</button></div>
     </section>
-    <section class="popup-section">
-      <label class="field" for="popupNote"><span>Quick note</span><textarea id="popupNote" rows="3" placeholder="Capture a thought or follow-up"></textarea></label>
+    <section class="popup-card">
+      <div class="section-title-row"><div><span class="eyebrow">Tasks</span><h2>Top priorities</h2></div><button id="popupAddTask" type="button">Add</button></div>
+      <div id="popupTasks" class="list-stack"></div>
     </section>
-    <section class="popup-actions" aria-label="Quick actions">
-      <button class="button primary" id="openDashboard" type="button">Open dashboard</button>
-      <button class="button secondary" id="popupToggleFocus" type="button">Start focus</button>
-      <button class="button secondary" id="popupAddTask" type="button">Add task</button>
-      <button class="button secondary" id="popupSaveNote" type="button">Save note</button>
-      <button class="button secondary" id="popupSettings" type="button">Settings</button>
+    <section class="popup-card">
+      <label class="sr-only" for="popupNote">Quick note</label>
+      <textarea id="popupNote" class="popup-note" placeholder="Capture a quick note"></textarea>
+      <button id="popupSaveNote" class="primary-wide" type="button">Save note</button>
+    </section>
+    <section class="popup-card popup-actions">
+      <button id="popupCommand" type="button">Command</button>
+      <button id="popupSettings" type="button">Settings</button>
     </section>
   </main>
-  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
   <script src="scripts/default-state.js"></script>
   <script src="scripts/storage.js"></script>
   <script src="scripts/popup.js"></script>

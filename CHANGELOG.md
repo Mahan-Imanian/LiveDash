@@ -1,13 +1,22 @@
 # Changelog
 
-## 6.0.0
+## 7.0.0
 
-- Rebuilt the new tab around a Widgetify-inspired layout with a central search hub, bookmark launcher grid, bottom dock, wallpaper-style backgrounds, compact widgets, and calmer customization surfaces.
-- Preserved Manifest V3 architecture with new tab override, popup, options page, background service worker, local icons, and strict CSP.
-- Added schema v6 state with background preferences, dock visibility, richer quick links, saved views, tasks, notes, metrics, schedule, signals, activity, and global US/EU timezones.
-- Added quick link create, edit, delete, and command palette actions.
-- Improved popup with search commands, top tasks, focus control, quick note capture, dashboard launch, and settings shortcut.
-- Improved options with background selection, dashboard defaults, data management, reset confirmation, and keyboard reference.
-- Reworked the UI system with restrained dark surfaces, wallpaper gradients, bottom dock navigation, stronger launcher hierarchy, responsive grids, visible focus states, accessible controls, and reduced decorative noise.
-- Removed Persian, RTL, Iran-specific, remote CDN, and region-locked assumptions from runtime surfaces.
-- Updated package metadata and validation for v6.
+- Rebuilt LiveDash around a closer Widgetify-style Chrome new tab experience.
+- Added immersive wallpaper-backed dashboard surface.
+- Added central search and command launcher.
+- Added bookmark grid with add, edit, delete, and Chrome bookmark sync.
+- Added compact side widgets for operator status, focus timer, notifications, time, weather, agenda, and world clocks.
+- Added bottom dock navigation.
+- Added command palette with Cmd+K and Ctrl+K.
+- Added local task table with priorities, due dates, status updates, filtering, quick add, edit, and delete.
+- Added local notes with quick add, tags, timestamps, edit, delete, and search filtering.
+- Added metrics with sparklines, target, source, freshness, large trend chart, and status distribution.
+- Added local notification center and activity history.
+- Added popup quick panel.
+- Added options page.
+- Added Manifest V3 background service worker.
+- Added schema v7 storage migration and safe import/export/reset/restore flows.
+- Added English-first global defaults for US and Europe.
+- Removed Persian, RTL, Iran-specific, remote CDN, and regional runtime assumptions.
+- Kept the extension loadable without a build chain.

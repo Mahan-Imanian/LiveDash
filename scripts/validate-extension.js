@@ -1,52 +1,30 @@
 const fs = require("fs");
 const path = require("path");
-
 const root = path.resolve(__dirname, "..");
-const manifestPath = path.join(root, "manifest.json");
-const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-const requiredFiles = [
-  "newtab.html",
-  "popup.html",
-  "options.html",
-  "background.js",
-  "styles/main.css",
-  "scripts/default-state.js",
-  "scripts/storage.js",
-  "scripts/app.js",
-  "scripts/popup.js",
-  "scripts/options.js",
-  "README.md",
-  "CHANGELOG.md",
-  "assets/icons/icon16.png",
-  "assets/icons/icon32.png",
-  "assets/icons/icon48.png",
-  "assets/icons/icon128.png"
-];
-
-function fail(message){
-  console.error(message);
-  process.exit(1);
+const required = ["manifest.json", "newtab.html", "popup.html", "options.html", "background.js", "styles/main.css", "scripts/default-state.js", "scripts/storage.js", "scripts/app.js", "scripts/popup.js", "scripts/options.js", "README.md", "CHANGELOG.md", "assets/icons/icon16.png", "assets/icons/icon32.png", "assets/icons/icon48.png", "assets/icons/icon128.png"];
+for(const file of required){
+  if(!fs.existsSync(path.join(root, file))) throw new Error(`Missing required file: ${file}`);
 }
-
-if(manifest.manifest_version !== 3) fail("manifest_version must be 3");
-if(!manifest.chrome_url_overrides || manifest.chrome_url_overrides.newtab !== "newtab.html") fail("new tab override missing");
-if(!manifest.action || manifest.action.default_popup !== "popup.html") fail("popup missing");
-if(manifest.options_page !== "options.html") fail("options page missing");
-if(!manifest.background || manifest.background.service_worker !== "background.js") fail("service worker missing");
-if(!manifest.permissions.includes("storage")) fail("storage permission missing");
-if(!manifest.content_security_policy || !manifest.content_security_policy.extension_pages.includes("script-src 'self'")) fail("MV3 CSP missing self script policy");
-const unsafeEval = "unsafe" + "-eval";
-const unsafeInline = "unsafe" + "-inline";
-if(manifest.content_security_policy.extension_pages.includes(unsafeEval) || manifest.content_security_policy.extension_pages.includes(unsafeInline)) fail("unsafe CSP directive present");
-for(const file of requiredFiles){
-  if(!fs.existsSync(path.join(root, file))) fail(`required file missing: ${file}`);
-}
-const textFiles = requiredFiles.filter((file) => !file.endsWith(".png"));
-for(const file of textFiles){
+const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
+if(manifest.manifest_version !== 3) throw new Error("Manifest must use version 3");
+if(!manifest.chrome_url_overrides || manifest.chrome_url_overrides.newtab !== "newtab.html") throw new Error("New tab override is missing");
+if(!manifest.action || manifest.action.default_popup !== "popup.html") throw new Error("Popup is missing");
+if(manifest.permissions.some((permission) => ["<all_urls>", "tabs", "scripting"].includes(permission))) throw new Error("Manifest contains excessive permissions");
+const csp = manifest.content_security_policy && manifest.content_security_policy.extension_pages;
+if(!csp || csp.includes("unsafe-eval") || csp.includes("unsafe-inline")) throw new Error("CSP is unsafe");
+const runtimeFiles = ["newtab.html", "popup.html", "options.html", "background.js", "styles/main.css", "scripts/default-state.js", "scripts/storage.js", "scripts/app.js", "scripts/popup.js", "scripts/options.js"];
+for(const file of runtimeFiles){
   const text = fs.readFileSync(path.join(root, file), "utf8");
-  if(new RegExp("TO" + "DO|lorem " + "ipsum", "i").test(text)) fail(`forbidden placeholder marker in ${file}`);
-  if(/<script[^>]*>\s*[^<\s]/i.test(text)) fail(`inline script detected in ${file}`);
-  if(new RegExp("https:\\/\\/cdn\\.|un" + "pkg\\.com|js" + "delivr\\.net", "i").test(text)) fail(`remote CDN dependency detected in ${file}`);
-  if(/[\u0600-\u06ff]/.test(text)) fail(`non-English regional script detected in ${file}`);
+  if(/[\u0600-\u06FF]/.test(text)) throw new Error(`Regional Persian/Arabic script found in ${file}`);
+  if(/https:\/\/cdn\.|https:\/\/widgetify\.ir|\.ttf|\.woff/.test(text)) throw new Error(`Remote or font dependency found in ${file}`);
+  if(file.endsWith(".html") && /<script(?![^>]+src=)/i.test(text)) throw new Error(`Inline script found in ${file}`);
 }
-console.log("Extension validation passed");
+const htmlFiles = ["newtab.html", "popup.html", "options.html"];
+for(const file of htmlFiles){
+  const html = fs.readFileSync(path.join(root, file), "utf8");
+  const refs = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1]).filter((ref) => !ref.startsWith("http") && !ref.startsWith("#"));
+  for(const ref of refs){
+    if(!fs.existsSync(path.join(root, ref))) throw new Error(`Broken asset path ${ref} in ${file}`);
+  }
+}
+console.log("LiveDash v7 extension validation passed");

@@ -1,58 +1,59 @@
 (function(global){
-  const VERSION = 6;
-  const STORAGE_KEY = "livedash.v6.state";
-  const LEGACY_KEYS = ["livedash.v5.state", "livedash.v4.state", "livedashState", "LiveDashState", "livedash-v3-state", "livedash.v3.state"];
+  const VERSION = 7;
+  const STORAGE_KEY = "livedash.v7.state";
+  const LEGACY_KEYS = ["livedash.v6.state", "livedash.v5.state", "livedash.v4.state", "livedashState", "LiveDashState", "livedash-v3-state", "livedash.v3.state"];
 
   const savedViews = [
-    { id: "executive", name: "Executive Overview", description: "High-signal overview with launcher, metrics, priority queue, schedule, and alerts." },
-    { id: "focus", name: "Personal Focus", description: "Calm work mode with timer, top tasks, notes, and time context." },
-    { id: "operations", name: "Operations", description: "Signals, schedule, weather readiness, timezones, links, and activity." },
-    { id: "metrics", name: "Metrics", description: "Trend analysis, KPI cards, status distribution, and source freshness." },
-    { id: "minimal", name: "Minimal", description: "Widgetify-style launcher with only clock, search, links, and focus." }
+    { id: "home", name: "Home Command", description: "Widgetify-style launcher with utilities, notes, focus, tasks, and local signals.", sections: ["launcher", "tools", "tasks", "notes", "signals"] },
+    { id: "focus", name: "Deep Focus", description: "Search, timer, top priorities, notes, and calendar with fewer distractions.", sections: ["launcher", "focus", "tasks", "notes"] },
+    { id: "operations", name: "Operations", description: "Signals, agenda, world clocks, weather, links, and activity history.", sections: ["launcher", "tools", "signals", "activity", "agenda"] },
+    { id: "metrics", name: "Metrics", description: "Operational metrics, trend console, status map, and task records.", sections: ["launcher", "metrics", "activity", "tasks"] },
+    { id: "minimal", name: "Minimal", description: "Search, bookmarks, clock, and a compact dock only.", sections: ["launcher", "tools"] }
   ];
 
   const navItems = [
-    { id: "overview", label: "Overview", icon: "⌂" },
-    { id: "focus", label: "Focus", icon: "◎" },
-    { id: "tasks", label: "Tasks", icon: "✓" },
-    { id: "metrics", label: "Metrics", icon: "↗" },
-    { id: "calendar", label: "Calendar", icon: "□" },
-    { id: "notes", label: "Notes", icon: "✎" },
-    { id: "activity", label: "Activity", icon: "◌" },
-    { id: "settings", label: "Settings", icon: "⚙" }
+    { id: "home", label: "Home", glyph: "H" },
+    { id: "focus", label: "Focus", glyph: "F" },
+    { id: "tasks", label: "Tasks", glyph: "T" },
+    { id: "notes", label: "Notes", glyph: "N" },
+    { id: "metrics", label: "Metrics", glyph: "M" },
+    { id: "activity", label: "Activity", glyph: "A" },
+    { id: "settings", label: "Settings", glyph: "S" }
   ];
 
   const moduleCatalog = [
-    { id: "launchpad", title: "Launcher Hub", category: "core", span: 8, description: "Search, command entry, and bookmark launch grid inspired by the reference extension." },
-    { id: "day", title: "Day Capsule", category: "core", span: 4, description: "Clock, local date, weather readiness, and timezone context." },
-    { id: "focusTimer", title: "Focus Command", category: "focus", span: 4, description: "Local focus timer with quick start and session tracking." },
-    { id: "priorities", title: "Priority Board", category: "focus", span: 8, description: "Production-grade task queue with status, due dates, priority, and filters." },
-    { id: "notes", title: "WigiPad Notes", category: "knowledge", span: 4, description: "Quick notes, tags, timestamps, and search." },
-    { id: "metrics", title: "Operating Metrics", category: "analytics", span: 8, description: "KPI cards with deltas, targets, sparklines, source, and freshness." },
-    { id: "trend", title: "Trend Console", category: "analytics", span: 8, description: "Large trend chart with target and freshness metadata." },
-    { id: "distribution", title: "Status Map", category: "analytics", span: 4, description: "Task and alert distribution chart." },
-    { id: "schedule", title: "Agenda", category: "calendar", span: 4, description: "Today’s commitments and compact calendar." },
-    { id: "signals", title: "Signals", category: "operations", span: 4, description: "Local notification center with reminders and warnings." },
-    { id: "activity", title: "Activity Trail", category: "history", span: 4, description: "Local audit history for dashboard actions." },
-    { id: "timezones", title: "World Clocks", category: "operations", span: 4, description: "US and Europe timezones for globally usable planning." },
-    { id: "weather", title: "Weather Readiness", category: "signals", span: 4, description: "Offline-safe weather context with explicit local fallback." }
+    { id: "launcher", title: "Search and Launch", type: "core", span: "wide", enabled: true },
+    { id: "commandCard", title: "Command Card", type: "core", span: "side", enabled: true },
+    { id: "timeWeather", title: "Time and Weather", type: "utility", span: "side", enabled: true },
+    { id: "focus", title: "Focus Timer", type: "focus", span: "small", enabled: true },
+    { id: "tasks", title: "Priority Tasks", type: "work", span: "wide", enabled: true },
+    { id: "notes", title: "Quick Notes", type: "work", span: "medium", enabled: true },
+    { id: "metrics", title: "Metrics", type: "analytics", span: "wide", enabled: true },
+    { id: "trend", title: "Trend Console", type: "analytics", span: "wide", enabled: true },
+    { id: "status", title: "Status Map", type: "analytics", span: "small", enabled: true },
+    { id: "agenda", title: "Agenda", type: "calendar", span: "medium", enabled: true },
+    { id: "signals", title: "Signals", type: "system", span: "small", enabled: true },
+    { id: "activity", title: "Activity", type: "system", span: "medium", enabled: true },
+    { id: "world", title: "World Clocks", type: "utility", span: "small", enabled: true }
   ];
 
-  const backgrounds = [
-    { id: "aurora", name: "Aurora Command", from: "#07111f", mid: "#14273f", to: "#05070c" },
-    { id: "graphite", name: "Graphite", from: "#070707", mid: "#15171c", to: "#030304" },
-    { id: "midnight", name: "Midnight Blue", from: "#07142b", mid: "#0f2444", to: "#050811" },
-    { id: "paper", name: "Light Paper", from: "#f6f8fc", mid: "#e9eef7", to: "#ffffff" }
+  const wallpapers = [
+    { id: "mist", name: "Morning Mist", mode: "light", a: "#dce8f8", b: "#a9bdd9", c: "#f5f7fb", accent: "#3b82f6" },
+    { id: "aurora", name: "Aurora Glass", mode: "dark", a: "#0d1024", b: "#16365c", c: "#050810", accent: "#79b8ff" },
+    { id: "carbon", name: "Carbon Studio", mode: "dark", a: "#060608", b: "#17191f", c: "#101215", accent: "#a1a1aa" },
+    { id: "violet", name: "Violet Beam", mode: "dark", a: "#14081f", b: "#422267", c: "#08050f", accent: "#c4b5fd" },
+    { id: "sage", name: "Sage Paper", mode: "light", a: "#ecf4ea", b: "#cdddc9", c: "#fffdf8", accent: "#23745a" }
   ];
-
-  function iso(offsetDays){
-    const date = new Date();
-    date.setDate(date.getDate() + offsetDays);
-    return date.toISOString();
-  }
 
   function uid(prefix){
-    return `${prefix}_${Math.random().toString(36).slice(2, 9)}_${Date.now().toString(36)}`;
+    return `${prefix}_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
+  }
+
+  function iso(offsetDays, hour){
+    const date = new Date();
+    date.setDate(date.getDate() + offsetDays);
+    if(typeof hour === "number") date.setHours(hour, 0, 0, 0);
+    return date.toISOString();
   }
 
   function createDefaultState(){
@@ -62,66 +63,67 @@
       createdAt: now,
       updatedAt: now,
       settings: {
-        theme: "dark",
-        density: "comfortable",
-        background: "aurora",
-        defaultView: "executive",
-        selectedView: "executive",
-        activeSection: "overview",
+        theme: "auto",
+        wallpaper: "aurora",
+        glass: "medium",
+        blur: true,
+        density: "balanced",
+        selectedView: "home",
+        defaultView: "home",
+        activeNav: "home",
+        editMode: false,
+        dockVisible: true,
+        greetingName: "Operator",
+        searchEngine: "google",
         timeRange: "7d",
         timeFormat: "auto",
-        filterOpen: false,
-        editMode: false,
-        reducedMotion: false,
-        showSignals: true,
-        dockVisible: true,
-        searchEngine: "google",
+        quickLinksSource: "local",
         weatherLocation: "New York",
-        hiddenModules: []
-      },
-      filters: {
-        priority: "all",
-        status: "all",
-        signal: "all",
-        query: ""
+        reducedMotion: false,
+        showBrowserBookmarks: true,
+        compactWidgets: false
       },
       focus: {
         active: false,
         startedAt: null,
         endsAt: null,
         durationMin: 25,
-        completedToday: 1
+        completedToday: 2,
+        dailyGoal: 4
       },
+      filters: {
+        taskStatus: "all",
+        priority: "all",
+        query: ""
+      },
+      links: [
+        { id: uid("link"), title: "Gmail", url: "https://mail.google.com", group: "Work", color: "#ef4444" },
+        { id: uid("link"), title: "Calendar", url: "https://calendar.google.com", group: "Work", color: "#2563eb" },
+        { id: uid("link"), title: "Drive", url: "https://drive.google.com", group: "Files", color: "#22c55e" },
+        { id: uid("link"), title: "Notion", url: "https://notion.so", group: "Knowledge", color: "#f8fafc" },
+        { id: uid("link"), title: "Linear", url: "https://linear.app", group: "Planning", color: "#8b5cf6" },
+        { id: uid("link"), title: "Figma", url: "https://figma.com", group: "Design", color: "#f97316" },
+        { id: uid("link"), title: "GitHub", url: "https://github.com", group: "Code", color: "#94a3b8" },
+        { id: uid("link"), title: "Vercel", url: "https://vercel.com", group: "Deploy", color: "#e5e7eb" },
+        { id: uid("link"), title: "Docs", url: "https://docs.google.com", group: "Docs", color: "#3b82f6" },
+        { id: uid("link"), title: "ChatGPT", url: "https://chatgpt.com", group: "AI", color: "#10b981" }
+      ],
       tasks: [
-        { id: uid("task"), title: "Review operating plan", priority: "critical", status: "open", due: iso(0), source: "Manual", owner: "You" },
-        { id: uid("task"), title: "Prepare release follow-ups", priority: "high", status: "open", due: iso(1), source: "Notes", owner: "You" },
-        { id: uid("task"), title: "Validate metrics targets", priority: "medium", status: "blocked", due: iso(2), source: "Metrics", owner: "You" },
-        { id: uid("task"), title: "Archive shipped checklist", priority: "low", status: "done", due: iso(-1), source: "Activity", owner: "You" }
+        { id: uid("task"), title: "Review launch checklist", priority: "critical", status: "open", due: iso(0, 10), source: "Release", owner: "You" },
+        { id: uid("task"), title: "Plan focused work block", priority: "high", status: "open", due: iso(0, 12), source: "Focus", owner: "You" },
+        { id: uid("task"), title: "Clean up stale notes", priority: "medium", status: "open", due: iso(1, 14), source: "Notes", owner: "You" },
+        { id: uid("task"), title: "Update dashboard metrics", priority: "medium", status: "blocked", due: iso(2, 9), source: "Metrics", owner: "You" },
+        { id: uid("task"), title: "Archive completed sprint items", priority: "low", status: "done", due: iso(-1, 17), source: "Activity", owner: "You" }
       ],
       notes: [
-        { id: uid("note"), title: "Release quality bar", body: "Validate install flow, persistence, keyboard access, responsive layout, reset, and import/export before shipping.", tags: ["release", "qa"], createdAt: iso(-1), updatedAt: iso(-1) },
-        { id: uid("note"), title: "Dashboard direction", body: "Keep the launcher calm, make widgets useful, and hide editing controls until edit mode.", tags: ["product", "ux"], createdAt: iso(-2), updatedAt: iso(-2) }
+        { id: uid("note"), title: "Command center direction", body: "Keep the new tab useful first: search, bookmarks, tasks, notes, focus, calendar, and signals in one calm surface.", tags: ["product", "ux"], createdAt: iso(-1), updatedAt: iso(-1) },
+        { id: uid("note"), title: "Useful widgets", body: "Prioritize widgets that help start work quickly: launcher, task table, notes, focus, time, weather, activity, and status.", tags: ["widgets"], createdAt: iso(-2), updatedAt: iso(-2) }
       ],
       metrics: [
-        { id: "readiness", label: "Readiness", value: 94, suffix: "%", delta: 5.2, target: 95, period: "7d", source: "Local dashboard", freshnessMin: 3, series: [72, 76, 80, 84, 88, 91, 94] },
-        { id: "focus", label: "Focus hours", value: 15.5, suffix: "h", delta: 2.4, target: 18, period: "7d", source: "Focus timer", freshnessMin: 8, series: [6, 7.5, 9, 10.5, 12, 14, 15.5] },
-        { id: "completion", label: "Completion", value: 81, suffix: "%", delta: 1.8, target: 85, period: "7d", source: "Task board", freshnessMin: 1, series: [65, 69, 72, 75, 78, 80, 81] },
-        { id: "signals", label: "Healthy signals", value: 12, suffix: "", delta: 3, target: 12, period: "today", source: "Extension runtime", freshnessMin: 5, series: [7, 8, 8, 9, 10, 11, 12] }
-      ],
-      commitments: [
-        { id: uid("commit"), time: "09:00", title: "Planning review", type: "Calendar", status: "confirmed" },
-        { id: uid("commit"), time: "11:30", title: "Protected focus block", type: "Focus", status: "protected" },
-        { id: uid("commit"), time: "15:00", title: "Metrics checkpoint", type: "Review", status: "tentative" }
-      ],
-      links: [
-        { id: uid("link"), title: "Calendar", url: "https://calendar.google.com", category: "Work", color: "blue" },
-        { id: uid("link"), title: "Gmail", url: "https://mail.google.com", category: "Work", color: "red" },
-        { id: uid("link"), title: "Docs", url: "https://docs.google.com", category: "Work", color: "green" },
-        { id: uid("link"), title: "GitHub", url: "https://github.com", category: "Engineering", color: "slate" },
-        { id: uid("link"), title: "Figma", url: "https://figma.com", category: "Design", color: "purple" },
-        { id: uid("link"), title: "Linear", url: "https://linear.app", category: "Planning", color: "indigo" },
-        { id: uid("link"), title: "Notion", url: "https://notion.so", category: "Knowledge", color: "gray" },
-        { id: uid("link"), title: "Vercel", url: "https://vercel.com", category: "Deploy", color: "slate" }
+        { id: "readiness", label: "Readiness", value: 92, suffix: "%", delta: 4.1, target: 95, period: "7d", source: "Local state", freshnessMin: 2, series: [69, 72, 78, 80, 84, 88, 92] },
+        { id: "flow", label: "Focus Flow", value: 11.5, suffix: "h", delta: 2.3, target: 14, period: "7d", source: "Focus timer", freshnessMin: 6, series: [4, 5, 6.5, 8, 9.5, 10, 11.5] },
+        { id: "tasks", label: "Task Closure", value: 76, suffix: "%", delta: 3.6, target: 85, period: "7d", source: "Task board", freshnessMin: 1, series: [52, 55, 60, 66, 71, 73, 76] },
+        { id: "notes", label: "Captured Notes", value: 18, suffix: "", delta: 5, target: 20, period: "30d", source: "Notes", freshnessMin: 3, series: [3, 5, 7, 9, 12, 14, 18] }
       ],
       weather: {
         location: "New York",
@@ -130,9 +132,9 @@
         high: 72,
         low: 61,
         unit: "F",
-        status: "offline-safe",
-        updatedAt: now,
-        source: "Local fallback"
+        source: "Local fallback",
+        status: "offline-ready",
+        updatedAt: now
       },
       timezones: [
         { id: "nyc", label: "New York", timezone: "America/New_York" },
@@ -140,20 +142,25 @@
         { id: "ber", label: "Berlin", timezone: "Europe/Berlin" },
         { id: "la", label: "Los Angeles", timezone: "America/Los_Angeles" }
       ],
+      agenda: [
+        { id: uid("agenda"), time: "09:00", title: "Planning review", category: "Work", status: "confirmed" },
+        { id: uid("agenda"), time: "11:30", title: "Protected focus block", category: "Focus", status: "protected" },
+        { id: uid("agenda"), time: "15:00", title: "Metrics check", category: "Review", status: "tentative" }
+      ],
       notifications: [
-        { id: uid("notice"), title: "LiveDash v6 is ready", body: "New tab, popup, options, dock, storage, and command palette are active.", severity: "success", read: false, createdAt: now },
-        { id: uid("notice"), title: "Blocked task needs review", body: "One task is blocked and should be resolved before adding scope.", severity: "warning", read: false, createdAt: iso(-1) }
+        { id: uid("notice"), title: "Welcome to LiveDash v7", body: "Widgetify-style layout, launcher, dock, widgets, storage, and settings are active.", severity: "success", read: false, createdAt: now },
+        { id: uid("notice"), title: "Offline safe", body: "Local modules continue working without network access.", severity: "info", read: false, createdAt: now }
       ],
       activity: [
-        { id: uid("activity"), type: "system", title: "LiveDash v6 initialized", detail: "Widgetify-inspired English command center created with global defaults.", createdAt: now }
+        { id: uid("activity"), type: "system", title: "LiveDash v7 initialized", detail: "New Widgetify-inspired Chrome new tab dashboard created with English global defaults.", createdAt: now }
       ],
+      widgetOrder: ["launcher", "commandCard", "timeWeather", "focus", "tasks", "notes", "metrics", "trend", "status", "agenda", "signals", "activity", "world"],
+      hiddenWidgets: [],
       lastBackup: null
     };
   }
 
-  function clone(value){
-    return JSON.parse(JSON.stringify(value));
-  }
+  function clone(value){ return JSON.parse(JSON.stringify(value)); }
 
   function mergeState(input){
     const base = createDefaultState();
@@ -163,18 +170,20 @@
     merged.settings = Object.assign(base.settings, input.settings || {});
     merged.filters = Object.assign(base.filters, input.filters || {});
     merged.focus = Object.assign(base.focus, input.focus || {});
+    merged.links = Array.isArray(input.links) ? input.links : base.links;
     merged.tasks = Array.isArray(input.tasks) ? input.tasks : base.tasks;
     merged.notes = Array.isArray(input.notes) ? input.notes : base.notes;
     merged.metrics = Array.isArray(input.metrics) ? input.metrics : base.metrics;
-    merged.commitments = Array.isArray(input.commitments) ? input.commitments : base.commitments;
-    merged.links = Array.isArray(input.links) ? input.links : base.links;
     merged.weather = Object.assign(base.weather, input.weather || {});
     merged.timezones = Array.isArray(input.timezones) ? input.timezones : base.timezones;
+    merged.agenda = Array.isArray(input.agenda || input.commitments) ? (input.agenda || input.commitments) : base.agenda;
     merged.notifications = Array.isArray(input.notifications) ? input.notifications : base.notifications;
     merged.activity = Array.isArray(input.activity) ? input.activity : base.activity;
+    merged.widgetOrder = Array.isArray(input.widgetOrder) ? input.widgetOrder : base.widgetOrder;
+    merged.hiddenWidgets = Array.isArray(input.hiddenWidgets) ? input.hiddenWidgets : base.hiddenWidgets;
     merged.updatedAt = new Date().toISOString();
     return merged;
   }
 
-  global.LiveDashDefaults = { VERSION, STORAGE_KEY, LEGACY_KEYS, savedViews, navItems, moduleCatalog, backgrounds, createDefaultState, mergeState, clone, uid };
+  global.LiveDashDefaults = { VERSION, STORAGE_KEY, LEGACY_KEYS, savedViews, navItems, moduleCatalog, wallpapers, createDefaultState, mergeState, clone, uid };
 })(globalThis);
