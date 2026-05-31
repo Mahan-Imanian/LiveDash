@@ -1,27 +1,25 @@
 (function(global){
-  const VERSION = 8;
-  const STORAGE_KEY = "livedash:v8:state";
-  const LEGACY_KEYS = ["livedash:v7:state", "livedash:v6:state", "livedash:v5:state", "livedash:v4:state", "livedash-state", "LiveDashState"];
+  const VERSION = 9;
+  const STORAGE_KEY = "livedash:v9:state";
+  const LEGACY_KEYS = ["livedash:v8:state", "livedash:v7:state", "livedash:v6:state", "livedash:v5:state", "livedash:v4:state", "livedash-state", "LiveDashState"];
 
   const spans = [3, 4, 6, 8, 12];
 
   const savedViews = [
-    { id: "executive", name: "Executive Overview", nav: "overview", template: "executive", description: "Outcome summary, critical signals, revenue trend, and owner activity." },
-    { id: "focus", name: "Personal Focus", nav: "operations", template: "personal", description: "Tasks, focus session, schedule, notes, and quick links for daily execution." },
-    { id: "operations", name: "Operations", nav: "operations", template: "operator", description: "Alerts, commitments, queues, activity, and operational health." },
-    { id: "metrics", name: "Metrics", nav: "analytics", template: "analyst", description: "KPI cards, trend analysis, status distribution, and metric records." },
-    { id: "minimal", name: "Minimal", nav: "overview", template: "minimal", description: "Quiet view with summary, focus, and the most important commitments." }
+    { id: "today", name: "Today", nav: "today", template: "today", description: "Immediate work, open risks, recent changes, and quick capture." },
+    { id: "work", name: "Work Queue", nav: "work", template: "operator", description: "Prioritized tasks, commitments, notes, and blocked work." },
+    { id: "review", name: "Weekly Review", nav: "reports", template: "analyst", description: "Trends, reports, metric records, and source freshness." },
+    { id: "reports", name: "Reports", nav: "reports", template: "reports", description: "Saved briefs, exports, and operational snapshots." },
+    { id: "minimal", name: "Minimal", nav: "today", template: "minimal", description: "A quiet daily view with only the essentials." }
   ];
 
   const navItems = [
-    { id: "overview", label: "Overview", icon: "OV" },
-    { id: "analytics", label: "Analytics", icon: "AN" },
-    { id: "operations", label: "Operations", icon: "OP" },
-    { id: "alerts", label: "Alerts", icon: "AL" },
-    { id: "reports", label: "Reports", icon: "RP" },
-    { id: "activity", label: "Activity", icon: "AC" },
-    { id: "admin", label: "Admin", icon: "AD" },
-    { id: "settings", label: "Settings", icon: "ST" }
+    { id: "today", label: "Today", icon: "⌁" },
+    { id: "work", label: "Work", icon: "✓" },
+    { id: "reports", label: "Reports", icon: "▦" },
+    { id: "activity", label: "Activity", icon: "↺" },
+    { id: "alerts", label: "Alerts", icon: "!" },
+    { id: "settings", label: "Settings", icon: "⚙" }
   ];
 
   const moduleCatalog = [
@@ -44,28 +42,25 @@
   ];
 
   const templates = [
-    { id: "executive", name: "Executive", density: "balanced", nav: "overview", modules: [
-      { id: "m-summary", type: "command-summary", span: 8 },
-      { id: "m-status", type: "status-distribution", span: 4 },
-      { id: "m-kpis", type: "kpi-strip", span: 12 },
-      { id: "m-trend", type: "revenue-trend", span: 8 },
-      { id: "m-activity", type: "activity-feed", span: 4 },
+    { id: "today", name: "Today", density: "compact", nav: "today", modules: [
+      { id: "m-now", type: "command-summary", span: 6 },
+      { id: "m-risks", type: "alerts-queue", span: 3 },
+      { id: "m-focus", type: "focus-session", span: 3 },
       { id: "m-tasks", type: "priority-table", span: 8 },
-      { id: "m-alerts", type: "alerts-queue", span: 4 },
-      { id: "m-reports", type: "reports-surface", span: 6 },
-      { id: "m-notes", type: "notes-followups", span: 6 }
+      { id: "m-schedule", type: "schedule-commitments", span: 4 },
+      { id: "m-kpis", type: "kpi-strip", span: 12 },
+      { id: "m-notes", type: "notes-followups", span: 6 },
+      { id: "m-activity", type: "activity-feed", span: 6 }
     ]},
-    { id: "operator", name: "Operator", density: "compact", nav: "operations", modules: [
+    { id: "operator", name: "Operator", density: "compact", nav: "work", modules: [
       { id: "m-op-summary", type: "command-summary", span: 6 },
       { id: "m-op-alerts", type: "alerts-queue", span: 6 },
       { id: "m-op-tasks", type: "priority-table", span: 8 },
       { id: "m-op-schedule", type: "schedule-commitments", span: 4 },
-      { id: "m-op-health", type: "module-health", span: 4 },
-      { id: "m-op-world", type: "world-clock", span: 4 },
-      { id: "m-op-activity", type: "activity-feed", span: 4 },
-      { id: "m-op-notes", type: "notes-followups", span: 8 }
+      { id: "m-op-notes", type: "notes-followups", span: 8 },
+      { id: "m-op-health", type: "module-health", span: 4 }
     ]},
-    { id: "analyst", name: "Analyst", density: "balanced", nav: "analytics", modules: [
+    { id: "analyst", name: "Analyst", density: "balanced", nav: "reports", modules: [
       { id: "m-an-kpis", type: "kpi-strip", span: 12 },
       { id: "m-an-trend", type: "revenue-trend", span: 8 },
       { id: "m-an-dist", type: "status-distribution", span: 4 },
@@ -73,29 +68,33 @@
       { id: "m-an-reports", type: "reports-surface", span: 4 },
       { id: "m-an-activity", type: "activity-feed", span: 12 }
     ]},
-    { id: "personal", name: "Personal Productivity", density: "balanced", nav: "operations", modules: [
-      { id: "m-p-focus", type: "focus-session", span: 3 },
-      { id: "m-p-weather", type: "weather-readiness", span: 3 },
-      { id: "m-p-world", type: "world-clock", span: 3 },
-      { id: "m-p-links", type: "quick-links", span: 3 },
-      { id: "m-p-tasks", type: "priority-table", span: 8 },
-      { id: "m-p-schedule", type: "schedule-commitments", span: 4 },
-      { id: "m-p-notes", type: "notes-followups", span: 8 },
-      { id: "m-p-activity", type: "activity-feed", span: 4 }
+    { id: "reports", name: "Reports", density: "balanced", nav: "reports", modules: [
+      { id: "m-reports-main", type: "reports-surface", span: 8 },
+      { id: "m-reports-trend", type: "revenue-trend", span: 4 },
+      { id: "m-reports-records", type: "metrics-records", span: 12 },
+      { id: "m-reports-activity", type: "activity-feed", span: 12 }
     ]},
-    { id: "minimal", name: "Minimal", density: "spacious", nav: "overview", modules: [
-      { id: "m-min-summary", type: "command-summary", span: 8 },
-      { id: "m-min-focus", type: "focus-session", span: 4 },
+    { id: "personal", name: "Personal Productivity", density: "balanced", nav: "work", modules: [
+      { id: "m-p-focus", type: "focus-session", span: 3 },
+      { id: "m-p-world", type: "world-clock", span: 3 },
+      { id: "m-p-tasks", type: "priority-table", span: 6 },
+      { id: "m-p-notes", type: "notes-followups", span: 6 },
+      { id: "m-p-links", type: "quick-links", span: 6 }
+    ]},
+    { id: "minimal", name: "Minimal", density: "compact", nav: "today", modules: [
+      { id: "m-min-summary", type: "command-summary", span: 6 },
       { id: "m-min-tasks", type: "priority-table", span: 6 },
-      { id: "m-min-notes", type: "notes-followups", span: 6 }
+      { id: "m-min-focus", type: "focus-session", span: 3 },
+      { id: "m-min-clock", type: "world-clock", span: 3 }
     ]}
   ];
 
   const defaultLayouts = {
-    executive: cloneTemplate("executive"),
-    focus: cloneTemplate("personal"),
-    operations: cloneTemplate("operator"),
-    metrics: cloneTemplate("analyst"),
+    today: cloneTemplate("today"),
+    operator: cloneTemplate("operator"),
+    analyst: cloneTemplate("analyst"),
+    reports: cloneTemplate("reports"),
+    personal: cloneTemplate("personal"),
     minimal: cloneTemplate("minimal")
   };
 
@@ -121,8 +120,8 @@
       schemaVersion: VERSION,
       createdAt: now,
       updatedAt: now,
-      selectedView: "executive",
-      selectedNav: "overview",
+      selectedView: "today",
+      selectedNav: "today",
       editMode: false,
       timeRange: "7d",
       filters: { priority: "all", status: "all", query: "", source: "all" },
@@ -131,7 +130,7 @@
         density: "balanced",
         wallpaper: "graphite",
         accent: "#7dd3fc",
-        defaultView: "executive",
+        defaultView: "today",
         timeFormat: "auto",
         reducedMotion: false,
         greetingName: "Operator",
@@ -142,10 +141,10 @@
         refreshInterval: "manual"
       },
       views: {
-        executive: { layout: clone(defaultLayouts.executive), versions: [] },
-        focus: { layout: clone(defaultLayouts.focus), versions: [] },
-        operations: { layout: clone(defaultLayouts.operations), versions: [] },
-        metrics: { layout: clone(defaultLayouts.metrics), versions: [] },
+        today: { layout: clone(defaultLayouts.today), versions: [] },
+        work: { layout: clone(defaultLayouts.operator), versions: [] },
+        review: { layout: clone(defaultLayouts.analyst), versions: [] },
+        reports: { layout: clone(defaultLayouts.reports), versions: [] },
         minimal: { layout: clone(defaultLayouts.minimal), versions: [] }
       },
       tasks: [
@@ -202,11 +201,11 @@
       weather: { location: "New York", temperature: 64, condition: "Operational", updatedAt: iso(-1), source: "Offline-safe local fallback" },
       focus: { active: false, durationMin: 25, startedAt: null, endsAt: null, completedSessions: 3 },
       notifications: [
-        { id: "notice-1", title: "Welcome to LiveDash v8", body: "Module-first personalization is now constrained by enterprise dashboard structure.", severity: "info", read: false, createdAt: now },
-        { id: "notice-2", title: "Local-first storage active", body: "Dashboard state persists with chrome.storage.local and offline fallback.", severity: "success", read: false, createdAt: now }
+        { id: "notice-1", title: "Welcome to LiveDash v9", body: "Module-first personalization is now constrained by enterprise dashboard structure.", severity: "info", read: false, createdAt: now },
+        { id: "notice-2", title: "Local-first storage active", body: "Dashboard state persists locally with an offline-safe fallback.", severity: "success", read: false, createdAt: now }
       ],
       activity: [
-        { id: "activity-1", type: "release", title: "LiveDash v8 initialized", detail: "Enterprise module system, saved templates, and local audit trail are active.", createdAt: now }
+        { id: "activity-1", type: "release", title: "LiveDash v9 initialized", detail: "Enterprise module system, saved templates, and local audit trail are active.", createdAt: now }
       ],
       undoStack: [],
       redoStack: [],
@@ -237,12 +236,13 @@
     savedViews.forEach((view) => {
       const existing = state.views[view.id] || {};
       state.views[view.id] = {
-        layout: normalizeLayout(existing.layout, defaultLayouts[view.id] || defaultLayouts.executive),
+        layout: normalizeLayout(existing.layout, defaultLayouts[view.template] || defaultLayouts[view.id] || defaultLayouts.today),
         versions: Array.isArray(existing.versions) ? existing.versions.slice(0, 20) : []
       };
     });
-    state.selectedView = savedViews.some((view) => view.id === state.selectedView) ? state.selectedView : state.settings.defaultView || "executive";
-    state.selectedNav = navItems.some((item) => item.id === state.selectedNav) ? state.selectedNav : savedViews.find((view) => view.id === state.selectedView)?.nav || "overview";
+    state.settings.defaultView = savedViews.some((view) => view.id === state.settings.defaultView) ? state.settings.defaultView : "today";
+    state.selectedView = savedViews.some((view) => view.id === state.selectedView) ? state.selectedView : state.settings.defaultView;
+    state.selectedNav = navItems.some((item) => item.id === state.selectedNav) ? state.selectedNav : savedViews.find((view) => view.id === state.selectedView)?.nav || "today";
     state.tasks = Array.isArray(input.tasks) ? input.tasks : base.tasks;
     state.notes = Array.isArray(input.notes) ? input.notes : base.notes;
     state.links = Array.isArray(input.links) ? input.links : base.links;

@@ -7,7 +7,7 @@ for(const file of required){
 }
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
 if(manifest.manifest_version !== 3) throw new Error("Manifest must use version 3");
-if(manifest.version !== "8.0.0") throw new Error("Manifest version must be 8.0.0");
+if(manifest.version !== "9.0.0") throw new Error("Manifest version must be 9.0.0");
 if(!manifest.chrome_url_overrides || manifest.chrome_url_overrides.newtab !== "newtab.html") throw new Error("New tab override is missing");
 if(!manifest.action || manifest.action.default_popup !== "popup.html") throw new Error("Popup is missing");
 if(!manifest.options_page || manifest.options_page !== "options.html") throw new Error("Options page is missing");
@@ -34,4 +34,4 @@ const app = fs.readFileSync(path.join(root, "scripts/app.js"), "utf8");
 for(const phrase of ["Module Library", "Saved view", "Edit mode", "Dashboard template", "reports", "alerts", "activity"]){
   if(!app.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Missing expected app behavior marker: ${phrase}`);
 }
-console.log("LiveDash v8 extension validation passed");
+console.log("LiveDash v9 extension validation passed");

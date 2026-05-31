@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LiveDash",
   "short_name": "LiveDash",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "description": "Personal Operations Command Center for Chrome.",
   "icons": {
     "16": "assets/icons/icon16.png",

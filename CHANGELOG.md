@@ -1,28 +1,20 @@
 # Changelog
 
+## 9.0.0
+
+- Removed the oversized hero panel and clipped headline pattern.
+- Rebuilt the first viewport around Today, open work, critical signals, module count, and local storage state.
+- Replaced broad enterprise-heavy navigation with a compact rail: Today, Work, Reports, Activity, Alerts, Settings.
+- Renamed default saved views to practical daily-use surfaces: Today, Work Queue, Weekly Review, Reports, Minimal.
+- Turned edit mode off by default and made view mode content-first.
+- Hid module controls until hover or edit mode.
+- Added clearer edit canvas language, grid guides, approved spans, undo, redo, template restore, and save layout.
+- Replaced raw implementation freshness copy with user-facing local update copy.
+- Reduced glow, gradients, radius, border intensity, and decorative visual noise.
+- Tightened typography, spacing, cards, tables, badges, command palette, drawers, popup, and options styling.
+- Added command action for capturing a link into quick links.
+- Updated storage schema, backup format, package output, validator, docs, and metadata to v9.
+
 ## 8.0.0
 
-- Rebuilt LiveDash around a workflow-first operations command center IA.
-- Added business navigation: Overview, Analytics, Operations, Alerts, Reports, Activity, Admin, Settings.
-- Converted Widgetify-inspired personalization into an enterprise Module Library.
-- Added module metadata: category, preview, recommended size, size options, data source, freshness, role relevance, permission, and behavior.
-- Added saved views with persistent layouts: Executive Overview, Personal Focus, Operations, Metrics, Minimal.
-- Added role-based dashboard templates: Executive, Operator, Analyst, Personal Productivity, Minimal.
-- Added view mode and edit mode separation.
-- Added approved module spans: 3, 4, 6, 8, and 12 columns.
-- Added layout undo and redo.
-- Added module add, remove, resize, reorder, configure, and detail flows.
-- Added command palette actions for modules, views, edit mode, settings, reports, alerts, activity, tasks, notes, focus, theme, import, export, and reset.
-- Added enterprise card system with restrained surfaces, source/freshness metadata, empty states, stale states, and drill-down drawers.
-- Added KPI scorecards with deltas, targets, freshness, and sparklines.
-- Added large trend chart and status distribution chart.
-- Added production task table with quick add, priority, due date, status, filters, completion, and persistence.
-- Added notes with quick add, search/filter support, tags, timestamps, edit, delete, and persistence.
-- Added alerts surface with severity, status, source, timestamp, and acknowledge action.
-- Added reports surface with saved reports, time range, status, generated timestamp, and export action.
-- Added activity feed for local audit history.
-- Added notification center for reminders, system notices, stale warnings, and completed actions.
-- Added structured settings and options pages with no raw JSON workflow.
-- Preserved Chrome MV3 architecture: new tab override, popup, options page, service worker, local icons, CSP, local assets.
-- Kept the extension English-first and globally usable with US/EU-friendly defaults.
-- Removed Persian, RTL, region-locked service, remote script, CDN, and bundled-font assumptions.
+- Added workflow-first module library, saved views, dashboard templates, alerts, reports, activity, edit mode, command palette, and Manifest V3 packaging.
