@@ -1,48 +1,38 @@
-# LiveDash v9
+# LiveDash v10
 
-LiveDash is a Manifest V3 Chrome extension that replaces the new tab page with a restrained, local-first personal operations command center.
+LiveDash is a local-first Chrome extension that turns the New Tab page into a focused daily command center.
 
-This version responds to the latest product critique by removing the landing-page-style hero, reducing chrome, making command search the primary action, collapsing the heavy sidebar into a rail, hiding module controls outside edit mode, and rebuilding the first viewport around useful operational state.
+Version 10 removes the generated-dashboard feel and rebuilds the experience around command, capture, today’s work, browser context, and trustworthy local state.
 
-## Install locally
+## Install
 
-1. Unzip the package.
-2. Open Chrome.
-3. Go to `chrome://extensions`.
-4. Enable Developer Mode.
-5. Select **Load unpacked**.
-6. Choose the unzipped LiveDash v9 folder.
-7. Open a new tab.
+1. Unzip the project.
+2. Open `chrome://extensions`.
+3. Enable Developer Mode.
+4. Choose **Load unpacked**.
+5. Select the unzipped LiveDash folder.
+6. Open a new tab.
 
-## What v9 changes
+## Extension surfaces
 
-- Compact command-first new tab shell.
-- No oversized marketing hero.
-- View mode is calm by default.
-- Edit mode shows grid-constrained module controls, undo, redo, templates, and save.
-- Sidebar reduced to a compact navigation rail.
-- User-facing freshness now reads as local update state instead of implementation language.
-- Widgetify-style personalization retained only for module library, add/remove, configuration, and low-friction daily-use mechanics.
-- Final tone moved away from consumer homepage UI and toward Linear/Raycast/Datadog-style restraint.
+- **New Tab**: daily command surface, work queue, capture inbox, context rail, alerts, reports, modules, settings.
+- **Popup**: quick capture, capture current tab, add task, top work, open dashboard, open side panel.
+- **Side Panel**: focused current-page workflow with page capture and task creation.
+- **Options**: appearance, density, default view, shortcuts, backup, import, restore, reset.
+- **Background service worker**: local freshness checks and stale source notices.
 
-## Core surfaces
+## Keyboard
 
-- New tab dashboard: command bar, saved views, module grid, tasks, alerts, reports, notes, metrics, activity.
-- Popup: quick command/search, focus timer, top tasks, quick note, dashboard/settings launch.
-- Options: theme, density, default view, module defaults, import/export, restore point, reset, shortcuts, storage health.
-- Background service worker: hourly local freshness check and critical-alert reminder entry.
-
-## Shortcuts
-
-- Cmd+K on macOS or Ctrl+K on Windows/Linux: command palette.
-- Esc: close palette, drawers, and modals.
-- Tab: keyboard navigation with visible focus rings.
+- `Ctrl K` or `Cmd K`: open command palette.
+- `Esc`: close command palette, drawers, and overlays.
+- `C`: open capture command when not typing.
+- `,`: open settings when not typing.
 
 ## Data model
 
-LiveDash stores data locally using the extension storage API with schema version 9. Import/export is validated, versioned, and creates restore points before destructive changes. The app is English-first, global, US/EU-friendly, offline-safe for local features, and avoids region-locked runtime services.
+LiveDash stores data in `chrome.storage.local` under schema version 10. Local storage fallback is kept for development contexts. Imports are validated. Reset creates a restore point.
 
-## Validation
+## Validate
 
 Run:
 
@@ -51,4 +41,15 @@ npm run build
 npm run package
 ```
 
-The package script creates `updated-premium-project-v9.zip` one directory above the project folder.
+The build validates Manifest V3, required extension pages, CSP, local assets, no inline scripts, no remote scripts, English/global runtime files, JavaScript syntax, and package structure.
+
+## Load test checklist
+
+- New Tab opens `newtab.html`.
+- Popup opens and saves a capture.
+- Side panel opens and captures the active page.
+- Options page saves preferences.
+- Command palette opens with `Ctrl K`.
+- Task completion persists after reload.
+- Export/import/reset flows complete.
+- No horizontal overflow at desktop, tablet, and mobile widths.
