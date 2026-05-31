@@ -3,39 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>LiveDash Quick Panel</title>
+  <title>LiveDash Quick Capture</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body class="popup-body" data-page="popup">
+<body data-page="popup">
   <main class="popup-shell">
-    <header class="popup-header">
-      <div><strong>LiveDash</strong><p id="popupDate">Loading</p></div>
-      <button id="popupSettings" type="button" aria-label="Open settings">Settings</button>
-    </header>
-    <section class="popup-card">
-      <div class="popup-time" id="popupTime">--:--</div>
-      <p id="popupStatus">Personal Operations Command Center</p>
-    </section>
-    <section class="popup-card">
-      <form id="popupSearchForm" class="popup-search" role="search">
-        <input id="popupSearch" type="search" placeholder="Search, command, or open URL">
-        <button type="submit">Go</button>
-      </form>
-    </section>
-    <section class="popup-card">
-      <div class="section-title-row"><div><span class="eyebrow">Focus</span><h3 id="popupFocus">25:00</h3></div><span class="badge" id="popupView">Overview</span></div>
-      <div class="popup-actions"><button id="popupStartFocus" type="button">Start focus</button><button id="popupStopFocus" type="button">Stop</button></div>
-    </section>
-    <section class="popup-card">
-      <div class="section-title-row"><div><span class="eyebrow">Today</span><h3>Top tasks</h3></div><button id="popupAddTask" type="button">Add</button></div>
-      <div id="popupTasks" class="list-stack"></div>
-    </section>
-    <section class="popup-card">
-      <label class="eyebrow" for="popupNote">Quick note</label>
-      <textarea id="popupNote" placeholder="Capture a follow-up"></textarea>
-      <button id="popupSaveNote" type="button" class="primary-wide">Save note</button>
-    </section>
-    <div class="popup-actions"><button id="openDashboard" class="primary-button" type="button">Open dashboard</button><button id="popupCommand" type="button">Command</button></div>
+    <header class="popup-head"><div><strong>LiveDash</strong><span id="popupTime">Loading</span></div><button id="openDashboard" type="button">Dashboard</button></header>
+    <section id="popupStatus" class="popup-status"></section>
+    <form id="popupCaptureForm" class="quick-capture-form">
+      <label>Quick capture<textarea id="popupCaptureText" rows="3" placeholder="Note, task, URL, or reminder"></textarea></label>
+      <div class="button-row"><button class="primary-button" type="submit">Save capture</button><button id="captureTab" type="button">Capture tab</button></div>
+    </form>
+    <section><h2>Top work</h2><div id="popupTasks" class="mini-list"></div></section>
+    <section><h2>Commands</h2><div class="popup-actions"><button id="popupAddTask" type="button">Add task</button><button id="popupOpenSide" type="button">Side panel</button><button id="popupSettings" type="button">Settings</button></div></section>
   </main>
   <script src="scripts/default-state.js"></script>
   <script src="scripts/storage.js"></script>
