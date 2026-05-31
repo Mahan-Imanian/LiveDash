@@ -1,7 +1,7 @@
 (function(global){
-  const VERSION = 10;
-  const STORAGE_KEY = "livedash:v10:state";
-  const LEGACY_KEYS = ["livedash:v9:state", "livedash:v8:state", "livedash:v7:state", "livedash:v6:state", "livedash:v5:state", "livedash:v4:state", "livedash:state", "liveDashState"];
+  const VERSION = 11;
+  const STORAGE_KEY = "livedash:v11:state";
+  const LEGACY_KEYS = ["livedash:v10:state", "livedash:v9:state", "livedash:v8:state", "livedash:v7:state", "livedash:v6:state", "livedash:v5:state", "livedash:v4:state", "livedash:state", "liveDashState"];
   const now = () => new Date().toISOString();
   const uid = (prefix) => `${prefix}-${Math.random().toString(36).slice(2,8)}-${Date.now().toString(36)}`;
   const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -105,7 +105,7 @@
         { id:"storage", label:"Local backup", state:"fresh", updatedAt:createdAt }
       ],
       activity:[
-        { id:uid("activity"), type:"system", title:"Dashboard initialized", detail:"Local v10 state is ready.", createdAt },
+        { id:uid("activity"), type:"system", title:"Today view prepared", detail:"Local work, capture, and source data are ready.", createdAt },
         { id:uid("activity"), type:"task", title:"Task captured", detail:"Review blocked work before 4 PM", createdAt }
       ],
       notifications:[
