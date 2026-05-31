@@ -6,51 +6,56 @@
   <title>LiveDash Options</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body data-page="options">
-  <div class="wallpaper" aria-hidden="true"><div class="wallpaper-noise"></div><div class="wallpaper-glow one"></div><div class="wallpaper-glow two"></div></div>
+<body class="options-body" data-page="options">
   <main class="options-shell">
-    <section class="options-hero">
-      <span class="eyebrow">LiveDash</span>
-      <h1>Extension options</h1>
-      <p>Configure the new tab command center, appearance, storage, shortcuts, and local data.</p>
-    </section>
+    <header class="options-header">
+      <div><span class="eyebrow">LiveDash v8</span><strong>Extension options</strong><p>Structured settings, local-first data management, and keyboard references.</p></div>
+      <button id="openNewTab" class="primary-button" type="button">Open dashboard</button>
+    </header>
     <section class="options-grid">
       <article class="options-card">
-        <h2>Appearance</h2>
+        <span class="eyebrow">Appearance</span><h2>Theme and layout</h2>
         <label>Theme<select id="optTheme"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></label>
         <label>Wallpaper<select id="optWallpaper"></select></label>
-        <label>Density<select id="optDensity"><option value="balanced">Balanced</option><option value="compact">Compact</option><option value="spacious">Spacious</option></select></label>
-        <label>Glass<select id="optGlass"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
-      </article>
-      <article class="options-card">
-        <h2>Dashboard</h2>
+        <label>Density<select id="optDensity"><option value="compact">Compact</option><option value="balanced">Balanced</option><option value="spacious">Spacious</option></select></label>
         <label>Default view<select id="optDefaultView"></select></label>
-        <label>Name<input id="optName" type="text"></label>
-        <label>Weather location<input id="optWeather" type="text"></label>
+      </article>
+      <article class="options-card">
+        <span class="eyebrow">Preferences</span><h2>Dashboard behavior</h2>
+        <label>Name<input id="optName" type="text" placeholder="Operator"></label>
+        <label>Weather location<input id="optWeather" type="text" placeholder="New York"></label>
         <label>Time format<select id="optTimeFormat"><option value="auto">Auto</option><option value="12h">12 hour</option><option value="24h">24 hour</option></select></label>
+        <label>Refresh interval<select id="optRefresh"><option value="manual">Manual</option><option value="15m">15 minutes</option><option value="hourly">Hourly</option></select></label>
       </article>
       <article class="options-card">
-        <h2>Data management</h2>
-        <p>Export a versioned backup, import a backup with validation, or reset to defaults with a restore point.</p>
-        <div class="button-row"><button id="optExport" type="button">Export backup</button><button id="optImport" type="button">Import backup</button><button id="optRestore" type="button">Restore backup</button><button id="optReset" class="danger" type="button">Reset</button></div>
-        <input id="optImportFile" class="sr-only" type="file" accept="application/json">
+        <span class="eyebrow">Module defaults</span><h2>Personalization</h2>
+        <label>Default module span<select id="optSpan"><option value="3">3 columns</option><option value="4">4 columns</option><option value="6">6 columns</option><option value="8">8 columns</option><option value="12">12 columns</option></select></label>
+        <label>Open module library in edit mode<select id="optLibraryOnEdit"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
+        <label>Quick dock<select id="optQuickDock"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
+        <label>Reduced motion<select id="optReducedMotion"><option value="false">System / normal</option><option value="true">Reduce motion</option></select></label>
       </article>
       <article class="options-card">
-        <h2>Shortcuts</h2>
+        <span class="eyebrow">Data</span><h2>Storage management</h2>
+        <div id="storageHealth" class="list-stack"></div>
+        <div class="button-row" style="margin-top:12px"><button id="optExport" type="button">Export backup</button><button id="optImport" type="button">Import backup</button><button id="optRestore" type="button">Restore point</button><button id="optReset" class="danger" type="button">Reset</button></div>
+      </article>
+      <article class="options-card">
+        <span class="eyebrow">Keyboard</span><h2>Shortcuts</h2>
         <div class="list-stack">
-          <div class="list-item"><span class="status-dot success"></span><div><strong>Command palette</strong><small>Cmd+K or Ctrl+K</small></div><kbd>K</kbd></div>
-          <div class="list-item"><span class="status-dot success"></span><div><strong>Close overlays</strong><small>Escape</small></div><kbd>Esc</kbd></div>
-          <div class="list-item"><span class="status-dot success"></span><div><strong>Search commands</strong><small>Type / in the new tab search box</small></div><kbd>/</kbd></div>
+          <div class="list-item"><span class="status-dot success"></span><div><strong>Command palette</strong><small>Cmd+K on macOS, Ctrl+K on Windows/Linux</small></div><kbd>Ctrl K</kbd></div>
+          <div class="list-item"><span class="status-dot success"></span><div><strong>Close overlays</strong><small>Closes command palette, drawers, and dialogs</small></div><kbd>Esc</kbd></div>
+          <div class="list-item"><span class="status-dot success"></span><div><strong>Keyboard navigation</strong><small>Tab through controls with visible focus rings</small></div><kbd>Tab</kbd></div>
         </div>
       </article>
       <article class="options-card">
-        <h2>About</h2>
-        <p>LiveDash v7 is a local-first Chrome new tab dashboard inspired by Widgetify-style utility surfaces and command-driven workflows.</p>
-        <div id="storageHealth" class="list-stack"></div>
+        <span class="eyebrow">About</span><h2>LiveDash</h2>
+        <p>LiveDash — Personal Operations Command Center for Chrome. Manifest V3, English-first, local-first, and designed for global US/EU accessibility.</p>
+        <div class="list-stack" style="margin-top:12px"><div class="list-item"><span class="status-dot success"></span><div><strong>Version</strong><small id="versionLabel">8.0.0</small></div><span>MV3</span></div></div>
       </article>
     </section>
   </main>
-  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <input id="optImportFile" class="sr-only" type="file" accept="application/json">
+  <div id="toastRegion" class="toast-region" aria-live="polite"></div>
   <script src="scripts/default-state.js"></script>
   <script src="scripts/storage.js"></script>
   <script src="scripts/options.js"></script>
