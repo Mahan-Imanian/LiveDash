@@ -5,7 +5,7 @@ const required = ["manifest.json", "newtab.html", "popup.html", "options.html", 
 for(const file of required){ if(!fs.existsSync(path.join(root, file))) throw new Error(`Missing required file: ${file}`); }
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
 if(manifest.manifest_version !== 3) throw new Error("Manifest must use version 3");
-if(manifest.version !== "10.0.0") throw new Error("Manifest version must be 10.0.0");
+if(manifest.version !== "11.0.0") throw new Error("Manifest version must be 11.0.0");
 if(manifest.chrome_url_overrides?.newtab !== "newtab.html") throw new Error("New tab override is missing");
 if(manifest.action?.default_popup !== "popup.html") throw new Error("Popup is missing");
 if(manifest.options_page !== "options.html") throw new Error("Options page is missing");
@@ -28,7 +28,7 @@ for(const file of ["newtab.html", "popup.html", "options.html", "sidepanel.html"
   for(const ref of refs){ if(!fs.existsSync(path.join(root, ref))) throw new Error(`Broken asset path ${ref} in ${file}`); }
 }
 const app = fs.readFileSync(path.join(root, "scripts/app.js"), "utf8");
-for(const phrase of ["Capture current tab", "Customize layout", "Module library", "Activity", "Alerts", "Reports", "source-level"]){
+for(const phrase of ["Capture current tab", "Edit layout", "Module library", "Activity", "Alerts", "Reports", "source-level"]){
   if(!app.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Missing expected app behavior marker: ${phrase}`);
 }
-console.log("LiveDash v10 extension validation passed");
+console.log("LiveDash v11 extension validation passed");
