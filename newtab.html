@@ -4,174 +4,119 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark light">
-  <title>LiveDash — Personal Operations Command Center</title>
+  <title>LiveDash — Command Center</title>
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body data-page="newtab">
-  <a class="skip-link" href="#dashboardRoot">Skip to dashboard</a>
-  <div class="background-field" aria-hidden="true"><div class="bg-grid"></div></div>
-
+  <a class="skip-link" href="#mainContent">Skip to work</a>
   <div class="app-shell">
-    <aside class="sidebar" aria-label="Primary navigation">
-      <div class="brand-block">
-        <span class="brand-mark" aria-hidden="true">LD</span>
-        <div><strong>LiveDash</strong><span>Command Center</span></div>
-      </div>
-      <nav id="primaryNav" class="primary-nav"></nav>
-      <button class="nav-action" type="button" data-action="open-command">Command</button>
+    <aside class="rail" aria-label="LiveDash navigation">
+      <div class="brand" aria-label="LiveDash"><span class="brand-dot"></span><strong>LiveDash</strong></div>
+      <nav id="primaryNav" class="rail-nav"></nav>
+      <button id="openSidePanel" class="rail-action" type="button">Side panel</button>
     </aside>
-
-    <div class="main-shell">
-      <header class="command-bar" aria-label="Command bar">
-        <div class="bar-left">
-          <button id="mobileNavToggle" class="icon-button mobile-only" type="button" aria-label="Toggle navigation">Menu</button>
-          <label class="saved-view-select"><span class="sr-only">Saved view</span><select id="viewSelect"></select></label>
-          <button id="commandOpen" class="command-trigger" type="button" aria-haspopup="dialog" aria-controls="commandPalette"><span>Command, search, or capture</span><kbd>Ctrl K</kbd></button>
-        </div>
-        <div class="bar-actions">
-          <label class="select-shell"><span class="sr-only">Time range</span><select id="timeRange"><option value="today">Today</option><option value="7d">7 days</option><option value="30d">30 days</option><option value="90d">90 days</option></select></label>
-          <button id="filterButton" class="toolbar-button" type="button" aria-expanded="false" aria-controls="filterPanel">Filters</button>
-          <button id="editToggle" class="toolbar-button" type="button" aria-pressed="false">View mode</button>
-          <button id="notificationOpen" class="toolbar-button signal-button" type="button" aria-haspopup="dialog" aria-controls="notificationDrawer">Alerts <span id="signalCount">0</span></button>
+    <div class="workspace">
+      <header class="topbar" aria-label="Command header">
+        <button id="mobileNavToggle" class="icon-button mobile-only" type="button" aria-label="Toggle navigation">Menu</button>
+        <button id="commandOpen" class="command-field" type="button" aria-haspopup="dialog" aria-controls="commandPalette">
+          <span>Search, capture, or run a command</span><kbd>Ctrl K</kbd>
+        </button>
+        <div class="topbar-meta">
+          <select id="viewSelect" aria-label="Saved view"></select>
+          <button id="notificationOpen" class="status-button" type="button" aria-haspopup="dialog" aria-controls="notificationDrawer">Alerts <span id="signalCount">0</span></button>
+          <span id="freshness" class="local-state" aria-live="polite">Stored locally</span>
+          <button id="editToggle" class="ghost-button" type="button" aria-pressed="false">Customize</button>
           <button id="settingsOpen" class="icon-button" type="button" aria-haspopup="dialog" aria-controls="settingsDrawer" aria-label="Open settings">Settings</button>
-          <span id="freshness" class="freshness" aria-live="polite">Local</span>
         </div>
       </header>
-
-      <section class="filter-bar" id="filterPanel" hidden>
-        <label>Priority<select id="priorityFilter"><option value="all">All priorities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label>
-        <label>Status<select id="statusFilter"><option value="all">All status</option><option value="open">Open</option><option value="blocked">Blocked</option><option value="done">Done</option><option value="acknowledged">Acknowledged</option></select></label>
-        <label>Source<select id="sourceFilter"><option value="all">All sources</option><option value="Tasks">Tasks</option><option value="Alerts">Alerts</option><option value="Reports">Reports</option><option value="Notes">Notes</option></select></label>
-        <label class="grow">Search<input id="globalFilter" type="search" placeholder="Filter work, notes, alerts, reports"></label>
-      </section>
-
-      <main id="dashboardRoot" class="dashboard-root" tabindex="-1">
-        <section class="today-bar" aria-labelledby="heroTitle">
-          <div class="today-title">
-            <span class="eyebrow">LiveDash v9</span>
-            <h1 id="heroTitle">Today</h1>
-            <p id="heroCopy">Fast local command surface for what changed, what matters, and what to do next.</p>
-          </div>
-          <div class="today-actions">
-            <button type="button" class="primary-button" data-action="open-command">Capture or run command</button>
-            <button id="openModuleLibraryHero" type="button" class="secondary-button">Module library</button>
-            <button id="applyTemplateHero" type="button" class="ghost-button">Templates</button>
-          </div>
+      <main id="mainContent" class="main-grid" tabindex="-1">
+        <section class="now-column" aria-labelledby="nowTitle">
+          <div class="section-title"><span id="todayDate"></span><h1 id="nowTitle">Today</h1><p id="todaySummary">Loading local work state.</p></div>
+          <section id="attentionStrip" class="attention-strip" aria-label="Attention summary"></section>
+          <section id="topPriority" class="primary-work" aria-label="Top priority"></section>
+          <section id="workQueue" class="work-panel" aria-label="Today work queue"></section>
+          <section id="captureInbox" class="work-panel" aria-label="Capture inbox"></section>
         </section>
-
-        <section class="view-inspector" aria-label="Operational summary">
-          <div class="inspector-card"><span>Open work</span><strong id="inspectorView">0</strong></div>
-          <div class="inspector-card"><span>Critical</span><strong id="inspectorMode">0</strong></div>
-          <div class="inspector-card"><span>Modules</span><strong id="inspectorModules">0</strong></div>
-          <div class="inspector-card"><span>Storage</span><strong id="inspectorFreshness">Local</strong></div>
-        </section>
-
-        <section class="edit-panel" id="editPanel" hidden>
-          <div>
-            <span class="eyebrow">Edit canvas</span>
-            <strong>Grid-constrained personalization</strong>
-            <p>Controls are visible now. Approved spans are 3, 4, 6, 8, and 12 columns.</p>
-          </div>
-          <div class="button-row">
-            <button id="openModuleLibrary" type="button">Module library</button>
-            <button id="undoLayout" type="button">Undo</button>
-            <button id="redoLayout" type="button">Redo</button>
-            <button id="restoreModules" type="button">Restore template</button>
-            <button id="saveEdit" type="button" class="primary-button">Save layout</button>
-          </div>
-        </section>
-
-        <section id="sectionHead" class="section-head"></section>
-        <section id="dashboardGrid" class="dashboard-grid" aria-live="polite"></section>
+        <aside class="context-column" aria-label="Context">
+          <section id="browserContext" class="context-panel"></section>
+          <section id="agendaPanel" class="context-panel"></section>
+          <section id="alertsPanel" class="context-panel"></section>
+          <section id="sourcesPanel" class="context-panel"></section>
+        </aside>
+        <section id="secondaryContent" class="secondary-zone" aria-label="Supporting modules"></section>
       </main>
     </div>
   </div>
 
-  <nav class="quick-dock" id="quickDock" aria-label="Quick actions"></nav>
+  <section class="edit-shell" id="editShell" hidden>
+    <div class="edit-toolbar" role="region" aria-label="Edit canvas tools">
+      <strong>Customize layout</strong>
+      <span>Grid guides are active. Changes are local until saved.</span>
+      <button id="openModuleLibrary" type="button">Module library</button>
+      <button id="undoLayout" type="button">Undo</button>
+      <button id="redoLayout" type="button">Redo</button>
+      <button id="restoreModules" type="button">Apply template</button>
+      <button id="cancelEdit" type="button">Discard</button>
+      <button id="saveEdit" class="primary-button" type="button">Save</button>
+    </div>
+    <aside id="moduleInspector" class="module-inspector" aria-label="Module settings"><div class="empty-state"><strong>No module selected</strong><p>Select a module to configure span, density, source, and refresh behavior.</p></div></aside>
+  </section>
 
   <section class="command-palette" id="commandPalette" role="dialog" aria-modal="true" aria-labelledby="commandTitle" hidden>
-    <div class="overlay" data-close="palette"></div>
+    <div class="scrim" data-close="palette"></div>
     <div class="palette-panel">
-      <label class="palette-input"><span aria-hidden="true">⌘</span><input id="commandInput" type="search" autocomplete="off" placeholder="Add task, capture note, open report, switch view"></label>
       <h2 id="commandTitle" class="sr-only">Command palette</h2>
+      <label class="palette-input"><input id="commandInput" type="search" autocomplete="off" placeholder="Add task, capture current tab, open alerts, switch view"></label>
+      <div id="commandHints" class="command-hints"></div>
       <div id="commandList" class="command-list" role="listbox"></div>
     </div>
   </section>
 
   <aside class="drawer" id="moduleLibraryDrawer" role="dialog" aria-modal="true" aria-labelledby="moduleLibraryTitle" hidden>
-    <div class="overlay" data-close="moduleLibrary"></div>
-    <div class="drawer-panel library-panel">
-      <div class="drawer-head"><div><span class="eyebrow">Module Library</span><h2 id="moduleLibraryTitle">Add workflow modules</h2><p>Widgetify-speed personalization, constrained by role, source, state behavior, and grid span.</p></div><button id="closeModuleLibrary" class="close-button" type="button" aria-label="Close module library">Close</button></div>
-      <div class="library-controls">
-        <input id="moduleSearch" type="search" placeholder="Search modules">
-        <select id="moduleCategory"><option value="all">All categories</option></select>
-      </div>
+    <div class="scrim" data-close="moduleLibrary"></div>
+    <div class="drawer-panel">
+      <div class="drawer-head"><div><h2 id="moduleLibraryTitle">Module library</h2><p>Workflow modules with source, state, permissions, and approved spans.</p></div><button id="closeModuleLibrary" class="close-button" type="button">Close</button></div>
+      <div class="library-controls"><input id="moduleSearch" type="search" placeholder="Search modules"><select id="moduleCategory"><option value="all">All categories</option></select></div>
       <div id="moduleLibrary" class="module-library"></div>
     </div>
   </aside>
 
+  <aside class="drawer" id="notificationDrawer" role="dialog" aria-modal="true" aria-labelledby="notificationTitle" hidden>
+    <div class="scrim" data-close="notifications"></div>
+    <div class="drawer-panel slim">
+      <div class="drawer-head"><div><h2 id="notificationTitle">Alerts</h2><p>Actionable reminders, stale sources, and completed operations.</p></div><button id="closeNotifications" class="close-button" type="button">Close</button></div>
+      <div id="notificationList" class="stack-list"></div>
+    </div>
+  </aside>
+
+  <aside class="drawer" id="detailsDrawer" role="dialog" aria-modal="true" aria-labelledby="detailsTitle" hidden>
+    <div class="scrim" data-close="details"></div>
+    <div class="drawer-panel slim">
+      <div class="drawer-head"><div><h2 id="detailsTitle">Details</h2><p id="detailsSubtitle">Source, state, and next action.</p></div><button id="closeDetails" class="close-button" type="button">Close</button></div>
+      <div id="detailsBody"></div>
+    </div>
+  </aside>
+
   <aside class="drawer" id="settingsDrawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
-    <div class="overlay" data-close="settings"></div>
-    <div class="drawer-panel wide">
-      <div class="drawer-head"><div><span class="eyebrow">Settings</span><h2 id="settingsTitle">LiveDash settings</h2><p>Storage, appearance, templates, module defaults, import, export, and reset.</p></div><button id="closeSettings" class="close-button" type="button" aria-label="Close settings">Close</button></div>
+    <div class="scrim" data-close="settings"></div>
+    <div class="drawer-panel">
+      <div class="drawer-head"><div><h2 id="settingsTitle">Settings</h2><p>Appearance, storage, shortcuts, backup, modules, and reset.</p></div><button id="closeSettings" class="close-button" type="button">Close</button></div>
       <div class="settings-grid">
-        <label>Theme<select id="themeSetting"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></label>
-        <label>Wallpaper<select id="wallpaperSetting"></select></label>
+        <label>Theme<select id="themeSetting"><option value="dark">Dark</option><option value="light">Light</option><option value="auto">System</option></select></label>
         <label>Density<select id="densitySetting"><option value="compact">Compact</option><option value="balanced">Balanced</option><option value="spacious">Spacious</option></select></label>
         <label>Default view<select id="defaultViewSetting"></select></label>
-        <label>Name<input id="nameSetting" type="text" placeholder="Operator"></label>
-        <label>Weather location<input id="weatherSetting" type="text" placeholder="New York"></label>
         <label>Time format<select id="timeFormatSetting"><option value="auto">Auto</option><option value="12h">12 hour</option><option value="24h">24 hour</option></select></label>
-        <label>Refresh interval<select id="refreshIntervalSetting"><option value="manual">Manual</option><option value="15m">15 minutes</option><option value="hourly">Hourly</option></select></label>
+        <label>Display name<input id="nameSetting" type="text" placeholder="Alex"></label>
+        <label>Default module span<select id="defaultSpanSetting"><option value="3">3 columns</option><option value="4">4 columns</option><option value="6">6 columns</option><option value="8">8 columns</option><option value="12">12 columns</option></select></label>
       </div>
-      <section class="settings-panel">
-        <h3>Data management</h3>
-        <p>Import/export is validated and creates restore points before destructive changes.</p>
-        <div class="button-row"><button id="exportBackup" type="button">Export backup</button><button id="importBackup" type="button">Import backup</button><button id="restoreBackup" type="button">Restore point</button><button id="resetDashboard" class="danger" type="button">Reset dashboard</button></div>
-      </section>
-      <section class="settings-panel">
-        <h3>Module defaults</h3>
-        <div class="settings-grid compact">
-          <label>Default module span<select id="defaultSpanSetting"><option value="3">3 columns</option><option value="4">4 columns</option><option value="6">6 columns</option><option value="8">8 columns</option><option value="12">12 columns</option></select></label>
-          <label>Open library in edit mode<select id="libraryOnEditSetting"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
-          <label>Quick dock<select id="quickDockSetting"><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
-          <label>Reduced motion<select id="motionSetting"><option value="false">System / normal</option><option value="true">Reduce motion</option></select></label>
-        </div>
-      </section>
-      <button id="openOptions" class="primary-wide" type="button">Open full options page</button>
+      <section class="settings-panel"><h3>Data</h3><p>Backups are versioned. Imports are validated and create restore points before replacing state.</p><div class="button-row"><button id="exportBackup" type="button">Export backup</button><button id="importBackup" type="button">Import backup</button><button id="restoreBackup" type="button">Restore point</button><button id="resetDashboard" class="danger" type="button">Reset</button></div></section>
+      <section class="settings-panel"><h3>Shortcuts</h3><div class="shortcut-grid"><span>Command palette</span><kbd>Ctrl K</kbd><span>Close overlay</span><kbd>Esc</kbd><span>Quick capture</span><kbd>C</kbd><span>Open settings</span><kbd>,</kbd></div></section>
+      <input id="importFile" type="file" accept="application/json" hidden>
     </div>
   </aside>
 
-  <aside class="drawer" id="notificationDrawer" role="dialog" aria-modal="true" aria-labelledby="notificationTitle" hidden>
-    <div class="overlay" data-close="notifications"></div>
-    <div class="drawer-panel">
-      <div class="drawer-head"><div><span class="eyebrow">Signals</span><h2 id="notificationTitle">Notification center</h2></div><button id="closeNotifications" class="close-button" type="button" aria-label="Close notifications">Close</button></div>
-      <div id="notificationList" class="drawer-list"></div>
-      <button id="markSignalsRead" class="primary-wide" type="button">Mark all read</button>
-    </div>
-  </aside>
-
-  <aside class="drawer" id="detailDrawer" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden>
-    <div class="overlay" data-close="detail"></div>
-    <div class="drawer-panel">
-      <div class="drawer-head"><div><span class="eyebrow">Drill-down</span><h2 id="detailTitle">Details</h2></div><button id="closeDetail" class="close-button" type="button" aria-label="Close detail drawer">Close</button></div>
-      <div id="detailBody" class="detail-body"></div>
-    </div>
-  </aside>
-
-  <section class="modal" id="modalRoot" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
-    <div class="overlay" data-close="modal"></div>
-    <div class="modal-panel">
-      <div class="modal-head"><h2 id="modalTitle">Dialog</h2><button id="modalClose" class="close-button" type="button" aria-label="Close dialog">Close</button></div>
-      <div id="modalBody" class="modal-body"></div>
-      <div id="modalFooter" class="modal-footer"></div>
-    </div>
-  </section>
-
-  <input id="importFile" class="sr-only" type="file" accept="application/json">
-  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
-
+  <div id="toastRegion" class="toast-region" aria-live="polite"></div>
   <script src="scripts/default-state.js"></script>
   <script src="scripts/storage.js"></script>
   <script src="scripts/app.js"></script>

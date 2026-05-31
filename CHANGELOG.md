@@ -1,20 +1,20 @@
 # Changelog
 
-## 9.0.0
+## 10.0.0
 
-- Removed the oversized hero panel and clipped headline pattern.
-- Rebuilt the first viewport around Today, open work, critical signals, module count, and local storage state.
-- Replaced broad enterprise-heavy navigation with a compact rail: Today, Work, Reports, Activity, Alerts, Settings.
-- Renamed default saved views to practical daily-use surfaces: Today, Work Queue, Weekly Review, Reports, Minimal.
-- Turned edit mode off by default and made view mode content-first.
-- Hid module controls until hover or edit mode.
-- Added clearer edit canvas language, grid guides, approved spans, undo, redo, template restore, and save layout.
-- Replaced raw implementation freshness copy with user-facing local update copy.
-- Reduced glow, gradients, radius, border intensity, and decorative visual noise.
-- Tightened typography, spacing, cards, tables, badges, command palette, drawers, popup, and options styling.
-- Added command action for capturing a link into quick links.
-- Updated storage schema, backup format, package output, validator, docs, and metadata to v9.
-
-## 8.0.0
-
-- Added workflow-first module library, saved views, dashboard templates, alerts, reports, activity, edit mode, command palette, and Manifest V3 packaging.
+- Removed the hero/landing-page layer from the new tab surface.
+- Removed floating bottom navigation and duplicate module/template entry points.
+- Rebuilt the New Tab as a three-zone extension-native surface: command header, today work column, context rail.
+- Made command/search/capture the primary interface element.
+- Replaced vague dashboard metrics with actionable work states: due today, blocked, capture inbox, stale sources.
+- Added browser-context capture using `activeTab` and side panel workflows.
+- Added `sidepanel.html` and `scripts/sidepanel.js`.
+- Added top-priority, work queue, capture inbox, source freshness, alerts, reports, activity, and inspectable metric detail drawers.
+- Added cleaner edit mode with fixed edit toolbar, grid guide overlay, module inspector, undo, redo, save, discard, template apply, resize, reorder, and remove.
+- Hid module controls outside hover or edit mode.
+- Rewrote copy to concrete user-actionable language.
+- Reworked the visual system with restrained dark surfaces, reduced border intensity, smaller radius, semantic colors, and stricter spacing.
+- Updated popup to focus on quick capture, current tab capture, top tasks, settings, dashboard, and side panel.
+- Updated options page for appearance, density, default view, shortcuts, storage, backup, import, restore, and reset.
+- Updated schema, storage, validation, package metadata, README, and final package name to v10.
+- Preserved Manifest V3, local-first persistence, popup, options page, background worker, import/export, and reset.
