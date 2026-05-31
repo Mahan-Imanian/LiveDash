@@ -80,7 +80,7 @@
     }
     const merged = defaults.mergeState(source);
     if(!source || migrated || source.schemaVersion !== defaults.VERSION){
-      appendActivity(merged, "migration", migrated ? "Storage migrated" : "Storage initialized", migrated ? "Older LiveDash data was upgraded to v10." : "Default LiveDash v10 state created.");
+      appendActivity(merged, "migration", migrated ? "Storage migrated" : "Local workspace prepared", migrated ? "Older LiveDash data was upgraded to v11." : "Default tasks, captures, and source health were created.");
       await saveState(merged);
       if(migrated) await storageRemove(LEGACY_KEYS);
     }
@@ -114,11 +114,11 @@
 
   async function exportState(){
     const state = await getState();
-    appendActivity(state, "export", "Dashboard backup exported", "A versioned LiveDash v10 backup was created.");
+    appendActivity(state, "export", "Dashboard backup exported", "A versioned LiveDash v11 backup was created.");
     await saveState(state);
     return {
       product: "LiveDash",
-      format: "livedash-v10-backup",
+      format: "livedash-v11-backup",
       schemaVersion: defaults.VERSION,
       exportedAt: new Date().toISOString(),
       state
@@ -138,7 +138,7 @@
     const current = await getState();
     const next = defaults.createDefaultState();
     next.lastBackup = current;
-    appendActivity(next, "reset", "Dashboard reset", "Default LiveDash v10 dashboard restored with a restore point.");
+    appendActivity(next, "reset", "Dashboard reset", "Default LiveDash v11 dashboard restored with a restore point.");
     appendNotification(next, "Dashboard reset", "Default dashboard restored. Previous data is retained as a restore point.", "warning");
     return saveState(next);
   }

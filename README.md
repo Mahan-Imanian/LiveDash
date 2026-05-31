@@ -1,8 +1,8 @@
-# LiveDash v10
+# LiveDash v11
 
 LiveDash is a local-first Chrome extension that turns the New Tab page into a focused daily command center.
 
-Version 10 removes the generated-dashboard feel and rebuilds the experience around command, capture, today’s work, browser context, and trustworthy local state.
+Version 11 removes the generated-dashboard feel and rebuilds the experience around command, capture, today’s work, browser context, and trustworthy local state.
 
 ## Install
 
@@ -30,7 +30,7 @@ Version 10 removes the generated-dashboard feel and rebuilds the experience arou
 
 ## Data model
 
-LiveDash stores data in `chrome.storage.local` under schema version 10. Local storage fallback is kept for development contexts. Imports are validated. Reset creates a restore point.
+LiveDash stores data in `chrome.storage.local` under schema version 11. Local storage fallback is kept for development contexts. Imports are validated. Reset creates a restore point.
 
 ## Validate
 
