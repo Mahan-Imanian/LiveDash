@@ -1,54 +1,46 @@
-# LiveDash v8
+# LiveDash v9
 
-LiveDash is a Manifest V3 Chrome extension that replaces the new tab page with a local-first Personal Operations Command Center.
+LiveDash is a Manifest V3 Chrome extension that replaces the new tab page with a restrained, local-first personal operations command center.
 
-## What changed in v8
+This version responds to the latest product critique by removing the landing-page-style hero, reducing chrome, making command search the primary action, collapsing the heavy sidebar into a rail, hiding module controls outside edit mode, and rebuilding the first viewport around useful operational state.
 
-LiveDash v8 adapts Widgetify-style modular personalization without copying the consumer homepage model. Widgets are now treated as enterprise-grade modules inside saved views, templates, structured navigation, dashboard sections, and role-aware workflows.
+## Install locally
 
-## Extension surfaces
+1. Unzip the package.
+2. Open Chrome.
+3. Go to `chrome://extensions`.
+4. Enable Developer Mode.
+5. Select **Load unpacked**.
+6. Choose the unzipped LiveDash v9 folder.
+7. Open a new tab.
 
-- New Tab dashboard: `newtab.html`
-- Popup quick panel: `popup.html`
-- Options page: `options.html`
-- Background service worker: `background.js`
-- Local persistence: `chrome.storage.local`
-- Offline fallback: local state and local seed data
+## What v9 changes
 
-## Load unpacked in Chrome
+- Compact command-first new tab shell.
+- No oversized marketing hero.
+- View mode is calm by default.
+- Edit mode shows grid-constrained module controls, undo, redo, templates, and save.
+- Sidebar reduced to a compact navigation rail.
+- User-facing freshness now reads as local update state instead of implementation language.
+- Widgetify-style personalization retained only for module library, add/remove, configuration, and low-friction daily-use mechanics.
+- Final tone moved away from consumer homepage UI and toward Linear/Raycast/Datadog-style restraint.
 
-1. Unzip the project.
-2. Open `chrome://extensions`.
-3. Enable Developer Mode.
-4. Select Load unpacked.
-5. Choose the unzipped LiveDash v8 folder.
-6. Open a new tab.
+## Core surfaces
 
-## Useful controls
+- New tab dashboard: command bar, saved views, module grid, tasks, alerts, reports, notes, metrics, activity.
+- Popup: quick command/search, focus timer, top tasks, quick note, dashboard/settings launch.
+- Options: theme, density, default view, module defaults, import/export, restore point, reset, shortcuts, storage health.
+- Background service worker: hourly local freshness check and critical-alert reminder entry.
 
-- Cmd+K on macOS or Ctrl+K on Windows/Linux opens the command palette.
-- Escape closes overlays.
-- Edit mode reveals module controls.
-- Module Library adds modules by business category.
-- Settings contains structured preferences, import/export, restore, and reset.
+## Shortcuts
 
-## Module Library categories
+- Cmd+K on macOS or Ctrl+K on Windows/Linux: command palette.
+- Esc: close palette, drawers, and modals.
+- Tab: keyboard navigation with visible focus rings.
 
-- Metrics
-- Operations
-- Tasks
-- Notes
-- Alerts
-- Reports
-- Integrations
-- Team Activity
-- Personal Productivity
+## Data model
 
-Each module includes category, preview, size options, data-source requirement, freshness behavior, role relevance, permission requirement, and runtime state behavior.
-
-## Local data
-
-Data is stored locally in `chrome.storage.local` using schema version 8. Import/export is versioned and validated. Reset saves a restore point before replacing local state.
+LiveDash stores data locally using the extension storage API with schema version 9. Import/export is validated, versioned, and creates restore points before destructive changes. The app is English-first, global, US/EU-friendly, offline-safe for local features, and avoids region-locked runtime services.
 
 ## Validation
 
@@ -56,12 +48,7 @@ Run:
 
 ```bash
 npm run build
-```
-
-Package:
-
-```bash
 npm run package
 ```
 
-The package script creates `updated-premium-project-v8.zip` one directory above the project folder.
+The package script creates `updated-premium-project-v9.zip` one directory above the project folder.

@@ -76,6 +76,8 @@
   }
 
   function renderControls(){
+    const open = state.tasks.filter((task) => task.status !== "done").length;
+    const critical = state.alerts.filter((item) => item.status === "open" && item.severity === "critical").length;
     $("#viewSelect").innerHTML = defaults.savedViews.map((view) => `<option value="${view.id}">${h(view.name)}</option>`).join("");
     $("#viewSelect").value = state.selectedView;
     $("#timeRange").value = state.timeRange;
@@ -83,57 +85,70 @@
     $("#statusFilter").value = state.filters.status;
     $("#sourceFilter").value = state.filters.source;
     $("#globalFilter").value = state.filters.query;
-    $("#editToggle").textContent = state.editMode ? "Edit mode" : "View mode";
+    $("#editToggle").textContent = state.editMode ? "Editing" : "View";
     $("#editToggle").setAttribute("aria-pressed", String(Boolean(state.editMode)));
     $("#editPanel").hidden = !state.editMode;
-    const unread = state.notifications.filter((item) => !item.read).length + state.alerts.filter((item) => item.status === "open" && item.severity === "critical").length;
+    const unread = state.notifications.filter((item) => !item.read).length + critical;
     $("#signalCount").textContent = String(unread);
-    $("#freshness").textContent = `Updated ${rel(state.updatedAt)}`;
-    $("#inspectorView").textContent = currentView().name;
-    $("#inspectorMode").textContent = state.editMode ? "Edit" : "View";
+    $("#freshness").textContent = `Local · updated ${rel(state.updatedAt)}`;
+    $("#inspectorView").textContent = String(open);
+    $("#inspectorMode").textContent = String(critical);
     $("#inspectorModules").textContent = String(currentLayout().length);
-    $("#inspectorFreshness").textContent = store.hasChromeStorage() ? "chrome.storage.local" : "local fallback";
-    $("#heroTitle").textContent = state.selectedNav === "overview" ? "Personal operations, structured like a serious command center." : `${defaults.navItems.find((item) => item.id === state.selectedNav)?.label || "Overview"} surface`;
-    $("#heroCopy").textContent = currentView().description;
+    $("#inspectorFreshness").textContent = store.hasChromeStorage() ? "Stored locally" : "Local fallback";
+    $("#heroTitle").textContent = currentView().name;
+    $("#heroCopy").textContent = operationalBrief();
+  }
+
+  function operationalBrief(){
+    const open = state.tasks.filter((task) => task.status !== "done").length;
+    const overdue = state.tasks.filter((task) => task.status !== "done" && new Date(task.due) < new Date()).length;
+    const critical = state.alerts.filter((item) => item.status === "open" && item.severity === "critical").length;
+    const last = rel(state.updatedAt);
+    return `${open} open items · ${overdue} overdue · ${critical} critical signals · stored locally, updated ${last}.`;
   }
 
   function sectionMeta(){
     const map = {
-      overview: ["Dashboard", "A workflow-first command center. Modules are personalized, but the information architecture stays disciplined."],
-      analytics: ["Analytics", "Metrics, trends, records, and source freshness for local-first operational analysis."],
-      operations: ["Operations", "Task flow, commitments, alerts, notes, and daily execution surfaces."],
-      alerts: ["Alerts", "Severity-ranked operational signals with acknowledgement and stale-data handling."],
-      reports: ["Reports", "Saved local report cards with export actions and generated timestamps."],
-      activity: ["Activity", "Local audit trail for dashboard changes, imports, exports, tasks, notes, and settings."],
-      admin: ["Admin", "Data management, module health, templates, restore points, and extension status."],
-      settings: ["Settings", "Structured preferences and data controls. No raw JSON workflow required."]
+      today: ["What changed", "Actionable work, urgent signals, and recent local activity."],
+      work: ["Work queue", "Prioritized tasks, commitments, notes, and blocked follow-ups."],
+      reports: ["Reports", "Metrics, saved briefs, records, and exportable snapshots."],
+      activity: ["Activity", "Local history for dashboard changes, imports, exports, tasks, notes, and settings."],
+      alerts: ["Alerts", "Severity-ranked signals with acknowledgement and stale-data handling."],
+      settings: ["Settings", "Storage, templates, module defaults, import/export, reset, and extension status."]
     };
-    return map[state.selectedNav] || map.overview;
+    return map[state.selectedNav] || map.today;
   }
 
   function surfaceLayout(){
-    if(state.selectedNav === "overview") return currentLayout();
+    if(state.selectedNav === "today") return currentLayout();
     const fixed = {
-      analytics: [
-        { id: "surface-kpi", type: "kpi-strip", span: 12 }, { id: "surface-trend", type: "revenue-trend", span: 8 }, { id: "surface-status", type: "status-distribution", span: 4 }, { id: "surface-records", type: "metrics-records", span: 12 }
-      ],
-      operations: [
-        { id: "surface-summary", type: "command-summary", span: 6 }, { id: "surface-tasks", type: "priority-table", span: 8 }, { id: "surface-schedule", type: "schedule-commitments", span: 4 }, { id: "surface-alerts", type: "alerts-queue", span: 6 }, { id: "surface-notes", type: "notes-followups", span: 6 }
-      ],
-      alerts: [
-        { id: "surface-alerts-only", type: "alerts-queue", span: 8 }, { id: "surface-health", type: "module-health", span: 4 }, { id: "surface-activity", type: "activity-feed", span: 12 }
+      work: [
+        { id: "surface-work-summary", type: "command-summary", span: 6 },
+        { id: "surface-work-tasks", type: "priority-table", span: 8 },
+        { id: "surface-work-schedule", type: "schedule-commitments", span: 4 },
+        { id: "surface-work-alerts", type: "alerts-queue", span: 6 },
+        { id: "surface-work-notes", type: "notes-followups", span: 6 }
       ],
       reports: [
-        { id: "surface-reports", type: "reports-surface", span: 8 }, { id: "surface-trend-report", type: "revenue-trend", span: 4 }, { id: "surface-records-report", type: "metrics-records", span: 12 }
+        { id: "surface-reports", type: "reports-surface", span: 6 },
+        { id: "surface-trend", type: "revenue-trend", span: 6 },
+        { id: "surface-kpis", type: "kpi-strip", span: 12 },
+        { id: "surface-records", type: "metrics-records", span: 12 }
       ],
       activity: [
-        { id: "surface-activity-main", type: "activity-feed", span: 8 }, { id: "surface-health-main", type: "module-health", span: 4 }, { id: "surface-alerts-history", type: "alerts-queue", span: 12 }
+        { id: "surface-activity-main", type: "activity-feed", span: 8 },
+        { id: "surface-health-main", type: "module-health", span: 4 },
+        { id: "surface-alerts-history", type: "alerts-queue", span: 12 }
       ],
-      admin: [
-        { id: "surface-health-admin", type: "module-health", span: 4 }, { id: "surface-reports-admin", type: "reports-surface", span: 4 }, { id: "surface-activity-admin", type: "activity-feed", span: 4 }, { id: "surface-links-admin", type: "quick-links", span: 6 }, { id: "surface-notes-admin", type: "notes-followups", span: 6 }
+      alerts: [
+        { id: "surface-alerts-only", type: "alerts-queue", span: 8 },
+        { id: "surface-health", type: "module-health", span: 4 },
+        { id: "surface-activity", type: "activity-feed", span: 12 }
       ],
       settings: [
-        { id: "surface-health-settings", type: "module-health", span: 4 }, { id: "surface-reports-settings", type: "reports-surface", span: 4 }, { id: "surface-activity-settings", type: "activity-feed", span: 4 }
+        { id: "surface-health-settings", type: "module-health", span: 4 },
+        { id: "surface-reports-settings", type: "reports-surface", span: 4 },
+        { id: "surface-activity-settings", type: "activity-feed", span: 4 }
       ]
     };
     return fixed[state.selectedNav] || currentLayout();
@@ -143,21 +158,19 @@
     const [title, copy] = sectionMeta();
     $("#sectionHead").innerHTML = `<div><span class="eyebrow">${h(currentView().name)}</span><h2>${h(title)}</h2><p>${h(copy)}</p></div><div class="button-row"><button type="button" data-action="open-module-library">Module library</button><button type="button" data-action="apply-template">Templates</button></div>`;
     const layout = surfaceLayout();
-    $("#dashboardGrid").innerHTML = layout.map((module, index) => renderModule(module, index, state.selectedNav === "overview")).join("");
+    $("#dashboardGrid").innerHTML = layout.map((module, index) => renderModule(module, index, state.selectedNav === "today")).join("");
   }
 
   function renderModule(module, index, editable){
     const meta = catalog(module.type);
     const status = module.type === "weather-readiness" ? "stale" : "fresh";
-    return `<article class="module-card" data-module-id="${h(module.id)}" data-module-type="${h(module.type)}" data-span="${allowedSpan(module.span)}" data-state="${status === "stale" ? "stale" : "fresh"}" tabindex="0">
+    const editControls = editable ? `<button type="button" data-action="move-module" data-dir="up" data-id="${h(module.id)}" aria-label="Move ${h(meta.name)} earlier">Move up</button><button type="button" data-action="move-module" data-dir="down" data-id="${h(module.id)}" aria-label="Move ${h(meta.name)} later">Move down</button><button type="button" data-action="resize-module" data-id="${h(module.id)}" aria-label="Resize ${h(meta.name)}">${allowedSpan(module.span)} cols</button><button type="button" data-action="configure-module" data-id="${h(module.id)}" data-type="${h(module.type)}" aria-label="Configure ${h(meta.name)}">Settings</button><button type="button" class="danger-text" data-action="remove-module" data-id="${h(module.id)}" aria-label="Remove ${h(meta.name)}">Remove</button>` : "";
+    return `<article class="module-card" data-module-id="${h(module.id)}" data-module-type="${h(module.type)}" data-span="${allowedSpan(module.span)}" data-state="${status}" tabindex="0">
       <header class="module-head">
-        <div class="module-title"><h3>${h(meta.name)}</h3><p>${h(meta.description)}</p></div>
-        <div class="module-actions" aria-label="Module actions">
-          <button type="button" data-action="details" data-id="${h(module.id)}" data-type="${h(module.type)}" aria-label="Open ${h(meta.name)} details">Info</button>
-          ${editable ? `<button type="button" data-action="move-module" data-dir="up" data-id="${h(module.id)}" aria-label="Move module earlier">↑</button><button type="button" data-action="move-module" data-dir="down" data-id="${h(module.id)}" aria-label="Move module later">↓</button><button type="button" data-action="resize-module" data-id="${h(module.id)}" aria-label="Resize module">${allowedSpan(module.span)}</button><button type="button" data-action="configure-module" data-id="${h(module.id)}" data-type="${h(module.type)}" aria-label="Configure module">Set</button><button type="button" data-action="remove-module" data-id="${h(module.id)}" aria-label="Remove module">Del</button>` : ""}
-        </div>
+        <div class="module-title"><h3>${h(meta.name)}</h3><p>${h(meta.category)} · ${h(meta.dataSource)}</p></div>
+        <div class="module-actions" aria-label="Module actions"><button type="button" data-action="details" data-id="${h(module.id)}" data-type="${h(module.type)}" aria-label="Open ${h(meta.name)} details">Details</button>${editControls}</div>
       </header>
-      <div class="badge-row"><span class="badge info">${h(meta.category)}</span><span class="badge">${h(meta.dataSource)}</span><span class="badge ${status === "stale" ? "warning" : "success"}">${status === "stale" ? "Fallback" : "Fresh"}</span></div>
+      <div class="badge-row"><span class="badge ${status === "stale" ? "warning" : "success"}">${status === "stale" ? "Fallback" : "Fresh"}</span><span class="badge">${h(meta.freshness)}</span><span class="badge">${h(meta.roles.join(" / "))}</span></div>
       ${renderModuleBody(module.type)}
     </article>`;
   }
@@ -266,7 +279,7 @@
     const layout = currentLayout();
     return `<div class="list-stack">
       <div class="list-item"><span class="status-dot success"></span><div><strong>Manifest V3 extension</strong><small>New tab, popup, options, and service worker are local.</small></div><span>OK</span></div>
-      <div class="list-item"><span class="status-dot success"></span><div><strong>Storage</strong><small>${store.hasChromeStorage() ? "chrome.storage.local" : "localStorage development fallback"}</small></div><span>v${state.schemaVersion}</span></div>
+      <div class="list-item"><span class="status-dot success"></span><div><strong>Storage</strong><small>${store.hasChromeStorage() ? "Secure local storage" : "Development fallback"}</small></div><span>v${state.schemaVersion}</span></div>
       <div class="list-item"><span class="status-dot warning"></span><div><strong>Modules</strong><small>${layout.length} modules in ${h(currentView().name)}</small></div><span>${state.editMode ? "Edit" : "View"}</span></div>
       <div class="list-item"><span class="status-dot success"></span><div><strong>Region</strong><small>English-first, US/EU friendly defaults, no Persian runtime text.</small></div><span>Global</span></div>
     </div>`;
@@ -301,9 +314,7 @@
   function renderDock(){
     const dock = $("#quickDock");
     dock.hidden = !state.settings.showQuickDock;
-    dock.innerHTML = [
-      ["overview", "Overview"], ["analytics", "Analytics"], ["operations", "Ops"], ["alerts", "Alerts"], ["reports", "Reports"], ["activity", "Activity"]
-    ].map(([id,label]) => `<button type="button" data-action="nav" data-id="${id}" aria-current="${state.selectedNav === id ? "page" : "false"}">${label}</button>`).join("") + `<button type="button" data-action="open-module-library">Add</button><button type="button" data-action="open-command">Command</button>`;
+    dock.innerHTML = [["today", "Today"], ["work", "Work"], ["reports", "Reports"], ["alerts", "Alerts"], ["activity", "Activity"]].map(([id,label]) => `<button type="button" data-action="nav" data-id="${id}" aria-current="${state.selectedNav === id ? "page" : "false"}">${label}</button>`).join("") + `<button type="button" data-action="open-command">Command</button>`;
   }
 
   function renderSettingsForm(){
@@ -466,7 +477,7 @@
   }
 
   async function confirmTemplate(){
-    const id = $("#templatePicker")?.value || "executive";
+    const id = $("#templatePicker")?.value || "today";
     const template = defaults.templates.find((item) => item.id === id) || defaults.templates[0];
     await save((draft) => {
       pushUndo(draft);
@@ -693,6 +704,7 @@
       { label: "Open activity", detail: "Local audit trail", action: () => setNav("activity") },
       { label: "Add task", detail: "Create a high-priority task", action: () => quickCommandTask() },
       { label: "Add note", detail: "Capture a tagged follow-up", action: () => quickCommandNote() },
+      { label: "Capture link", detail: "Save a URL into quick links", action: () => openAddLinkModal() },
       { label: "Start focus session", detail: "Begin a local 25 minute timer", action: startFocus },
       { label: "Change theme", detail: "Toggle dark and light UI", action: toggleTheme },
       { label: "Export data", detail: "Download a versioned backup", action: exportBackup },
@@ -750,7 +762,7 @@
 
   async function exportBackup(){
     const payload = await store.exportState();
-    store.downloadJson(payload, `livedash-v8-backup-${new Date().toISOString().slice(0,10)}.json`);
+    store.downloadJson(payload, `livedash-v9-backup-${new Date().toISOString().slice(0,10)}.json`);
     state = await store.getState();
     render();
     toast("Backup exported");
@@ -773,7 +785,7 @@
   }
 
   function confirmReset(){
-    openModal("Reset dashboard", `<p>Reset restores the default LiveDash v8 dashboard, templates, modules, tasks, notes, alerts, and reports. A restore point is saved before reset.</p><p>Export a backup first if this state must be kept outside Chrome storage.</p>`, `<button type="button" data-action="export-data">Export backup</button><button type="button" data-action="close-modal">Cancel</button><button type="button" class="danger" data-action="confirm-reset">Reset dashboard</button>`);
+    openModal("Reset dashboard", `<p>Reset restores the default LiveDash v9 dashboard, templates, modules, tasks, notes, alerts, and reports. A restore point is saved before reset.</p><p>Export a backup first if this state must be kept outside Chrome storage.</p>`, `<button type="button" data-action="export-data">Export backup</button><button type="button" data-action="close-modal">Cancel</button><button type="button" class="danger" data-action="confirm-reset">Reset dashboard</button>`);
   }
 
   async function resetDashboard(){
