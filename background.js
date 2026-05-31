@@ -1,4 +1,4 @@
-const STORAGE_KEY = "livedash:v8:state";
+const STORAGE_KEY = "livedash:v9:state";
 
 function now(){ return new Date().toISOString(); }
 function getState(){

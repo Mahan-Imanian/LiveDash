@@ -35,7 +35,7 @@
     $("#optLibraryOnEdit").value = String(Boolean(state.settings.openModuleLibraryOnEdit));
     $("#optQuickDock").value = String(Boolean(state.settings.showQuickDock));
     $("#optReducedMotion").value = String(Boolean(state.settings.reducedMotion));
-    $("#storageHealth").innerHTML = `<div class="list-item"><span class="status-dot success"></span><div><strong>Storage engine</strong><small>${store.hasChromeStorage() ? "chrome.storage.local" : "localStorage development fallback"}</small></div><span>OK</span></div><div class="list-item"><span class="status-dot success"></span><div><strong>Schema</strong><small>LiveDash v${state.schemaVersion}</small></div><span>Current</span></div><div class="list-item"><span class="status-dot success"></span><div><strong>Records</strong><small>${state.tasks.length} tasks · ${state.notes.length} notes · ${state.views[state.selectedView].layout.length} modules</small></div><span>Local</span></div>`;
+    $("#storageHealth").innerHTML = `<div class="list-item"><span class="status-dot success"></span><div><strong>Storage engine</strong><small>${store.hasChromeStorage() ? "Secure local storage" : "Development fallback"}</small></div><span>OK</span></div><div class="list-item"><span class="status-dot success"></span><div><strong>Schema</strong><small>LiveDash v${state.schemaVersion}</small></div><span>Current</span></div><div class="list-item"><span class="status-dot success"></span><div><strong>Records</strong><small>${state.tasks.length} tasks · ${state.notes.length} notes · ${state.views[state.selectedView].layout.length} modules</small></div><span>Local</span></div>`;
   }
   async function save(){
     state = await store.updateState((draft) => {
@@ -58,7 +58,7 @@
     render();
     toast("Saved");
   }
-  async function exportBackup(){ const payload = await store.exportState(); store.downloadJson(payload, `livedash-v8-backup-${new Date().toISOString().slice(0,10)}.json`); state = await store.getState(); render(); toast("Backup exported"); }
+  async function exportBackup(){ const payload = await store.exportState(); store.downloadJson(payload, `livedash-v9-backup-${new Date().toISOString().slice(0,10)}.json`); state = await store.getState(); render(); toast("Backup exported"); }
   async function importFile(file){ try { const payload = JSON.parse(await file.text()); state = await store.importState(payload); render(); toast("Backup imported"); } catch(error){ toast(error.message || "Import failed"); } }
   async function reset(){ if(!confirm("Reset LiveDash to defaults? A restore point will be saved first.")) return; state = await store.resetState(); render(); toast("Dashboard reset"); }
   async function restore(){ try { state = await store.restoreBackup(); render(); toast("Restore complete"); } catch(error){ toast(error.message); } }

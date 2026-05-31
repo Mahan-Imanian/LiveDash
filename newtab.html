@@ -10,20 +10,16 @@
 </head>
 <body data-page="newtab">
   <a class="skip-link" href="#dashboardRoot">Skip to dashboard</a>
-  <div class="background-field" aria-hidden="true"><div class="bg-grid"></div><div class="bg-orb one"></div><div class="bg-orb two"></div></div>
+  <div class="background-field" aria-hidden="true"><div class="bg-grid"></div></div>
 
   <div class="app-shell">
     <aside class="sidebar" aria-label="Primary navigation">
       <div class="brand-block">
         <span class="brand-mark" aria-hidden="true">LD</span>
-        <div><strong>LiveDash</strong><span>Operations Command Center</span></div>
+        <div><strong>LiveDash</strong><span>Command Center</span></div>
       </div>
       <nav id="primaryNav" class="primary-nav"></nav>
-      <div class="sidebar-card">
-        <span class="eyebrow">Local-first</span>
-        <strong id="sidebarStatus">Ready offline</strong>
-        <p>Chrome storage, local reports, versioned backups, and safe resets.</p>
-      </div>
+      <button class="nav-action" type="button" data-action="open-command">Command</button>
     </aside>
 
     <div class="main-shell">
@@ -31,7 +27,7 @@
         <div class="bar-left">
           <button id="mobileNavToggle" class="icon-button mobile-only" type="button" aria-label="Toggle navigation">Menu</button>
           <label class="saved-view-select"><span class="sr-only">Saved view</span><select id="viewSelect"></select></label>
-          <button id="commandOpen" class="command-trigger" type="button" aria-haspopup="dialog" aria-controls="commandPalette"><span>Search commands, modules, reports</span><kbd>Ctrl K</kbd></button>
+          <button id="commandOpen" class="command-trigger" type="button" aria-haspopup="dialog" aria-controls="commandPalette"><span>Command, search, or capture</span><kbd>Ctrl K</kbd></button>
         </div>
         <div class="bar-actions">
           <label class="select-shell"><span class="sr-only">Time range</span><select id="timeRange"><option value="today">Today</option><option value="7d">7 days</option><option value="30d">30 days</option><option value="90d">90 days</option></select></label>
@@ -39,7 +35,7 @@
           <button id="editToggle" class="toolbar-button" type="button" aria-pressed="false">View mode</button>
           <button id="notificationOpen" class="toolbar-button signal-button" type="button" aria-haspopup="dialog" aria-controls="notificationDrawer">Alerts <span id="signalCount">0</span></button>
           <button id="settingsOpen" class="icon-button" type="button" aria-haspopup="dialog" aria-controls="settingsDrawer" aria-label="Open settings">Settings</button>
-          <span id="freshness" class="freshness" aria-live="polite">Fresh</span>
+          <span id="freshness" class="freshness" aria-live="polite">Local</span>
         </div>
       </header>
 
@@ -47,41 +43,42 @@
         <label>Priority<select id="priorityFilter"><option value="all">All priorities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label>
         <label>Status<select id="statusFilter"><option value="all">All status</option><option value="open">Open</option><option value="blocked">Blocked</option><option value="done">Done</option><option value="acknowledged">Acknowledged</option></select></label>
         <label>Source<select id="sourceFilter"><option value="all">All sources</option><option value="Tasks">Tasks</option><option value="Alerts">Alerts</option><option value="Reports">Reports</option><option value="Notes">Notes</option></select></label>
-        <label class="grow">Search<input id="globalFilter" type="search" placeholder="Filter tasks, notes, alerts, modules, activity"></label>
+        <label class="grow">Search<input id="globalFilter" type="search" placeholder="Filter work, notes, alerts, reports"></label>
       </section>
 
       <main id="dashboardRoot" class="dashboard-root" tabindex="-1">
-        <section class="hero-panel" aria-labelledby="heroTitle">
-          <div>
-            <span class="eyebrow">LiveDash v8</span>
-            <h1 id="heroTitle">Personal operations, structured like a serious command center.</h1>
-            <p id="heroCopy">Use Widgetify-style personalization mechanics inside a disciplined workflow dashboard: saved views, module library, grid rules, metrics, alerts, reports, and local audit history.</p>
+        <section class="today-bar" aria-labelledby="heroTitle">
+          <div class="today-title">
+            <span class="eyebrow">LiveDash v9</span>
+            <h1 id="heroTitle">Today</h1>
+            <p id="heroCopy">Fast local command surface for what changed, what matters, and what to do next.</p>
           </div>
-          <div class="hero-actions">
-            <button id="openModuleLibraryHero" type="button" class="primary-button">Add module</button>
-            <button id="applyTemplateHero" type="button" class="secondary-button">Apply template</button>
+          <div class="today-actions">
+            <button type="button" class="primary-button" data-action="open-command">Capture or run command</button>
+            <button id="openModuleLibraryHero" type="button" class="secondary-button">Module library</button>
+            <button id="applyTemplateHero" type="button" class="ghost-button">Templates</button>
           </div>
         </section>
 
-        <section class="view-inspector" aria-label="Current view summary">
-          <div class="inspector-card"><span>View</span><strong id="inspectorView">Executive Overview</strong></div>
-          <div class="inspector-card"><span>Mode</span><strong id="inspectorMode">View</strong></div>
+        <section class="view-inspector" aria-label="Operational summary">
+          <div class="inspector-card"><span>Open work</span><strong id="inspectorView">0</strong></div>
+          <div class="inspector-card"><span>Critical</span><strong id="inspectorMode">0</strong></div>
           <div class="inspector-card"><span>Modules</span><strong id="inspectorModules">0</strong></div>
-          <div class="inspector-card"><span>Freshness</span><strong id="inspectorFreshness">Live local</strong></div>
+          <div class="inspector-card"><span>Storage</span><strong id="inspectorFreshness">Local</strong></div>
         </section>
 
         <section class="edit-panel" id="editPanel" hidden>
           <div>
-            <span class="eyebrow">Edit mode</span>
-            <strong>Personalize without breaking structure.</strong>
-            <p>Approved spans are 3, 4, 6, 8, and 12 columns. Module controls are visible only in edit mode or on hover.</p>
+            <span class="eyebrow">Edit canvas</span>
+            <strong>Grid-constrained personalization</strong>
+            <p>Controls are visible now. Approved spans are 3, 4, 6, 8, and 12 columns.</p>
           </div>
           <div class="button-row">
             <button id="openModuleLibrary" type="button">Module library</button>
             <button id="undoLayout" type="button">Undo</button>
             <button id="redoLayout" type="button">Redo</button>
             <button id="restoreModules" type="button">Restore template</button>
-            <button id="saveEdit" type="button" class="primary-button">Save view</button>
+            <button id="saveEdit" type="button" class="primary-button">Save layout</button>
           </div>
         </section>
 
@@ -96,7 +93,7 @@
   <section class="command-palette" id="commandPalette" role="dialog" aria-modal="true" aria-labelledby="commandTitle" hidden>
     <div class="overlay" data-close="palette"></div>
     <div class="palette-panel">
-      <label class="palette-input"><span aria-hidden="true">⌘</span><input id="commandInput" type="search" autocomplete="off" placeholder="Type a command, module, view, or action"></label>
+      <label class="palette-input"><span aria-hidden="true">⌘</span><input id="commandInput" type="search" autocomplete="off" placeholder="Add task, capture note, open report, switch view"></label>
       <h2 id="commandTitle" class="sr-only">Command palette</h2>
       <div id="commandList" class="command-list" role="listbox"></div>
     </div>
@@ -105,7 +102,7 @@
   <aside class="drawer" id="moduleLibraryDrawer" role="dialog" aria-modal="true" aria-labelledby="moduleLibraryTitle" hidden>
     <div class="overlay" data-close="moduleLibrary"></div>
     <div class="drawer-panel library-panel">
-      <div class="drawer-head"><div><span class="eyebrow">Module Library</span><h2 id="moduleLibraryTitle">Add enterprise-grade modules</h2><p>Widgetify-style fast personalization, constrained by role, source, span, and dashboard quality.</p></div><button id="closeModuleLibrary" class="close-button" type="button" aria-label="Close module library">Close</button></div>
+      <div class="drawer-head"><div><span class="eyebrow">Module Library</span><h2 id="moduleLibraryTitle">Add workflow modules</h2><p>Widgetify-speed personalization, constrained by role, source, state behavior, and grid span.</p></div><button id="closeModuleLibrary" class="close-button" type="button" aria-label="Close module library">Close</button></div>
       <div class="library-controls">
         <input id="moduleSearch" type="search" placeholder="Search modules">
         <select id="moduleCategory"><option value="all">All categories</option></select>
@@ -117,7 +114,7 @@
   <aside class="drawer" id="settingsDrawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
     <div class="overlay" data-close="settings"></div>
     <div class="drawer-panel wide">
-      <div class="drawer-head"><div><span class="eyebrow">Admin / Settings</span><h2 id="settingsTitle">LiveDash settings</h2><p>Structured controls. No JSON editing required.</p></div><button id="closeSettings" class="close-button" type="button" aria-label="Close settings">Close</button></div>
+      <div class="drawer-head"><div><span class="eyebrow">Settings</span><h2 id="settingsTitle">LiveDash settings</h2><p>Storage, appearance, templates, module defaults, import, export, and reset.</p></div><button id="closeSettings" class="close-button" type="button" aria-label="Close settings">Close</button></div>
       <div class="settings-grid">
         <label>Theme<select id="themeSetting"><option value="auto">Auto</option><option value="dark">Dark</option><option value="light">Light</option></select></label>
         <label>Wallpaper<select id="wallpaperSetting"></select></label>
