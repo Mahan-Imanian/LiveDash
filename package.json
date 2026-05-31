@@ -1,8 +1,8 @@
 {
-  "name": "livedash-v7-chrome-extension",
-  "version": "7.0.0",
+  "name": "livedash-v8-chrome-extension",
+  "version": "8.0.0",
   "private": true,
-  "description": "LiveDash v7 Chrome extension new tab command center.",
+  "description": "LiveDash v8 Manifest V3 Chrome extension operations command center.",
   "scripts": {
     "check": "node --check scripts/default-state.js && node --check scripts/storage.js && node --check scripts/app.js && node --check scripts/popup.js && node --check scripts/options.js && node --check background.js && node scripts/validate-extension.js",
     "build": "npm run check",
@@ -12,7 +12,7 @@
     "chrome-extension",
     "new-tab",
     "dashboard",
-    "bookmarks",
+    "operations",
     "productivity"
   ],
   "license": "MIT"

@@ -1,35 +1,54 @@
-# LiveDash v7
+# LiveDash v8
 
-LiveDash is a Manifest V3 Chrome extension that replaces the Chrome New Tab page with a personal operations command center.
+LiveDash is a Manifest V3 Chrome extension that replaces the new tab page with a local-first Personal Operations Command Center.
 
-## Install locally
+## What changed in v8
 
-1. Unzip `LiveDash-v7.zip`.
-2. Open Chrome and go to `chrome://extensions`.
-3. Enable Developer Mode.
-4. Select **Load unpacked**.
-5. Choose the unzipped `LiveDash-v7` folder.
-6. Open a new tab.
+LiveDash v8 adapts Widgetify-style modular personalization without copying the consumer homepage model. Widgets are now treated as enterprise-grade modules inside saved views, templates, structured navigation, dashboard sections, and role-aware workflows.
 
 ## Extension surfaces
 
-- New Tab: main LiveDash dashboard with search, bookmarks, widgets, tasks, notes, focus, metrics, activity, and settings.
-- Popup: compact quick panel for search, focus, top tasks, quick note, dashboard launch, and settings.
-- Options: appearance, dashboard preferences, import/export, reset, restore, shortcuts, and storage health.
-- Background service worker: storage initialization, update/startup activity, alarm-based freshness marker.
+- New Tab dashboard: `newtab.html`
+- Popup quick panel: `popup.html`
+- Options page: `options.html`
+- Background service worker: `background.js`
+- Local persistence: `chrome.storage.local`
+- Offline fallback: local state and local seed data
 
-## Core features
+## Load unpacked in Chrome
 
-- Widgetify-style new tab layout with central search, bookmark grid, side widgets, and bottom dock.
-- English-first global defaults for US and Europe.
-- Chrome bookmarks import using the `bookmarks` permission.
-- Local-first persistence through `chrome.storage.local`.
-- Safe migration from earlier LiveDash storage keys.
-- Versioned import and export backups.
-- Safe reset with restore point.
-- Command palette with Cmd+K or Ctrl+K.
-- Focus timer, priority task table, notes, metrics, charts, agenda, world clocks, weather fallback, signals, and activity trail.
-- No remote scripts, no CDN runtime dependency, no inline scripts, no Persian or Iran-specific runtime assumptions.
+1. Unzip the project.
+2. Open `chrome://extensions`.
+3. Enable Developer Mode.
+4. Select Load unpacked.
+5. Choose the unzipped LiveDash v8 folder.
+6. Open a new tab.
+
+## Useful controls
+
+- Cmd+K on macOS or Ctrl+K on Windows/Linux opens the command palette.
+- Escape closes overlays.
+- Edit mode reveals module controls.
+- Module Library adds modules by business category.
+- Settings contains structured preferences, import/export, restore, and reset.
+
+## Module Library categories
+
+- Metrics
+- Operations
+- Tasks
+- Notes
+- Alerts
+- Reports
+- Integrations
+- Team Activity
+- Personal Productivity
+
+Each module includes category, preview, size options, data-source requirement, freshness behavior, role relevance, permission requirement, and runtime state behavior.
+
+## Local data
+
+Data is stored locally in `chrome.storage.local` using schema version 8. Import/export is versioned and validated. Reset saves a restore point before replacing local state.
 
 ## Validation
 
@@ -37,13 +56,12 @@ Run:
 
 ```bash
 npm run build
+```
+
+Package:
+
+```bash
 npm run package
 ```
 
-`npm run build` validates Manifest V3 structure, script syntax, CSP safety, required files, asset paths, and language/regional cleanup.
-
-## Permissions
-
-- `storage`: persists dashboard data locally.
-- `alarms`: updates freshness markers.
-- `bookmarks`: imports browser bookmarks into the launcher when requested by the user.
+The package script creates `updated-premium-project-v8.zip` one directory above the project folder.
