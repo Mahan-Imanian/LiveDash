@@ -1,5 +1,11 @@
 # Changelog
 
+## v14.0.1
+
+- Fixed the New Tab crash caused by the missing world-clock time formatter.
+- Added safe local city-time formatting for US/EU/global clock widgets.
+- Revalidated the extension package and generated a fixed v14 ZIP.
+
 ## v14.0.0
 
 - Rebuilt the Widgetify-style new tab surface with a more polished, high-end visual system.
