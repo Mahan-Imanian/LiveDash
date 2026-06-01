@@ -1,4 +1,4 @@
-# LiveDash v14
+# LiveDash v14.0.1
 
 LiveDash is a Manifest V3 Chrome extension that transforms the new tab page into a polished, interactive, personalized dashboard for search, bookmarks, tasks, focus sessions, calendar context, notes, and quick links.
 

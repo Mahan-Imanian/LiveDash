@@ -34,6 +34,19 @@
     }).format(date);
   }
 
+  function formatCityTime(offset) {
+    const numericOffset = Number(offset);
+    const targetDate = Number.isFinite(numericOffset)
+      ? new Date(Date.now() + numericOffset * 60 * 60 * 1000)
+      : now();
+    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: state?.profile?.timeFormat !== '24h',
+      timeZone: Number.isFinite(numericOffset) ? 'UTC' : undefined
+    }).format(targetDate);
+  }
+
   function getTimeParts() {
     const clean = formatTime().replace(/\s?(AM|PM)$/i, '');
     const [hour = '00', minute = '00'] = clean.split(':');
