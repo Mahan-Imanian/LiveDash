@@ -41,7 +41,7 @@
   }
   async function exportData(){
     const data = await storage.exportState();
-    storage.downloadJson(data, `livedash-v11-backup-${new Date().toISOString().slice(0,10)}.json`);
+    storage.downloadJson(data, `livedash-v12-backup-${new Date().toISOString().slice(0,10)}.json`);
     state = await storage.getState();
     render();
   }
@@ -60,7 +60,7 @@
     catch(error){ alert(error.message || "No restore point is available."); }
   }
   async function resetData(){
-    if(!confirm("Reset LiveDash to the v11 default state? A restore point will be retained.")) return;
+    if(!confirm("Reset LiveDash to the v12 default state? A restore point will be retained.")) return;
     state = await storage.resetState();
     render();
   }

@@ -9,7 +9,7 @@
   let redoStack = [];
   let selectedModuleId = null;
   const nav = [
-    ["today","Today"], ["capture","Inbox"], ["work","Work"], ["reports","Reports"], ["activity","Activity"], ["alerts","Alerts"], ["settings","Settings"]
+    ["today","Today"], ["capture","Inbox"], ["work","Work"], ["sources","Sources"], ["reports","Review"], ["activity","Activity"], ["alerts","Alerts"], ["settings","Settings"]
   ];
 
   const h = (value) => String(value ?? "").replace(/[&<>"]/g, (m) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
@@ -58,7 +58,11 @@
 
   function renderNav(){
     const root = $("#primaryNav");
-    root.innerHTML = nav.map(([id,label]) => `<button class="rail-item" type="button" data-section="${h(id)}" aria-current="${state.selectedSection === id ? "page" : "false"}" title="${h(label)}">${h(label)}</button>`).join("");
+    const icons = { today:"⌁", capture:"⌘", work:"✓", sources:"◌", reports:"▣", activity:"↻", alerts:"!", settings:"⚙" };
+    root.innerHTML = nav.map(([id,label]) => {
+      const count = id === "alerts" ? state.alerts.filter((a) => a.status === "open").length : id === "capture" ? state.captures.filter((c) => c.status === "inbox").length : id === "sources" ? state.sources.filter((s) => s.state !== "fresh").length : 0;
+      return `<button class="rail-item" type="button" data-section="${h(id)}" aria-current="${state.selectedSection === id ? "page" : "false"}" title="${h(label)}"><span class="rail-glyph">${h(icons[id] || "•")}</span><span>${h(label)}</span>${count ? `<em>${count}</em>` : ""}</button>`;
+    }).join("");
   }
 
   function renderHeader(){
@@ -74,6 +78,7 @@
     if(state.selectedSection === "today") return renderTodayDashboard();
     if(state.selectedSection === "work") return renderWorkSection();
     if(state.selectedSection === "capture") return renderCaptureSection();
+    if(state.selectedSection === "sources") return renderSourcesSection();
     if(state.selectedSection === "reports") return renderReportsSection();
     if(state.selectedSection === "activity") return renderActivitySection();
     if(state.selectedSection === "alerts") return renderAlertsSection();
@@ -98,14 +103,9 @@
   }
 
   function renderAttentionTiles(){
-    const dueToday = state.tasks.filter((t) => t.due === new Date().toISOString().slice(0,10) && t.status !== "done").length;
-    const tiles = [
-      { id:"due", value:dueToday, label:"Due today", detail:"Open deadlines" },
-      { id:"blocked", value:blockedTasks().length, label:"Blocked", detail:"Needs a decision" },
-      { id:"captures", value:state.captures.filter((c) => c.status === "inbox").length, label:"Capture inbox", detail:"Unprocessed notes" },
-      { id:"stale", value:state.reports.filter((r) => r.status === "stale").length, label:"Stale reports", detail:"Needs refresh" }
-    ];
-    $("#attentionStrip").innerHTML = tiles.map((tile) => `<button class="attention-card" type="button" data-action="metric-detail" data-id="${h(tile.id)}"><strong>${h(tile.value)}</strong><span>${h(tile.label)}</span><small>${h(tile.detail)}</small></button>`).join("");
+    const data = metricData();
+    const urgent = data.find((item) => item.id === "blocked" && item.value > 0) || data.find((item) => item.value > 0) || data[0];
+    $("#attentionStrip").innerHTML = `<button class="attention-card attention-primary" type="button" data-action="metric-detail" data-id="${h(urgent.id)}"><span class="metric-kicker">Needs attention</span><strong>${h(urgent.value)}</strong><span>${h(urgent.label)}</span><small>${h(urgent.detail)} · ${h(urgent.freshness)}</small></button>${data.filter((item) => item.id !== urgent.id).map((tile) => `<button class="attention-card" type="button" data-action="metric-detail" data-id="${h(tile.id)}"><strong>${h(tile.value)}</strong><span>${h(tile.label)}</span><small>${h(tile.detail)} · ${h(tile.delta)}</small></button>`).join("")}`;
   }
 
   function renderWorkSection(){
@@ -123,6 +123,21 @@
     $("#topPriority").innerHTML = `<div class="panel-head"><div><h2>Quick capture</h2><p>Save a note locally or capture the active browser page from the popup or side panel.</p></div><button data-action="open-side-panel" type="button">Open side panel</button></div><form id="quickNoteForm" class="quick-capture-form"><label class="sr-only" for="quickNoteText">Quick note</label><textarea id="quickNoteText" placeholder="Decision, follow-up, URL, or reminder" rows="3"></textarea><div class="button-row"><button class="primary-button" type="submit">Save capture</button><button data-action="capture-current-tab" type="button">Capture tab</button></div></form>`;
     renderCaptureInbox();
     $("#workQueue").innerHTML = `<div class="panel-head"><div><h2>Recent captures</h2><p>Latest local captures and their processing state.</p></div></div>${state.captures.slice(0,8).map((c) => `<div class="capture-row"><div><strong>${h(c.title)}</strong><div class="work-meta"><span>${h(c.type)}</span><span>${h(c.status)}</span><span>${h(rel(c.createdAt))}</span></div><small>${h(c.note)}</small></div></div>`).join("")}`;
+  }
+
+  function renderSourcesSection(){
+    const stale = state.sources.filter((s)=>s.state !== "fresh");
+    setSectionHeader("Sources", stale.length ? `${stale.length} source${stale.length === 1 ? "" : "s"} need review before the next operating check.` : "All local sources are fresh and ready.");
+    renderAttentionTiles();
+    $("#topPriority").innerHTML = `<div class="panel-head"><div><h2>Source health</h2><p>Refresh stale records and confirm local backup readiness.</p></div><button data-action="run-command" data-command="export" type="button">Export backup</button></div>${state.sources.map(renderSourceRow).join("")}`;
+    $("#workQueue").innerHTML = `<div class="panel-head"><div><h2>Stale records</h2><p>Items that can make the dashboard less trustworthy.</p></div></div>${stale.length ? stale.map(renderSourceRow).join("") : empty("No stale sources", "Local data is current.")}`;
+    $("#captureInbox").innerHTML = `<div class="panel-head"><div><h2>Backup status</h2><p>Local-first data can be exported or restored at any time.</p></div><button data-action="run-command" data-command="settings" type="button">Storage settings</button></div><div class="source-row"><div><strong>Last local save</strong><small>${h(rel(state.updatedAt))} · stored locally in Chrome</small></div><span class="state-badge success">ready</span></div>`;
+  }
+
+  function renderSourceRow(s){
+    const tone = s.state === "fresh" ? "success" : "warning";
+    const title = s.state === "fresh" ? "Fresh" : "Needs review";
+    return `<div class="source-row source-state ${h(tone)}"><div><strong>${h(s.label)}</strong><small>${h(title)} · updated ${h(rel(s.updatedAt))}</small></div><div class="row-actions"><span class="state-badge ${h(tone)}">${h(s.state)}</span><button data-action="source-detail" data-id="${h(s.id)}" type="button">Inspect</button></div></div>`;
   }
 
   function renderReportsSection(){
@@ -155,7 +170,7 @@
   }
 
   function notificationRows(limit){
-    return state.notifications.slice(0,limit).map((n) => `<div class="alert-row"><div class="alert-main"><div class="alert-line"><span class="state-badge ${n.severity === "warning" ? "warning" : n.severity === "success" ? "success" : "info"}">${h(n.severity)}</span><strong>${h(n.title)}</strong></div><small>${h(n.body)}</small><div class="work-meta"><span>${h(rel(n.createdAt))}</span><span>${n.read ? "read" : "unread"}</span></div></div><div class="row-actions"><button data-action="read-notice" data-id="${h(n.id)}" type="button">Mark read</button></div></div>`).join("") || empty("No notifications", "Completed actions and warnings will appear here.");
+    return `<div class="timeline">${state.notifications.slice(0,limit).map((n) => `<div class="timeline-row ${n.read ? "is-read" : "is-unread"}"><span class="severity-dot ${n.severity === "warning" ? "warning" : n.severity === "success" ? "success" : "info"}"></span><div><strong>${h(n.title)}</strong><small>${h(n.body)}</small><div class="work-meta"><span>${h(rel(n.createdAt))}</span><span>${n.read ? "read" : "unread"}</span></div></div><button data-action="read-notice" data-id="${h(n.id)}" type="button">Mark read</button></div>`).join("")}</div>` || empty("No notifications", "Completed actions and warnings will appear here.");
   }
 
   function renderTopPriority(){
@@ -187,12 +202,12 @@
     $("#agendaPanel").innerHTML = `<div class="panel-head"><div><h2>Next</h2><p>Schedule and focus context.</p></div></div>${state.schedule.slice(0,3).map((item) => `<div class="source-row"><strong>${h(item.time)} · ${h(item.title)}</strong><small>${h(item.prep)}</small></div>`).join("")}`;
     const alerts = state.alerts.filter((a) => a.status === "open").slice(0,3);
     $("#alertsPanel").innerHTML = `<div class="panel-head"><div><h2>Alerts</h2><p>Only items that need action.</p></div><button data-action="open-alerts" type="button">View</button></div>${alerts.length ? alerts.map(renderAlertRow).join("") : empty("No open alerts", "You are clear for now.")}`;
-    $("#sourcesPanel").innerHTML = `<div class="panel-head"><div><h2>Local state</h2><p>Source-level freshness.</p></div></div>${state.sources.map((s) => `<div class="source-row"><div><strong>${h(s.label)}</strong><small>${h(s.state)} · updated ${h(rel(s.updatedAt))}</small></div></div>`).join("")}`;
+    $("#sourcesPanel").innerHTML = `<div class="panel-head"><div><h2>Source health</h2><p>Freshness and local backup status.</p></div><button data-section="sources" type="button">Inspect</button></div>${state.sources.slice(0,4).map(renderSourceRow).join("")}`;
   }
 
   async function renderBrowserContext(){
     const root = $("#browserContext");
-    root.innerHTML = `<div class="panel-head"><div><h2>Browser context</h2><p>Page capture, linked tasks, and recent source material.</p></div><button data-action="open-side-panel" type="button">Side panel</button></div><div id="tabContextBody" class="source-row"><div><strong>Ready for page capture</strong><small>Use the popup or side panel on any regular page to capture the tab, selected text, or a page-linked task.</small></div></div>${state.captures.slice(0,2).map((c) => `<div class="source-row"><div><strong>${h(c.title)}</strong><small>${h(c.type)} · ${h(c.status)} · ${h(rel(c.createdAt))}</small></div></div>`).join("")}`;
+    root.innerHTML = `<div class="panel-head"><div><h2>Browser context</h2><p>Capture the active page into your local work stream.</p></div><button data-action="open-side-panel" type="button">Side panel</button></div><div id="tabContextBody" class="source-row context-ready"><div><strong>No active page available</strong><small>Open a regular web page to capture URL context, notes, or a page-linked task.</small></div><div class="row-actions"><button data-action="capture-current-tab" type="button">Save page</button><button data-action="task-from-tab" type="button">Task</button></div></div>${state.captures.slice(0,2).map((c) => `<div class="source-row"><div><strong>${h(c.title)}</strong><small>${h(c.type)} · ${h(c.status)} · ${h(rel(c.createdAt))}</small></div></div>`).join("")}`;
     const tab = await getActiveTab();
     if(tab && tab.url && !tab.url.startsWith("chrome://") && !tab.url.startsWith("chrome-extension://")){
       const host = (() => { try { return new URL(tab.url).hostname; } catch { return "current page"; } })();
@@ -211,6 +226,7 @@
     if(state.selectedSection === "today") return layout.filter((m) => !["work-queue","context-rail","capture-inbox","agenda","alerts-list"].includes(m.type));
     if(state.selectedSection === "work") return layout.filter((m) => ["work-queue","capture-inbox","notes-log","activity"].includes(m.type));
     if(state.selectedSection === "capture") return layout.filter((m) => ["context-rail","capture-inbox","notes-log","activity"].includes(m.type));
+    if(state.selectedSection === "sources") return layout.filter((m) => ["alerts-list","metric-drilldown","activity"].includes(m.type));
     if(state.selectedSection === "reports") return layout.filter((m) => ["reports","metric-drilldown","activity"].includes(m.type));
     if(state.selectedSection === "activity") return layout.filter((m) => ["activity","notes-log","capture-inbox"].includes(m.type));
     if(state.selectedSection === "alerts") return layout.filter((m) => ["alerts-list","activity","metric-drilldown"].includes(m.type));
@@ -236,15 +252,16 @@
 
   function renderMetrics(){
     const data = metricData();
-    return `<div class="attention-strip metric-strip">${data.map((m) => `<button class="attention-card" type="button" data-action="metric-detail" data-id="${h(m.id)}"><strong>${h(m.value)}</strong><span>${h(m.label)}</span><small>${h(m.detail)}</small></button>`).join("")}</div><div class="chart-mini" aria-label="Work trend"><svg viewBox="0 0 460 72" width="100%" height="72"><polyline points="10,54 70,44 130,48 190,34 250,38 310,24 370,30 450,18" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/></svg></div>`;
+    return `<div class="attention-strip metric-strip">${data.map((m) => `<button class="attention-card" type="button" data-action="metric-detail" data-id="${h(m.id)}"><span class="metric-kicker">${h(m.freshness)}</span><strong>${h(m.value)}</strong><span>${h(m.label)}</span><small>${h(m.detail)} · target ${h(m.target)}</small></button>`).join("")}</div><div class="chart-mini" aria-label="Work trend"><svg viewBox="0 0 460 72" width="100%" height="72"><polyline points="10,54 70,44 130,48 190,34 250,38 310,24 370,30 450,18" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/><polyline points="10,62 70,58 130,50 190,52 250,42 310,38 370,32 450,26" fill="none" stroke="var(--context)" stroke-width="2" stroke-linecap="round" opacity=".8"/></svg></div>`;
   }
 
   function metricData(){
+    const today = new Date().toISOString().slice(0,10);
     return [
-      { id:"due", value:state.tasks.filter((t)=>t.due===new Date().toISOString().slice(0,10)&&t.status!=="done").length, label:"Due today", detail:"Tasks needing action" },
-      { id:"blocked", value:blockedTasks().length, label:"Blocked", detail:"Requires decision" },
-      { id:"captures", value:state.captures.filter((c)=>c.status==="inbox").length, label:"Inbox", detail:"Captures to process" },
-      { id:"stale", value:state.sources.filter((s)=>s.state!=="fresh").length, label:"Stale sources", detail:"Refresh or review" }
+      { id:"due", value:state.tasks.filter((t)=>t.due===today&&t.status!=="done").length, label:"Due today", detail:"Open work with today's deadline", delta:"live", freshness:`Tasks · ${rel(sourceState("tasks").updatedAt)}`, target:"0 overdue" },
+      { id:"blocked", value:blockedTasks().length, label:"Blocked", detail:"Needs a decision before progress", delta:blockedTasks().length ? "resolve first" : "clear", freshness:`Tasks · ${rel(sourceState("tasks").updatedAt)}`, target:"0 blockers" },
+      { id:"captures", value:state.captures.filter((c)=>c.status==="inbox").length, label:"Capture inbox", detail:"Pages and notes waiting for triage", delta:"triage", freshness:`Captures · ${rel(sourceState("captures").updatedAt)}`, target:"empty inbox" },
+      { id:"stale", value:state.sources.filter((s)=>s.state!=="fresh").length, label:"Source review", detail:"Data sources outside freshness rules", delta:"refresh", freshness:`Sources · ${rel(state.updatedAt)}`, target:"all fresh" }
     ];
   }
 
@@ -255,7 +272,7 @@
   function renderAlertRow(alert){
     const tone = alert.severity === "critical" ? "danger" : alert.severity === "warning" ? "warning" : "info";
     const reviewAction = alert.source === "Capture inbox" ? "open-inbox" : alert.source === "Reports" ? "open-reports" : "open-work";
-    return `<div class="alert-row"><div class="alert-main"><div class="alert-line"><span class="state-badge ${tone}">${h(alert.severity)}</span><strong>${h(alert.title)}</strong></div><small>${h(alert.body)}</small><div class="work-meta"><span>${h(alert.source)}</span><span>${h(rel(alert.createdAt))}</span><span>${h(alert.status)}</span></div></div><div class="row-actions"><button data-action="${reviewAction}" type="button">Review</button><button data-action="ack-alert" data-id="${h(alert.id)}" type="button">Acknowledge</button></div></div>`;
+    return `<div class="alert-row alert-${h(tone)}"><span class="severity-rail" aria-hidden="true"></span><div class="alert-main"><div class="alert-line"><span class="severity-dot ${h(tone)}"></span><strong>${h(alert.title)}</strong></div><small>${h(alert.body)}</small><div class="work-meta"><span>${h(alert.source)}</span><span>${h(rel(alert.createdAt))}</span><span>${h(alert.status)}</span></div></div><div class="row-actions"><button class="primary-button" data-action="${reviewAction}" type="button">Review</button><button class="ghost-action" data-action="ack-alert" data-id="${h(alert.id)}" type="button">Acknowledge</button></div></div>`;
   }
 
   function renderEdit(){
@@ -323,6 +340,7 @@
     if(action === "open-work") return setSection("work");
     if(action === "open-inbox") return setSection("capture");
     if(action === "open-reports") return setSection("reports");
+    if(action === "open-sources") return setSection("sources");
     if(id === "openModuleLibrary" || action === "open-library") return openDrawer("moduleLibraryDrawer");
     if(id === "closeModuleLibrary" || id === "closeSettings" || id === "closeNotifications" || id === "closeDetails") return closeOverlays();
     if(id === "mobileNavToggle") return document.body.classList.toggle("nav-open");
@@ -348,6 +366,7 @@
     if(action === "ack-alert") return acknowledgeAlert(actionEl.dataset.id);
     if(action === "read-notice") return markNotice(actionEl.dataset.id);
     if(action === "metric-detail") return metricDetail(actionEl.dataset.id);
+    if(action === "source-detail") return sourceDetail(actionEl.dataset.id);
     if(action === "report-detail") return reportDetail(actionEl.dataset.id);
     if(action === "details") return moduleDetail(actionEl.dataset.type || actionEl.dataset.id);
     if(action === "add-module") return addModule(actionEl.dataset.type);
@@ -393,6 +412,7 @@
       { id:"add-task", label:"Add task", detail:"Create a task in today work" },
       { id:"add-note", label:"Add note", detail:"Save a note to the decision log" },
       { id:"open-alerts", label:"Open alerts", detail:"Review actionable notifications" },
+      { id:"open-sources", label:"Open source health", detail:"Review stale local sources" },
       { id:"open-reports", label:"Open reports", detail:"Switch to report review" },
       { id:"open-inbox", label:"Open inbox", detail:"Triage captured pages and notes" },
       { id:"open-work", label:"Open work", detail:"Review tasks and blockers" },
@@ -410,6 +430,7 @@
     if(id === "add-task") return quickAddTask();
     if(id === "add-note") return quickNote();
     if(id === "open-alerts") return openDrawer("notificationDrawer");
+    if(id === "open-sources") return setSection("sources");
     if(id === "open-reports") return setSection("reports");
     if(id === "open-inbox") return setSection("capture");
     if(id === "open-work") return setSection("work");
@@ -484,16 +505,17 @@
   }
 
   function taskDetail(id){ const task = state.tasks.find((t) => t.id === id); if(!task) return; detail("Task", task.title, `<div class="source-row"><strong>Status</strong><small>${h(task.status)} · ${h(task.priority)} · due ${h(dateFmt(task.due))}</small></div><div class="source-row"><strong>Source</strong><small>${h(task.source)} · ${h(task.owner)}</small></div><p>${h(task.notes)}</p>${task.linkedUrl ? `<p><a href="${h(task.linkedUrl)}" target="_blank" rel="noreferrer">Open source page</a></p>` : ""}`); }
-  function metricDetail(id){ const metric = metricData().find((m)=>m.id===id); detail("Metric", metric?.label || "Metric", `<div class="source-row"><strong>${h(metric?.value ?? "")}</strong><small>${h(metric?.detail ?? "Derived from local state")}</small></div><p>This tile opens the matching local records so the count stays actionable.</p>`); }
+  function metricDetail(id){ const metric = metricData().find((m)=>m.id===id); detail("Metric", metric?.label || "Metric", `<div class="source-row"><strong>${h(metric?.value ?? "")}</strong><small>${h(metric?.detail ?? "Derived from local state")} · ${h(metric?.freshness || "local")}</small></div><div class="source-row"><strong>Target</strong><small>${h(metric?.target || "Review")}</small></div><p>Metric tiles act as live filters. Use Review to open the related work stream.</p><button data-action="${id === "captures" ? "open-inbox" : id === "stale" ? "open-sources" : "open-work"}" type="button">Review related items</button>`); }
+  function sourceDetail(id){ const s = sourceState(id); detail("Source", s.label, `<div class="source-row"><strong>${h(s.state)}</strong><small>Updated ${h(rel(s.updatedAt))} · stored locally</small></div><p>Freshness affects alerts, reports, and the attention summary.</p><button data-action="run-command" data-command="export" type="button">Export backup</button>`); }
   function reportDetail(id){ const r = state.reports.find((x)=>x.id===id); detail("Report", r?.title || "Report", `<div class="source-row"><strong>${h(r?.status)}</strong><small>${h(r?.timeRange)} · generated ${h(rel(r?.lastGenerated))}</small></div><button data-action="run-command" data-command="export" type="button">Export backup</button>`); }
   function moduleDetail(type){ const meta = catalog(type); detail("Module", meta.name, `<p>${h(meta.description)}</p><div class="source-row"><strong>Source</strong><small>${h(meta.dataSource)}</small></div><div class="source-row"><strong>States</strong><small>${h(meta.states)}</small></div><div class="source-row"><strong>Permissions</strong><small>${h(meta.permissions)}</small></div>`); }
   function detail(kind,title,body){ $("#detailsTitle").textContent = `${kind}: ${title}`; $("#detailsSubtitle").textContent = "Source, state, and next action."; $("#detailsBody").innerHTML = body; openDrawer("detailsDrawer"); }
 
   async function saveSettings(){ await update((draft) => { draft.settings.theme = $("#themeSetting").value; draft.settings.density = $("#densitySetting").value; draft.settings.timeFormat = $("#timeFormatSetting").value; draft.settings.defaultView = $("#defaultViewSetting").value; draft.settings.displayName = $("#nameSetting").value.trim() || "Alex"; draft.settings.defaultModuleSpan = Number($("#defaultSpanSetting").value); activity(draft,"settings","Settings changed","Appearance or defaults updated."); }); }
-  async function exportBackup(){ const data = await storage.exportState(); storage.downloadJson(data, `livedash-v11-backup-${new Date().toISOString().slice(0,10)}.json`); state = await storage.getState(); renderAll(); toast("Backup exported"); }
+  async function exportBackup(){ const data = await storage.exportState(); storage.downloadJson(data, `livedash-v12-backup-${new Date().toISOString().slice(0,10)}.json`); state = await storage.getState(); renderAll(); toast("Backup exported"); }
   async function importFile(event){ const file = event.target.files[0]; if(!file) return; try{ const text = await file.text(); state = await storage.importState(JSON.parse(text)); renderAll(); closeOverlays(); toast("Backup imported"); } catch(error){ toast(error.message || "Import failed"); } finally{ event.target.value = ""; } }
   async function restoreBackup(){ try{ state = await storage.restoreBackup(); renderAll(); toast("Restore point loaded"); } catch(error){ toast(error.message || "No restore point"); } }
-  async function resetDashboard(){ if(!confirm("Reset LiveDash to the default v11 dashboard? A restore point will be kept.")) return; state = await storage.resetState(); renderAll(); toast("Dashboard reset"); }
+  async function resetDashboard(){ if(!confirm("Reset LiveDash to the default v12 dashboard? A restore point will be kept.")) return; state = await storage.resetState(); renderAll(); toast("Dashboard reset"); }
 
   function toast(message){ const el = document.createElement("div"); el.className = "toast"; el.textContent = message; $("#toastRegion").append(el); setTimeout(() => el.remove(), 2600); }
 
