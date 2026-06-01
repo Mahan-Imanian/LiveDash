@@ -1,5 +1,13 @@
 # Changelog
 
+## v15.0.0
+
+- Rebuilt the visual composition to match the Widgetify-style reference more closely while keeping English defaults.
+- Removed generic app-card boxes from library pages and replaced them with icon-grid panels.
+- Added centered category navigation, tighter white panels, floating bottom dock, polished search pod, empty add-site slots, and compact widget spacing.
+- Reworked icon presentation with local custom SVG badges instead of keyboard glyph placeholders.
+- Preserved MV3 extension, popup, side panel, options, local storage, import/export, and reset flows.
+
 ## v14.0.1
 
 - Fixed the New Tab crash caused by the missing world-clock time formatter.

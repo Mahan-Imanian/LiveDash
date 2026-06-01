@@ -1,5 +1,5 @@
 (function () {
-  const SCHEMA_VERSION = 130;
+  const SCHEMA_VERSION = 150;
 
   const nowIso = () => new Date().toISOString();
 
@@ -7,7 +7,7 @@
     {
       id: 'daily',
       label: 'Daily Essentials',
-      icon: '🔔',
+      icon: 'daily',
       accent: 'rose',
       apps: [
         { name: 'Gmail', url: 'https://mail.google.com', icon: '✉️', note: 'Inbox' },
@@ -33,7 +33,7 @@
     {
       id: 'public',
       label: 'Public Services',
-      icon: '🏛️',
+      icon: 'public',
       accent: 'slate',
       apps: [
         { name: 'IRS', url: 'https://www.irs.gov', icon: '🇺🇸', note: 'US taxes' },
@@ -49,7 +49,7 @@
     {
       id: 'tools',
       label: 'Tools',
-      icon: '🛠️',
+      icon: 'tools',
       accent: 'blue',
       apps: [
         { name: 'Trello', url: 'https://trello.com', icon: '▣', note: 'Boards' },
@@ -85,7 +85,7 @@
     {
       id: 'ai',
       label: 'AI',
-      icon: '🧠',
+      icon: 'ai',
       accent: 'violet',
       apps: [
         { name: 'ChatGPT', url: 'https://chat.openai.com', icon: '✦', note: 'Assistant' },
@@ -117,10 +117,10 @@
     {
       id: 'social',
       label: 'Social',
-      icon: 'f',
+      icon: 'social',
       accent: 'indigo',
       apps: [
-        { name: 'Facebook', url: 'https://www.facebook.com', icon: 'f', note: 'Social' },
+        { name: 'Facebook', url: 'https://www.facebook.com', icon: 'social', note: 'Social' },
         { name: 'Instagram', url: 'https://www.instagram.com', icon: '◎', note: 'Social' },
         { name: 'X', url: 'https://x.com', icon: '𝕏', note: 'Social' },
         { name: 'Reddit', url: 'https://www.reddit.com', icon: 'r', note: 'Forum' },

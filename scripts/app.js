@@ -358,7 +358,7 @@
   }
 
   function renderTopTabs() {
-    return `<nav class="top-tabs" aria-label="App categories">
+    return `<nav class="top-tabs widget-nav" aria-label="App categories">
       ${state.categories.map((category) => `<button class="top-tab ${state.settings.appCategory === category.id ? 'active' : ''}" data-action="category" data-category="${escapeHtml(category.id)}" type="button">
         ${renderIcon(category.id, category.label, 'sm', 'tab-icon')}<span>${escapeHtml(category.label)}</span>
       </button>`).join('')}
@@ -410,9 +410,10 @@
       { name: 'Google Drive', url: 'https://drive.google.com' }
     ];
     return `<section class="search-hero premium-card" aria-label="Search and quick commands">
-      <div class="search-line">
+      <div class="search-pod">
+        <button class="search-tool" data-action="open-command" type="button" aria-label="Open command search">${renderIcon('search', 'Search', 'xs')}</button>
+        <button class="search-tool" data-action="open-command" type="button" aria-label="Open quick scanner">${renderIcon('grid', 'Scanner', 'xs')}</button>
         <div class="search-input-wrap">
-          ${renderIcon('search', 'Search', 'xs', 'search-leading')}
           <input id="mainSearch" type="search" placeholder="Search Google or run a LiveDash command" autocomplete="off" aria-label="Search or command">
         </div>
         <select class="search-engine" id="searchEngine" aria-label="Search engine">
@@ -420,7 +421,7 @@
           <option value="bing" ${engine === 'bing' ? 'selected' : ''}>Bing</option>
           <option value="duckduckgo" ${engine === 'duckduckgo' ? 'selected' : ''}>DuckDuckGo</option>
         </select>
-        <button class="command-button" data-action="open-command" type="button" aria-label="Open command palette">⌘K</button>
+        <button class="command-button" data-action="open-command" type="button" aria-label="Open command palette">${renderIcon('grid', 'Command', 'xs')}</button>
       </div>
       <div class="search-chips" aria-label="Quick actions">
         ${chipApps.map((app) => `<button class="search-chip" data-action="open-url" data-url="${escapeHtml(app.url)}" type="button">${renderAppIcon(app, 'xs')}<span>${escapeHtml(app.name.replace('Google ', ''))}</span></button>`).join('')}
@@ -435,7 +436,7 @@
       ${state.bookmarkSlots.map((slot) => {
         const filled = Boolean(slot.url);
         const color = slot.color || appColor(slot.label || slot.id);
-        const icon = filled ? renderAppIcon(slot, 'sm') : renderIcon('add', 'Add site', 'sm', 'bookmark-add-icon');
+        const icon = filled ? renderAppIcon(slot, 'md') : renderIcon('add', 'Add site', 'xl', 'bookmark-add-icon');
         return `<button class="bookmark-slot ${filled ? 'filled' : 'empty'}" style="--slot-color:${escapeHtml(color)}" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
           <span class="bookmark-icon">${icon}</span>
           <span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span>
@@ -516,7 +517,7 @@
 
   function renderAppTile(app) {
     const color = app.color || appColor(app.name);
-    return `<a class="app-tile" style="--app-color:${escapeHtml(color)}" href="${appUrl(app)}" target="_self" rel="noreferrer">
+    return `<a class="app-tile" style="--app-color:${escapeHtml(color)}" href="${appUrl(app)}" target="_self" rel="noreferrer" aria-label="Open ${escapeHtml(app.name)}">
       <span class="app-icon">${renderAppIcon(app, 'lg')}</span>
       <span class="app-label">${escapeHtml(app.name)}</span>
       <span class="app-note">${escapeHtml(app.note || '')}</span>
@@ -526,7 +527,7 @@
   function renderAppPanel(category, options = {}) {
     const apps = category.apps.slice(0, options.limit || category.apps.length);
     return `<section class="app-panel premium-card ${options.featured ? 'featured-panel' : ''}">
-      <div class="app-panel-header"><div class="app-panel-title">${renderIcon(category.id, category.label, 'xs')}${escapeHtml(category.label)}</div><span class="badge">${escapeHtml(options.badge || (options.featured ? 'Featured' : category.accent || 'Apps'))}</span></div>
+      <div class="app-panel-header"><div class="app-panel-title">${renderIcon(category.id, category.label, 'xs')}${escapeHtml(category.label)}</div>${options.featured ? '<span class="badge">Featured</span>' : ''}</div>
       <div class="app-grid ${options.compact ? 'compact-app-grid' : ''}">${apps.map(renderAppTile).join('')}</div>
     </section>`;
   }
@@ -551,14 +552,15 @@
   }
 
   function renderAppsPage() {
-    const daily = categoryById(state.settings.appCategory);
-    const tools = categoryById('tools');
-    const publicServices = categoryById('public');
+    const selected = categoryById(state.settings.appCategory);
+    const secondaryA = state.settings.appCategory === 'tools' ? categoryById('daily') : categoryById('tools');
+    const secondaryB = state.settings.appCategory === 'public' ? categoryById('google') : categoryById('public');
     return `<main class="apps-grid-page" aria-label="Apps library">
-      ${renderAppPanel(daily, { featured: true, badge: 'Featured' })}
+      ${renderTopTabs()}
+      ${renderAppPanel(selected, { featured: true })}
       <div class="two-col-panels">
-        ${renderAppPanel(tools, { limit: 9, badge: 'Utilities' })}
-        ${renderAppPanel(publicServices, { limit: 8, badge: 'US / Europe' })}
+        ${renderAppPanel(secondaryA, { limit: 9 })}
+        ${renderAppPanel(secondaryB, { limit: 8 })}
       </div>
     </main>`;
   }
@@ -668,7 +670,6 @@
     setBodyTheme();
     const route = state.settings.route || 'home';
     root.innerHTML = `<div class="widgetify-shell route-${escapeHtml(route)}">
-      ${renderTopTabs()}
       <div class="page-grid">
         ${route === 'home' ? renderHomePage() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
       </div>
