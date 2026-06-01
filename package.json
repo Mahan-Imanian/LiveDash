@@ -1,8 +1,8 @@
 {
-  "name": "livedash-v12-widgetify-style-extension",
-  "version": "12.1.0",
+  "name": "livedash-v13-widgetify-style-extension",
+  "version": "13.0.0",
   "private": true,
-  "description": "LiveDash personalized new tab dashboard Chrome extension.",
+  "description": "LiveDash AAA personalized new tab dashboard Chrome extension.",
   "scripts": {
     "check": "node --check scripts/default-state.js && node --check scripts/storage.js && node --check scripts/app.js && node --check scripts/popup.js && node --check scripts/sidepanel.js && node --check scripts/options.js && node --check background.js && node scripts/validate-extension.js",
     "build": "npm run check",
