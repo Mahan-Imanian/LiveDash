@@ -1,4 +1,4 @@
-# LiveDash v11
+# LiveDash v12
 
 LiveDash is a local-first Chrome extension that turns the New Tab page into a focused daily command center.
 
