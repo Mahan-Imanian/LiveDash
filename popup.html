@@ -2,21 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>LiveDash Quick Capture</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LiveDash Quick Actions</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body data-page="popup">
-  <main class="popup-shell">
-    <header class="popup-head"><div><strong>LiveDash</strong><span id="popupTime">Loading</span></div><button id="openDashboard" type="button">Dashboard</button></header>
-    <section id="popupStatus" class="popup-status"></section>
-    <form id="popupCaptureForm" class="quick-capture-form">
-      <label>Quick capture<textarea id="popupCaptureText" rows="3" placeholder="Note, task, URL, or reminder"></textarea></label>
-      <div class="button-row"><button class="primary-button" type="submit">Save capture</button><button id="captureTab" type="button">Capture tab</button></div>
-    </form>
-    <section><h2>Top work</h2><div id="popupTasks" class="mini-list"></div></section>
-    <section><h2>Commands</h2><div class="popup-actions"><button id="popupAddTask" type="button">Add task</button><button id="popupOpenSide" type="button">Side panel</button><button id="popupSettings" type="button">Settings</button></div></section>
-  </main>
+<body class="popup-page">
+  <main id="popup" class="popup-root"></main>
   <script src="scripts/default-state.js"></script>
   <script src="scripts/storage.js"></script>
   <script src="scripts/popup.js"></script>

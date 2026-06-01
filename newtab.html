@@ -1,122 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-surface="light">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="dark light">
-  <title>LiveDash — Command Center</title>
-  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>LiveDash</title>
+  <link rel="icon" href="assets/icons/icon32.png">
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body data-page="newtab">
-  <a class="skip-link" href="#mainContent">Skip to work</a>
-  <div class="app-shell">
-    <aside class="rail" aria-label="LiveDash navigation">
-      <div class="brand" aria-label="LiveDash"><span class="brand-dot"></span><strong>LiveDash</strong></div>
-      <nav id="primaryNav" class="rail-nav"></nav>
-      <button id="openSidePanel" class="rail-action" type="button">Side panel</button>
-    </aside>
-    <div class="workspace">
-      <header class="topbar" aria-label="Command header">
-        <button id="mobileNavToggle" class="icon-button mobile-only" type="button" aria-label="Toggle navigation">Menu</button>
-        <button id="commandOpen" class="command-field" type="button" aria-haspopup="dialog" aria-controls="commandPalette">
-          <span>Search, capture, or run a command</span><kbd>Ctrl K</kbd>
-        </button>
-        <div class="topbar-meta">
-          <select id="viewSelect" aria-label="Saved view"></select>
-          <button id="notificationOpen" class="status-button" type="button" aria-haspopup="dialog" aria-controls="notificationDrawer">Alerts <span id="signalCount">0</span></button>
-          <span id="freshness" class="local-state" aria-live="polite">Stored locally</span>
-          <button id="editToggle" class="ghost-button" type="button" aria-pressed="false">Customize</button>
-          <button id="settingsOpen" class="icon-button" type="button" aria-haspopup="dialog" aria-controls="settingsDrawer" aria-label="Open settings">Settings</button>
-        </div>
-      </header>
-      <main id="mainContent" class="main-grid" tabindex="-1">
-        <section class="now-column" aria-labelledby="nowTitle">
-          <div class="section-title"><span id="todayDate"></span><h1 id="nowTitle">Today</h1><p id="todaySummary">Loading local work state.</p></div>
-          <section id="attentionStrip" class="attention-strip" aria-label="Attention summary"></section>
-          <section id="topPriority" class="primary-work" aria-label="Top priority"></section>
-          <section id="workQueue" class="work-panel" aria-label="Today work queue"></section>
-          <section id="captureInbox" class="work-panel" aria-label="Capture inbox"></section>
-        </section>
-        <aside class="context-column" aria-label="Context">
-          <section id="browserContext" class="context-panel"></section>
-          <section id="agendaPanel" class="context-panel"></section>
-          <section id="alertsPanel" class="context-panel"></section>
-          <section id="sourcesPanel" class="context-panel"></section>
-        </aside>
-        <section id="secondaryContent" class="secondary-zone" aria-label="Supporting modules"></section>
-      </main>
-    </div>
-  </div>
-
-  <section class="edit-shell" id="editShell" hidden>
-    <div class="edit-toolbar" role="region" aria-label="Edit canvas tools">
-      <strong>Edit layout</strong>
-      <span>Grid guides are active. Changes are local until saved.</span>
-      <button id="openModuleLibrary" type="button">Module library</button>
-      <button id="undoLayout" type="button">Undo</button>
-      <button id="redoLayout" type="button">Redo</button>
-      <button id="restoreModules" type="button">Apply template</button>
-      <button id="cancelEdit" type="button">Discard</button>
-      <button id="saveEdit" class="primary-button" type="button">Save</button>
-    </div>
-    <aside id="moduleInspector" class="module-inspector" aria-label="Module settings"><div class="empty-state"><strong>No module selected</strong><p>Select a module to configure span, density, source, and refresh behavior.</p></div></aside>
-  </section>
-
-  <section class="command-palette" id="commandPalette" role="dialog" aria-modal="true" aria-labelledby="commandTitle" hidden>
-    <div class="scrim" data-close="palette"></div>
-    <div class="palette-panel">
-      <h2 id="commandTitle" class="sr-only">Command palette</h2>
-      <label class="palette-input"><input id="commandInput" type="search" autocomplete="off" placeholder="Add task, capture current tab, open alerts, switch view"></label>
-      <div id="commandHints" class="command-hints"></div>
-      <div id="commandList" class="command-list" role="listbox"></div>
-    </div>
-  </section>
-
-  <aside class="drawer" id="moduleLibraryDrawer" role="dialog" aria-modal="true" aria-labelledby="moduleLibraryTitle" hidden>
-    <div class="scrim" data-close="moduleLibrary"></div>
-    <div class="drawer-panel">
-      <div class="drawer-head"><div><h2 id="moduleLibraryTitle">Module library</h2><p>Workflow modules with source, state, permissions, and approved spans.</p></div><button id="closeModuleLibrary" class="close-button" type="button">Close</button></div>
-      <div class="library-controls"><input id="moduleSearch" type="search" placeholder="Search modules"><select id="moduleCategory"><option value="all">All categories</option></select></div>
-      <div id="moduleLibrary" class="module-library"></div>
-    </div>
-  </aside>
-
-  <aside class="drawer" id="notificationDrawer" role="dialog" aria-modal="true" aria-labelledby="notificationTitle" hidden>
-    <div class="scrim" data-close="notifications"></div>
-    <div class="drawer-panel slim">
-      <div class="drawer-head"><div><h2 id="notificationTitle">Alerts</h2><p>Actionable reminders, stale sources, and completed operations.</p></div><button id="closeNotifications" class="close-button" type="button">Close</button></div>
-      <div id="notificationList" class="stack-list"></div>
-    </div>
-  </aside>
-
-  <aside class="drawer" id="detailsDrawer" role="dialog" aria-modal="true" aria-labelledby="detailsTitle" hidden>
-    <div class="scrim" data-close="details"></div>
-    <div class="drawer-panel slim">
-      <div class="drawer-head"><div><h2 id="detailsTitle">Details</h2><p id="detailsSubtitle">Source, state, and next action.</p></div><button id="closeDetails" class="close-button" type="button">Close</button></div>
-      <div id="detailsBody"></div>
-    </div>
-  </aside>
-
-  <aside class="drawer" id="settingsDrawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
-    <div class="scrim" data-close="settings"></div>
-    <div class="drawer-panel">
-      <div class="drawer-head"><div><h2 id="settingsTitle">Settings</h2><p>Appearance, storage, shortcuts, backup, modules, and reset.</p></div><button id="closeSettings" class="close-button" type="button">Close</button></div>
-      <div class="settings-grid">
-        <label>Theme<select id="themeSetting"><option value="dark">Dark</option><option value="light">Light</option><option value="auto">System</option></select></label>
-        <label>Density<select id="densitySetting"><option value="compact">Compact</option><option value="balanced">Balanced</option><option value="spacious">Spacious</option></select></label>
-        <label>Default view<select id="defaultViewSetting"></select></label>
-        <label>Time format<select id="timeFormatSetting"><option value="auto">Auto</option><option value="12h">12 hour</option><option value="24h">24 hour</option></select></label>
-        <label>Display name<input id="nameSetting" type="text" placeholder="Alex"></label>
-        <label>Default module span<select id="defaultSpanSetting"><option value="3">3 columns</option><option value="4">4 columns</option><option value="6">6 columns</option><option value="8">8 columns</option><option value="12">12 columns</option></select></label>
-      </div>
-      <section class="settings-panel"><h3>Data</h3><p>Backups are versioned. Imports are validated and create restore points before replacing state.</p><div class="button-row"><button id="exportBackup" type="button">Export backup</button><button id="importBackup" type="button">Import backup</button><button id="restoreBackup" type="button">Restore point</button><button id="resetDashboard" class="danger" type="button">Reset</button></div></section>
-      <section class="settings-panel"><h3>Shortcuts</h3><div class="shortcut-grid"><span>Command palette</span><kbd>Ctrl K</kbd><span>Close overlay</span><kbd>Esc</kbd><span>Quick capture</span><kbd>C</kbd><span>Open settings</span><kbd>,</kbd></div></section>
-      <input id="importFile" type="file" accept="application/json" hidden>
-    </div>
-  </aside>
-
-  <div id="toastRegion" class="toast-region" aria-live="polite"></div>
+<body class="newtab-page">
+  <div id="app" class="app-root" aria-live="polite"></div>
   <script src="scripts/default-state.js"></script>
   <script src="scripts/storage.js"></script>
   <script src="scripts/app.js"></script>

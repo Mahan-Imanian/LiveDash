@@ -1,9 +1,9 @@
-const fs = require("fs");
-const path = require("path");
-const { execFileSync } = require("child_process");
-const root = path.resolve(__dirname, "..");
-const out = path.resolve(root, "..", "updated-premium-project-v12.zip");
-if(fs.existsSync(out)) fs.rmSync(out);
-const exclude = ["node_modules", ".git", ".DS_Store", "*.log", "dist", "coverage", "updated-premium-project-v12.zip"];
-execFileSync("zip", ["-r", out, ".", ...exclude.flatMap((item) => ["-x", item])], { cwd: root, stdio: "inherit" });
+const fs = require('fs');
+const path = require('path');
+const { execFileSync } = require('child_process');
+
+const root = path.resolve(__dirname, '..');
+const out = '/mnt/data/updated-premium-project-v12-widgetify.zip';
+if (fs.existsSync(out)) fs.unlinkSync(out);
+execFileSync('zip', ['-qr', out, '.'], { cwd: root, stdio: 'inherit' });
 console.log(out);

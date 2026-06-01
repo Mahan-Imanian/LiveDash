@@ -1,523 +1,687 @@
-(function(){
-  const $ = (s, root=document) => root.querySelector(s);
-  const $$ = (s, root=document) => Array.from(root.querySelectorAll(s));
-  const storage = globalThis.LiveDashStorage;
-  const defaults = globalThis.LiveDashDefaults;
-  const allowedSpans = [3,4,6,8,12];
-  let state;
-  let undoStack = [];
-  let redoStack = [];
-  let selectedModuleId = null;
-  const nav = [
-    ["today","Today"], ["capture","Inbox"], ["work","Work"], ["sources","Sources"], ["reports","Review"], ["activity","Activity"], ["alerts","Alerts"], ["settings","Settings"]
-  ];
+(function () {
+  const root = document.getElementById('app');
+  let state = null;
+  let timerId = null;
+  let commandOpen = false;
+  let drawerOpen = false;
+  let loginOpen = false;
+  let bookmarkEditingId = null;
 
-  const h = (value) => String(value ?? "").replace(/[&<>"]/g, (m) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
-  const byOrder = (a,b) => (a.order || 0) - (b.order || 0);
-  const rel = (iso) => {
-    if(!iso) return "Unknown";
-    const diff = Date.now() - new Date(iso).getTime();
-    if(diff < 60000) return "just now";
-    if(diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
-    if(diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
-    return `${Math.floor(diff/86400000)}d ago`;
+  const $ = (selector, node = document) => node.querySelector(selector);
+  const $$ = (selector, node = document) => Array.from(node.querySelectorAll(selector));
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+  const uid = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  const getNow = () => new Date();
+
+  const searchEngines = {
+    google: 'https://www.google.com/search?q=',
+    bing: 'https://www.bing.com/search?q=',
+    duckduckgo: 'https://duckduckgo.com/?q='
   };
-  const dateFmt = (iso, opts={month:"short",day:"numeric"}) => iso ? new Intl.DateTimeFormat(undefined, opts).format(new Date(`${iso}T12:00:00`)) : "No date";
-  const timeNow = () => new Intl.DateTimeFormat(undefined, { weekday:"short", month:"short", day:"numeric" }).format(new Date());
 
-  async function init(){
-    state = await storage.getState();
-    state.editMode = false;
-    await storage.saveState(state);
-    bindStaticEvents();
-    renderAll();
+  function formatTime(date = getNow()) {
+    const hour12 = state?.profile?.timeFormat !== '24h';
+    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { hour: '2-digit', minute: '2-digit', hour12 }).format(date);
   }
 
-  function currentLayout(){ return (state.layouts[state.selectedView] || state.layouts.today || []).slice().sort(byOrder); }
-  function catalog(type){ return state.moduleCatalog.find((item) => item.id === type) || state.moduleCatalog[0]; }
-  function openTasks(){ return state.tasks.filter((t) => t.status !== "done"); }
-  function blockedTasks(){ return state.tasks.filter((t) => t.status === "blocked"); }
-  function criticalAlerts(){ return state.alerts.filter((a) => a.status === "open" && a.severity === "critical"); }
-  function sourceState(id){ return state.sources.find((s) => s.id === id) || { label:id, state:"fresh", updatedAt:state.updatedAt }; }
-
-  function renderAll(){
-    document.body.classList.toggle("editing", state.editMode);
-    document.body.classList.toggle("nav-open", false);
-    document.documentElement.classList.toggle("light", state.settings.theme === "light");
-    document.body.dataset.density = state.settings.density;
-    renderNav();
-    renderHeader();
-    renderToday();
-    renderContext();
-    renderSecondary();
-    renderEdit();
-    renderLibrary();
-    renderNotifications();
-    renderSettingsValues();
+  function formatDate(date = getNow()) {
+    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(date);
   }
 
-  function renderNav(){
-    const root = $("#primaryNav");
-    const icons = { today:"⌁", capture:"⌘", work:"✓", sources:"◌", reports:"▣", activity:"↻", alerts:"!", settings:"⚙" };
-    root.innerHTML = nav.map(([id,label]) => {
-      const count = id === "alerts" ? state.alerts.filter((a) => a.status === "open").length : id === "capture" ? state.captures.filter((c) => c.status === "inbox").length : id === "sources" ? state.sources.filter((s) => s.state !== "fresh").length : 0;
-      return `<button class="rail-item" type="button" data-section="${h(id)}" aria-current="${state.selectedSection === id ? "page" : "false"}" title="${h(label)}"><span class="rail-glyph">${h(icons[id] || "•")}</span><span>${h(label)}</span>${count ? `<em>${count}</em>` : ""}</button>`;
-    }).join("");
+  function formatShortDate(date = getNow()) {
+    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
   }
 
-  function renderHeader(){
-    $("#viewSelect").innerHTML = state.templates.map((v) => `<option value="${h(v.id)}" ${state.selectedView === v.id ? "selected" : ""}>${h(v.name)}</option>`).join("");
-    $("#signalCount").textContent = state.alerts.filter((a) => a.status === "open").length + state.notifications.filter((n) => !n.read).length;
-    const freshest = state.sources.filter((s) => s.state !== "fresh").length ? `${state.sources.filter((s) => s.state !== "fresh").length} source needs review` : `Local · updated ${rel(state.updatedAt)}`;
-    $("#freshness").textContent = freshest;
-    $("#editToggle").textContent = state.editMode ? "Exit edit" : "Edit";
-    $("#editToggle").setAttribute("aria-pressed", String(state.editMode));
+  function getTimeParts() {
+    const time = formatTime();
+    const parts = time.replace(/\s?(AM|PM)$/i, '').split(':');
+    return { hour: parts[0] || '00', minute: parts[1] || '00', suffix: (time.match(/AM|PM/i) || [''])[0] };
   }
 
-  function renderToday(){
-    if(state.selectedSection === "today") return renderTodayDashboard();
-    if(state.selectedSection === "work") return renderWorkSection();
-    if(state.selectedSection === "capture") return renderCaptureSection();
-    if(state.selectedSection === "sources") return renderSourcesSection();
-    if(state.selectedSection === "reports") return renderReportsSection();
-    if(state.selectedSection === "activity") return renderActivitySection();
-    if(state.selectedSection === "alerts") return renderAlertsSection();
-    return renderTodayDashboard();
+  function setBodyTheme() {
+    document.body.classList.remove('theme-mist', 'theme-pearl', 'theme-sunset', 'theme-forest');
+    const theme = state?.settings?.theme || 'sky';
+    if (theme !== 'sky') document.body.classList.add(`theme-${theme}`);
   }
 
-  function setSectionHeader(title, summary){
-    $("#todayDate").textContent = timeNow();
-    $("#nowTitle").textContent = title;
-    $("#todaySummary").textContent = summary;
+  async function save(next = state) {
+    state = await window.LiveDashStore.setState(next);
+    setBodyTheme();
   }
 
-  function renderTodayDashboard(){
-    const dueToday = state.tasks.filter((t) => t.due === new Date().toISOString().slice(0,10) && t.status !== "done").length;
-    const captures = state.captures.filter((c) => c.status === "inbox").length;
-    const openAlertCount = state.alerts.filter((a) => a.status === "open").length;
-    setSectionHeader("Today", `${openTasks().length} open tasks, ${dueToday} due today, ${openAlertCount} alerts, ${captures} captures waiting.`);
-    renderAttentionTiles();
-    renderTopPriority();
-    renderWorkQueue();
-    renderCaptureInbox();
+  function pushActivity(title, body) {
+    state.activity = [{ id: uid('activity'), title, body, createdAt: new Date().toISOString() }, ...(state.activity || [])].slice(0, 30);
   }
 
-  function renderAttentionTiles(){
-    const data = metricData();
-    const urgent = data.find((item) => item.id === "blocked" && item.value > 0) || data.find((item) => item.value > 0) || data[0];
-    $("#attentionStrip").innerHTML = `<button class="attention-card attention-primary" type="button" data-action="metric-detail" data-id="${h(urgent.id)}"><span class="metric-kicker">Needs attention</span><strong>${h(urgent.value)}</strong><span>${h(urgent.label)}</span><small>${h(urgent.detail)} · ${h(urgent.freshness)}</small></button>${data.filter((item) => item.id !== urgent.id).map((tile) => `<button class="attention-card" type="button" data-action="metric-detail" data-id="${h(tile.id)}"><strong>${h(tile.value)}</strong><span>${h(tile.label)}</span><small>${h(tile.detail)} · ${h(tile.delta)}</small></button>`).join("")}`;
+  function pushNotification(title, body, type = 'info') {
+    state.notifications = [{ id: uid('notice'), title, body, type, read: false, createdAt: new Date().toISOString() }, ...(state.notifications || [])].slice(0, 20);
   }
 
-  function renderWorkSection(){
-    setSectionHeader("Work", "Prioritized execution queue with blocked items, due dates, and source context.");
-    renderAttentionTiles();
-    const blocked = blockedTasks();
-    $("#topPriority").innerHTML = blocked.length ? `<div class="panel-head"><div><h2>Blocked work</h2><p>${blocked.length} item${blocked.length === 1 ? "" : "s"} need a decision.</p></div><button data-action="open-alerts" type="button">Review alerts</button></div>${blocked.map(renderTaskRow).join("")}` : `<div class="panel-head"><div><h2>No blocked work</h2><p>Work queue is unblocked.</p></div><button data-action="add-task" type="button">Add task</button></div>`;
-    renderWorkQueue();
-    $("#captureInbox").innerHTML = `<div class="panel-head"><div><h2>Work notes</h2><p>Recent notes connected to active work.</p></div><button data-action="run-command" data-command="add-note" type="button">Add note</button></div>${state.notes.slice(0,4).map((n) => `<div class="capture-row"><div><strong>${h(n.title)}</strong><small>${h(n.body)}</small><div class="work-meta"><span>${h(n.tags.join(", "))}</span><span>${h(rel(n.updatedAt))}</span></div></div></div>`).join("")}`;
+  function showToast(message) {
+    let wrap = $('.toast-wrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'toast-wrap';
+      document.body.appendChild(wrap);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    wrap.appendChild(toast);
+    setTimeout(() => toast.remove(), 2600);
   }
 
-  function renderCaptureSection(){
-    setSectionHeader("Inbox", "Process captured pages, notes, and decisions into tasks or archives.");
-    renderAttentionTiles();
-    $("#topPriority").innerHTML = `<div class="panel-head"><div><h2>Quick capture</h2><p>Save a note locally or capture the active browser page from the popup or side panel.</p></div><button data-action="open-side-panel" type="button">Open side panel</button></div><form id="quickNoteForm" class="quick-capture-form"><label class="sr-only" for="quickNoteText">Quick note</label><textarea id="quickNoteText" placeholder="Decision, follow-up, URL, or reminder" rows="3"></textarea><div class="button-row"><button class="primary-button" type="submit">Save capture</button><button data-action="capture-current-tab" type="button">Capture tab</button></div></form>`;
-    renderCaptureInbox();
-    $("#workQueue").innerHTML = `<div class="panel-head"><div><h2>Recent captures</h2><p>Latest local captures and their processing state.</p></div></div>${state.captures.slice(0,8).map((c) => `<div class="capture-row"><div><strong>${h(c.title)}</strong><div class="work-meta"><span>${h(c.type)}</span><span>${h(c.status)}</span><span>${h(rel(c.createdAt))}</span></div><small>${h(c.note)}</small></div></div>`).join("")}`;
+  function categoryById(id) {
+    return state.categories.find((category) => category.id === id) || state.categories[0];
   }
 
-  function renderSourcesSection(){
-    const stale = state.sources.filter((s)=>s.state !== "fresh");
-    setSectionHeader("Sources", stale.length ? `${stale.length} source${stale.length === 1 ? "" : "s"} need review before the next operating check.` : "All local sources are fresh and ready.");
-    renderAttentionTiles();
-    $("#topPriority").innerHTML = `<div class="panel-head"><div><h2>Source health</h2><p>Refresh stale records and confirm local backup readiness.</p></div><button data-action="run-command" data-command="export" type="button">Export backup</button></div>${state.sources.map(renderSourceRow).join("")}`;
-    $("#workQueue").innerHTML = `<div class="panel-head"><div><h2>Stale records</h2><p>Items that can make the dashboard less trustworthy.</p></div></div>${stale.length ? stale.map(renderSourceRow).join("") : empty("No stale sources", "Local data is current.")}`;
-    $("#captureInbox").innerHTML = `<div class="panel-head"><div><h2>Backup status</h2><p>Local-first data can be exported or restored at any time.</p></div><button data-action="run-command" data-command="settings" type="button">Storage settings</button></div><div class="source-row"><div><strong>Last local save</strong><small>${h(rel(state.updatedAt))} · stored locally in Chrome</small></div><span class="state-badge success">ready</span></div>`;
+  function routeLabel(route) {
+    return ({ home: 'Widgets', apps: 'Apps', explore: 'Explore' })[route] || 'Widgets';
   }
 
-  function renderSourceRow(s){
-    const tone = s.state === "fresh" ? "success" : "warning";
-    const title = s.state === "fresh" ? "Fresh" : "Needs review";
-    return `<div class="source-row source-state ${h(tone)}"><div><strong>${h(s.label)}</strong><small>${h(title)} · updated ${h(rel(s.updatedAt))}</small></div><div class="row-actions"><span class="state-badge ${h(tone)}">${h(s.state)}</span><button data-action="source-detail" data-id="${h(s.id)}" type="button">Inspect</button></div></div>`;
+  function appUrl(app) {
+    return escapeHtml(app.url || '#');
   }
 
-  function renderReportsSection(){
-    setSectionHeader("Reports", "Review local report freshness, export backups, and inspect stale sources.");
-    renderAttentionTiles();
-    $("#topPriority").innerHTML = `<div class="panel-head"><div><h2>Source review</h2><p>${state.sources.filter((s)=>s.state!=="fresh").length} source${state.sources.filter((s)=>s.state!=="fresh").length === 1 ? "" : "s"} need review.</p></div><button data-action="run-command" data-command="export" type="button">Export backup</button></div>${state.sources.map((s) => `<div class="source-row"><div><strong>${h(s.label)}</strong><small>${h(s.state)} · updated ${h(rel(s.updatedAt))}</small></div></div>`).join("")}`;
-    $("#workQueue").innerHTML = `<div class="panel-head"><div><h2>Saved reports</h2><p>Local-first review cards and export status.</p></div></div>${state.reports.map((r) => `<div class="report-row"><div><strong>${h(r.title)}</strong><div class="work-meta"><span>${h(r.status)}</span><span>${h(r.timeRange)}</span><span>Generated ${h(rel(r.lastGenerated))}</span></div></div><div class="row-actions"><button data-action="report-detail" data-id="${h(r.id)}" type="button">Review</button></div></div>`).join("")}`;
-    $("#captureInbox").innerHTML = renderMetrics();
+  function renderTopTabs() {
+    return `<nav class="top-tabs" aria-label="App categories">
+      ${state.categories.map((category) => `<button class="top-tab ${state.settings.appCategory === category.id ? 'active' : ''}" data-action="category" data-category="${escapeHtml(category.id)}" type="button">
+        <span class="tab-icon">${escapeHtml(category.icon)}</span><span>${escapeHtml(category.label)}</span>
+      </button>`).join('')}
+    </nav>`;
   }
 
-  function renderActivitySection(){
-    setSectionHeader("Activity", "Timeline of local captures, task changes, imports, exports, alerts, and layout edits.");
-    renderAttentionTiles();
-    $("#topPriority").innerHTML = `<div class="panel-head"><div><h2>Recent changes</h2><p>User-visible actions, not developer logs.</p></div></div>${activityRows(8)}`;
-    $("#workQueue").innerHTML = `<div class="panel-head"><div><h2>Completed and changed</h2><p>Recent saved operations.</p></div></div>${activityRows(12)}`;
-    $("#captureInbox").innerHTML = `<div class="panel-head"><div><h2>Notifications</h2><p>Unread local notices.</p></div><button data-action="open-alerts" type="button">Open</button></div>${notificationRows(6)}`;
+  function renderSearchHero() {
+    const engine = state.settings.searchEngine || 'google';
+    return `<section class="search-hero" aria-label="Search and quick commands">
+      <div class="search-line">
+        <div class="search-input-wrap">
+          <span aria-hidden="true">🔎</span>
+          <input id="mainSearch" type="search" placeholder="Search Google or run a LiveDash command" autocomplete="off" aria-label="Search or command">
+        </div>
+        <select class="search-engine" id="searchEngine" aria-label="Search engine">
+          <option value="google" ${engine === 'google' ? 'selected' : ''}>Google</option>
+          <option value="bing" ${engine === 'bing' ? 'selected' : ''}>Bing</option>
+          <option value="duckduckgo" ${engine === 'duckduckgo' ? 'selected' : ''}>DuckDuckGo</option>
+        </select>
+        <button class="icon-button" data-action="open-command" type="button" aria-label="Open command palette">⌘</button>
+      </div>
+      <div class="search-chips" aria-label="Quick actions">
+        <button class="search-chip" data-action="open-url" data-url="https://chat.openai.com" type="button">✦ ChatGPT</button>
+        <button class="search-chip" data-action="open-url" data-url="https://calendar.google.com" type="button">📅 Calendar</button>
+        <button class="search-chip" data-action="open-url" data-url="https://mail.google.com" type="button">✉️ Gmail</button>
+        <button class="search-chip" data-action="open-url" data-url="https://drive.google.com" type="button">▲ Drive</button>
+        <button class="search-chip" data-action="add-note" type="button">＋ Quick note</button>
+        <button class="search-chip" data-action="add-task" type="button">✓ Quick task</button>
+      </div>
+    </section>`;
   }
 
-  function renderAlertsSection(){
-    setSectionHeader("Alerts", "Actionable warnings, blockers, and source health items.");
-    renderAttentionTiles();
-    const open = state.alerts.filter((a)=>a.status === "open");
-    $("#topPriority").innerHTML = `<div class="panel-head"><div><h2>Open alerts</h2><p>${open.length} item${open.length === 1 ? "" : "s"} need attention.</p></div></div>${open.length ? open.map(renderAlertRow).join("") : empty("No open alerts", "All local warnings are clear.")}`;
-    $("#workQueue").innerHTML = `<div class="panel-head"><div><h2>Source health</h2><p>Stale and fresh sources by local timestamp.</p></div></div>${state.sources.map((s) => `<div class="source-row"><div><strong>${h(s.label)}</strong><small>${h(s.state)} · updated ${h(rel(s.updatedAt))}</small></div><span class="state-badge ${s.state === "fresh" ? "success" : "warning"}">${h(s.state)}</span></div>`).join("")}`;
-    $("#captureInbox").innerHTML = `<div class="panel-head"><div><h2>Notification history</h2><p>Completed actions and reminders.</p></div></div>${notificationRows(8)}`;
+  function renderClockCard() {
+    const parts = getTimeParts();
+    return `<section class="widget-card clock-card" aria-label="Clock and weather">
+      <div class="flip-clock">
+        <div class="time-block"><div>${escapeHtml(parts.hour)}</div><div>${escapeHtml(parts.minute)}</div></div>
+        <div class="date-block">
+          <div class="weekday">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { weekday: 'long' }).format(getNow()))}</div>
+          <div class="day">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { day: '2-digit' }).format(getNow()))}</div>
+          <div class="meta">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { month: 'long', year: 'numeric' }).format(getNow()))}</div>
+          <div class="meta">${escapeHtml(formatShortDate())}</div>
+        </div>
+      </div>
+      <div class="weather-pill"><span>☁️ ${escapeHtml(state.weather.city)} · ${escapeHtml(state.weather.summary)}</span><strong>${escapeHtml(String(state.weather.tempC))}°C</strong></div>
+      <button class="telegram-pill" data-action="open-url" data-url="https://web.telegram.org" type="button"><span>✈ Telegram Web</span><span>Open</span></button>
+      <div class="status-pill"><span>Local dashboard</span><span>Saved just now</span></div>
+    </section>`;
   }
 
-  function activityRows(limit){
-    return state.activity.slice(0,limit).map((a) => `<div class="activity-row"><div><strong>${h(a.title)}</strong><small>${h(a.detail)} · ${h(rel(a.createdAt))}</small></div></div>`).join("") || empty("No activity", "Actions will appear here.");
+  function renderBookmarkSlots() {
+    return `<section class="bookmark-grid" aria-label="Bookmark slots">
+      ${state.bookmarkSlots.map((slot) => {
+        const filled = Boolean(slot.url);
+        return `<button class="bookmark-slot ${filled ? 'filled' : ''}" style="--slot-color:${escapeHtml(slot.color || '#536dff')}" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
+          <span class="bookmark-icon">${escapeHtml(filled ? slot.icon : '+')}</span>
+          <span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span>
+        </button>`;
+      }).join('')}
+    </section>`;
   }
 
-  function notificationRows(limit){
-    return `<div class="timeline">${state.notifications.slice(0,limit).map((n) => `<div class="timeline-row ${n.read ? "is-read" : "is-unread"}"><span class="severity-dot ${n.severity === "warning" ? "warning" : n.severity === "success" ? "success" : "info"}"></span><div><strong>${h(n.title)}</strong><small>${h(n.body)}</small><div class="work-meta"><span>${h(rel(n.createdAt))}</span><span>${n.read ? "read" : "unread"}</span></div></div><button data-action="read-notice" data-id="${h(n.id)}" type="button">Mark read</button></div>`).join("")}</div>` || empty("No notifications", "Completed actions and warnings will appear here.");
+  function renderPetCard() {
+    return `<section class="widget-card pet-card" aria-label="Daily prompt">
+      <div class="pet-banner">
+        <div class="pet-avatar">🐶</div>
+        <div><div class="pet-title">Need a quick win?</div><div class="pet-subtitle">Add one task, capture one page, or open your calendar.</div></div>
+      </div>
+      <div class="pixel-pet" aria-hidden="true">🦊</div>
+      <div class="pet-hearts" aria-label="Focus energy">♥♥♥♥♥</div>
+      <button class="primary-button" data-action="add-task" type="button">Add today’s task</button>
+    </section>`;
   }
 
-  function renderTopPriority(){
-    const task = openTasks().sort((a,b) => priorityRank(a.priority)-priorityRank(b.priority))[0];
-    const root = $("#topPriority");
-    if(!task){
-      root.innerHTML = `<div class="panel-head"><div><h2>No urgent work</h2><p>Capture a task or process your inbox.</p></div><button data-action="add-task" type="button">Add task</button></div>`;
+  function renderCurrencyCard() {
+    const flags = { USD: '🇺🇸', EUR: '🇪🇺', GBP: '🇬🇧' };
+    return `<section class="widget-card compact" aria-label="Currency rates">
+      <div class="card-title-row"><div class="card-title">💱 Rates</div><button class="mini-button" data-action="refresh" type="button" aria-label="Refresh rates">↻</button></div>
+      <div class="currency-list">
+        ${state.currency.map((item) => `<div class="currency-row">
+          <div class="currency-flag">${escapeHtml(flags[item.code] || '◌')}</div>
+          <div class="currency-name">${escapeHtml(item.code)}</div>
+          <div class="currency-value">${escapeHtml(item.value)}</div>
+          <div class="currency-arrow ${escapeHtml(item.delta)}">${item.delta === 'flat' ? '→' : '↑'}</div>
+        </div>`).join('')}
+      </div>
+    </section>`;
+  }
+
+  function renderPomodoro() {
+    const total = (state.settings.focusMinutes || 25) * 60;
+    const remaining = state.focus.remaining || total;
+    const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
+    const seconds = (remaining % 60).toString().padStart(2, '0');
+    const deg = Math.max(0, Math.min(360, 360 - (remaining / total) * 360));
+    return `<section class="widget-card compact pomodoro-card" aria-label="Pomodoro timer">
+      <div class="card-title-row" style="width:100%"><div class="card-title">⏱ Focus</div><span class="card-subtitle">${state.focus.mode === 'break' ? 'Break' : 'Work'}</span></div>
+      <div class="pomo-ring" style="--pomo-deg:${deg}deg"><div><div class="pomo-time">${minutes}:${seconds}</div><div class="pomo-label">${state.focus.running ? 'In progress' : 'Ready'}</div></div></div>
+      <div class="pomo-controls">
+        <button class="mini-button" data-action="pomo-reset" type="button" aria-label="Reset focus timer">↺</button>
+        <button class="play-button" data-action="pomo-toggle" type="button" aria-label="Start or pause focus timer">${state.focus.running ? 'Ⅱ' : '▶'}</button>
+        <button class="mini-button" data-action="pomo-mode" type="button" aria-label="Switch focus mode">⇄</button>
+      </div>
+    </section>`;
+  }
+
+  function renderTasks() {
+    const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').slice(0, 4);
+    return `<section class="widget-card compact task-card" aria-label="Tasks">
+      <div class="card-title-row"><div class="card-title">☑ Tasks</div><button class="mini-button" data-action="clear-done" type="button" aria-label="Clear completed tasks">⌫</button></div>
+      <div class="task-list">
+        ${openTasks.length ? openTasks.map((task) => `<div class="task-row ${task.status === 'done' ? 'done' : ''}">
+          <button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}">${task.status === 'done' ? '✓' : ''}</button>
+          <div><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-${escapeHtml(task.priority)}">${escapeHtml(task.priority)}</span> · ${escapeHtml(task.source || 'Local')}</div></div>
+          <button class="mini-button" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Delete task">×</button>
+        </div>`).join('') : `<div class="empty-state"><div class="empty-icon">☑</div><div>No tasks to show.<br>Add a task or adjust filters.</div></div>`}
+      </div>
+      <div class="task-input-row"><button class="primary-button" data-action="add-task-input" type="button" aria-label="Add task">＋</button><input id="taskInput" placeholder="New task title..." aria-label="New task title"></div>
+    </section>`;
+  }
+
+  function renderCalendar() {
+    const today = getNow();
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOffset = start.getDay();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const prevDays = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    const cells = [];
+    for (let i = 0; i < 42; i += 1) {
+      const dayNumber = i - startOffset + 1;
+      const muted = dayNumber < 1 || dayNumber > daysInMonth;
+      const shown = dayNumber < 1 ? prevDays + dayNumber : dayNumber > daysInMonth ? dayNumber - daysInMonth : dayNumber;
+      const isToday = !muted && shown === today.getDate();
+      const event = !muted && [5, 11, 18, 24].includes(shown);
+      cells.push(`<div class="calendar-day ${muted ? 'muted' : ''} ${isToday ? 'today' : ''} ${event ? 'event' : ''}">${shown}</div>`);
+    }
+    return `<section class="widget-card compact calendar-card" aria-label="Calendar">
+      <div class="calendar-header"><button class="mini-button" type="button" aria-label="Previous month">‹</button><div class="calendar-month">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { month: 'long', year: 'numeric' }).format(today))}</div><button class="mini-button" type="button" aria-label="Next month">›</button></div>
+      <div class="calendar-grid">
+        ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => `<div class="calendar-day-name">${d}</div>`).join('')}
+        ${cells.join('')}
+      </div>
+      <div class="calendar-actions"><button class="secondary-button" data-action="open-url" data-url="https://calendar.google.com" type="button">Google Calendar</button><button class="secondary-button" data-action="add-task" type="button">Add reminder</button></div>
+    </section>`;
+  }
+
+  function renderDashboard() {
+    return `<main class="dashboard-grid" aria-label="Personal dashboard">
+      ${renderClockCard()}
+      <div class="widgets-main">
+        ${renderSearchHero()}
+        ${renderBookmarkSlots()}
+        <div class="lower-widget-grid">
+          ${renderCurrencyCard()}
+          ${renderPomodoro()}
+          ${renderTasks()}
+        </div>
+      </div>
+      <div class="right-rail">
+        ${renderPetCard()}
+        ${renderCalendar()}
+      </div>
+    </main>`;
+  }
+
+  function renderAppsPage() {
+    const selected = categoryById(state.settings.appCategory);
+    const daily = categoryById('daily');
+    const tools = categoryById('tools');
+    const publicServices = categoryById('public');
+    const google = categoryById('google');
+    const ai = categoryById('ai');
+    return `<main class="apps-grid-page" aria-label="Application hub">
+      <section class="app-panel">
+        <div class="app-panel-header"><div class="app-panel-title">${escapeHtml(selected.icon)} ${escapeHtml(selected.label)}</div><span class="badge">Featured</span></div>
+        <div class="app-grid">${selected.apps.slice(0, 18).map(renderAppTile).join('')}</div>
+      </section>
+      <div class="panel-grid">
+        <section class="app-panel">
+          <div class="app-panel-header"><div class="app-panel-title">🛠 Tools</div><span>Utilities</span></div>
+          <div class="app-grid" style="grid-template-columns:repeat(3,1fr)">${tools.apps.slice(0, 9).map(renderAppTile).join('')}</div>
+        </section>
+        <section class="app-panel">
+          <div class="app-panel-header"><div class="app-panel-title">🏛 Public Services</div><span>US / Europe</span></div>
+          <div class="app-grid" style="grid-template-columns:repeat(4,1fr)">${publicServices.apps.slice(0, 8).map(renderAppTile).join('')}</div>
+        </section>
+      </div>
+      <div class="two-col-panels">
+        <section class="app-panel">
+          <div class="app-panel-header"><div class="app-panel-title">🧠 AI</div><span>Assistants</span></div>
+          <div class="app-grid" style="grid-template-columns:repeat(4,1fr)">${ai.apps.slice(0, 8).map(renderAppTile).join('')}</div>
+        </section>
+        <section class="app-panel">
+          <div class="app-panel-header"><div class="app-panel-title">G Google Services</div><span>Workflows</span></div>
+          <div class="app-grid" style="grid-template-columns:repeat(5,1fr)">${google.apps.slice(0, 10).map(renderAppTile).join('')}</div>
+        </section>
+      </div>
+    </main>`;
+  }
+
+  function renderExplorePage() {
+    return `<main class="apps-grid-page" aria-label="Explore and personal shortcuts">
+      <div class="two-col-panels">
+        <section class="app-panel">
+          <div class="app-panel-header"><div class="app-panel-title">🌍 World clocks</div><span>Global teams</span></div>
+          <div class="currency-list">${state.worldClocks.map((clock) => `<div class="currency-row"><div class="currency-flag">🌐</div><div class="currency-name">${escapeHtml(clock.city)}</div><div class="currency-value">${escapeHtml(formatCityTime(clock.offset))}</div><div></div></div>`).join('')}</div>
+        </section>
+        <section class="app-panel">
+          <div class="app-panel-header"><div class="app-panel-title">📝 Notes</div><button class="secondary-button" data-action="add-note" type="button">Add note</button></div>
+          <div class="task-list">${state.notes.slice(0, 5).map((note) => `<div class="task-row"><div class="task-check">#</div><div><div class="task-title">${escapeHtml(note.title)}</div><div class="task-meta">${escapeHtml(note.tag)} · ${escapeHtml(new Date(note.createdAt).toLocaleDateString())}</div></div><button class="mini-button" data-action="delete-note" data-id="${escapeHtml(note.id)}" type="button">×</button></div>`).join('')}</div>
+        </section>
+      </div>
+      <section class="app-panel">
+        <div class="app-panel-header"><div class="app-panel-title">🔔 Notifications</div><button class="secondary-button" data-action="mark-read" type="button">Mark read</button></div>
+        <div class="task-list">${state.notifications.slice(0, 8).map((notice) => `<div class="task-row"><div class="task-check">${notice.read ? '✓' : '!'}</div><div><div class="task-title">${escapeHtml(notice.title)}</div><div class="task-meta">${escapeHtml(notice.body)} · ${escapeHtml(new Date(notice.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</div></div><button class="mini-button" data-action="dismiss-notice" data-id="${escapeHtml(notice.id)}" type="button">×</button></div>`).join('')}</div>
+      </section>
+    </main>`;
+  }
+
+  function renderAppTile(app) {
+    return `<a class="app-tile" href="${appUrl(app)}" target="_self" rel="noreferrer">
+      <span class="app-icon">${escapeHtml(app.icon || app.name[0])}</span>
+      <span class="app-label">${escapeHtml(app.name)}</span>
+      <span class="app-note">${escapeHtml(app.note || '')}</span>
+    </a>`;
+  }
+
+  function formatCityTime(offset) {
+    const utc = new Date(getNow().getTime() + getNow().getTimezoneOffset() * 60000);
+    const date = new Date(utc.getTime() + offset * 3600000);
+    return new Intl.DateTimeFormat(state.profile.locale || 'en-US', { hour: '2-digit', minute: '2-digit', hour12: state.profile.timeFormat !== '24h' }).format(date);
+  }
+
+  function renderDock() {
+    if (!state.settings.showDock) return '';
+    const route = state.settings.route;
+    return `<nav class="bottom-dock" aria-label="LiveDash navigation">
+      <div class="dock-side">
+        <button class="dock-button" data-action="login" type="button" aria-label="Account">☻</button>
+        <button class="dock-button" data-action="open-apps-category" data-category="daily" type="button" aria-label="Daily essentials">▢</button>
+        <button class="dock-button" data-action="settings" type="button" aria-label="Settings">⚙</button>
+        <button class="dock-button" data-action="toggle-dock" type="button" aria-label="Hide dock">◌</button>
+      </div>
+      <div class="dock-center">
+        <button class="dock-button ${route === 'apps' ? 'active' : ''}" data-route="apps" type="button" aria-label="App grid">▦</button>
+        <button class="dock-button ${route === 'explore' ? 'active' : ''}" data-route="explore" type="button" aria-label="Explore">🌐</button>
+        <button class="dock-button ${route === 'home' ? 'active' : ''}" data-route="home" type="button" aria-label="Widgets home">⌂</button>
+      </div>
+      <div class="brand-side"><span class="brand-text">LiveDash</span><span class="brand-mark">L</span></div>
+    </nav>`;
+  }
+
+  function renderModal() {
+    return `<div class="modal-backdrop ${loginOpen || bookmarkEditingId ? 'open' : ''}" data-action="close-modal"></div>
+      ${loginOpen ? `<section class="modal-card" role="dialog" aria-modal="true" aria-label="Sign in">
+        <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">×</button><div class="modal-title">Sign in to LiveDash</div></div>
+        <div class="auth-card">
+          <div class="auth-title">Sign in or create account</div>
+          <div class="auth-sub">Save your profile, favorites, and dashboard preferences locally first.</div>
+          <label><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
+          <button class="primary-button" data-action="sign-in" type="button">Continue</button>
+        </div>
+        <div class="divider">or</div>
+        <div class="auth-actions"><button class="secondary-button" data-action="google-sign-in" type="button">G Continue with Google</button><button class="secondary-button" data-action="password-sign-in" type="button">🔒 Use password</button></div>
+      </section>` : ''}
+      ${bookmarkEditingId ? renderBookmarkModal() : ''}`;
+  }
+
+  function renderBookmarkModal() {
+    const slot = state.bookmarkSlots.find((item) => item.id === bookmarkEditingId) || state.bookmarkSlots[0];
+    return `<section class="modal-card" role="dialog" aria-modal="true" aria-label="Edit bookmark">
+      <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">×</button><div class="modal-title">Bookmark slot</div></div>
+      <div class="auth-card">
+        <label><strong>Name</strong><input id="bookmarkName" class="form-input" value="${escapeHtml(slot.label === 'Add site' ? '' : slot.label)}" placeholder="Example: Gmail" aria-label="Bookmark name"></label>
+        <label><strong>URL</strong><input id="bookmarkUrl" class="form-input" value="${escapeHtml(slot.url || '')}" placeholder="https://example.com" aria-label="Bookmark URL"></label>
+        <label><strong>Icon</strong><input id="bookmarkIcon" class="form-input" value="${escapeHtml(slot.icon === '+' ? '' : slot.icon)}" placeholder="G" aria-label="Bookmark icon"></label>
+        <button class="primary-button" data-action="save-bookmark" type="button">Save slot</button>
+      </div>
+    </section>`;
+  }
+
+  function renderDrawer() {
+    return `<div class="drawer-backdrop ${drawerOpen ? 'open' : ''}" data-action="close-drawer"></div>
+      <aside class="drawer ${drawerOpen ? 'open' : ''}" aria-label="Settings drawer">
+        <div class="modal-head"><div class="modal-title">Customize LiveDash</div><button class="icon-button" data-action="close-drawer" type="button" aria-label="Close settings">×</button></div>
+        <section class="drawer-section"><div class="card-title">Background</div><div class="setting-grid">
+          ${['sky','mist','pearl','sunset','forest'].map((theme) => `<button class="setting-tile ${state.settings.theme === theme ? 'active' : ''}" data-action="theme" data-theme="${theme}" type="button">${escapeHtml(theme[0].toUpperCase() + theme.slice(1))}<br><span class="card-subtitle">${theme === 'sky' ? 'Widgetify blue' : 'Dashboard theme'}</span></button>`).join('')}
+        </div></section>
+        <section class="drawer-section"><div class="card-title">Search</div><div class="setting-grid">
+          ${Object.keys(searchEngines).map((engine) => `<button class="setting-tile ${state.settings.searchEngine === engine ? 'active' : ''}" data-action="engine" data-engine="${engine}" type="button">${escapeHtml(engine)}<br><span class="card-subtitle">Default engine</span></button>`).join('')}
+        </div></section>
+        <section class="drawer-section"><div class="card-title">Data</div><button class="secondary-button" data-action="export" type="button">Export backup</button><label class="secondary-button" style="cursor:pointer"><input id="importFile" type="file" accept="application/json" style="display:none">Import backup</label><button class="secondary-button" data-action="reset" type="button">Reset dashboard</button></section>
+        <section class="drawer-section"><div class="card-title">Keyboard</div><div class="task-row"><div class="task-check">⌘</div><div><div class="task-title">Open command palette</div><div class="task-meta">Cmd/Ctrl + K</div></div><span></span></div></section>
+      </aside>`;
+  }
+
+  function renderCommandPalette() {
+    const commands = [
+      ['home', 'Open widgets home', 'Dashboard widgets and cards', '⌂'],
+      ['apps', 'Open app library', 'Daily, tools, public services, Google, AI', '▦'],
+      ['explore', 'Open explore', 'Notes, clocks, notifications', '🌐'],
+      ['add-task', 'Add task', 'Create a quick task', '✓'],
+      ['add-note', 'Add note', 'Create a quick note', '📝'],
+      ['settings', 'Customize dashboard', 'Themes, search, backup', '⚙'],
+      ['export', 'Export backup', 'Download local dashboard data', '↓'],
+      ['login', 'Sign in', 'Local-first profile flow', '☻']
+    ];
+    return `<div class="command-backdrop ${commandOpen ? 'open' : ''}" data-action="close-command"></div>
+      <section class="command-card ${commandOpen ? 'open' : ''}" role="dialog" aria-label="Command palette">
+        <input id="commandInput" placeholder="Type a command, app, or website..." aria-label="Command search">
+        <div class="command-list" id="commandList">
+          ${commands.map(([action, title, sub, icon]) => `<button class="command-row" data-action="${escapeHtml(action)}" type="button"><span class="app-icon" style="width:36px;height:36px;border-radius:12px;font-size:18px">${escapeHtml(icon)}</span><span><span class="command-row-title">${escapeHtml(title)}</span><span class="command-row-sub">${escapeHtml(sub)}</span></span><span class="kbd">↵</span></button>`).join('')}
+        </div>
+      </section>`;
+  }
+
+  function render() {
+    setBodyTheme();
+    const route = state.settings.route || 'home';
+    root.innerHTML = `<div class="widgetify-shell">
+      ${renderTopTabs()}
+      <div class="page-grid">
+        ${route === 'home' ? renderDashboard() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
+      </div>
+    </div>
+    ${renderDock()}
+    ${renderModal()}
+    ${renderDrawer()}
+    ${renderCommandPalette()}`;
+    bindTransientInputs();
+  }
+
+  function bindTransientInputs() {
+    const search = $('#mainSearch');
+    if (search) {
+      search.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') runSearch(search.value);
+      });
+      search.addEventListener('focus', () => {});
+    }
+    const engine = $('#searchEngine');
+    if (engine) {
+      engine.addEventListener('change', async () => {
+        state.settings.searchEngine = engine.value;
+        await save();
+      });
+    }
+    const taskInput = $('#taskInput');
+    if (taskInput) {
+      taskInput.addEventListener('keydown', async (event) => {
+        if (event.key === 'Enter') await addTask(taskInput.value);
+      });
+    }
+    const commandInput = $('#commandInput');
+    if (commandInput) {
+      setTimeout(() => commandInput.focus(), 0);
+      commandInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') runSearch(commandInput.value);
+      });
+    }
+    const importFile = $('#importFile');
+    if (importFile) {
+      importFile.addEventListener('change', async () => {
+        if (importFile.files && importFile.files[0]) await importBackup(importFile.files[0]);
+      });
+    }
+  }
+
+  function runSearch(value) {
+    const query = String(value || '').trim();
+    if (!query) {
+      commandOpen = true;
+      render();
       return;
     }
-    root.innerHTML = `<div class="panel-head"><div><h2>Next decision</h2><p>${h(task.source)} · due ${h(dateFmt(task.due))}</p></div><span class="priority ${h(task.priority)}">${h(task.priority)}</span></div><div class="work-row"><div><strong>${h(task.title)}</strong><div class="work-meta"><span>${h(task.owner)}</span><span>${h(task.status)}</span><span>${h(task.notes)}</span></div></div><div class="row-actions"><button data-action="task-detail" data-id="${h(task.id)}" type="button">Open</button><button class="primary-button" data-action="complete-task" data-id="${h(task.id)}" type="button">Complete</button></div></div>`;
+    const lower = query.toLowerCase();
+    const matchingApp = state.categories.flatMap((category) => category.apps).find((app) => app.name.toLowerCase() === lower);
+    if (matchingApp) {
+      window.location.href = matchingApp.url;
+      return;
+    }
+    if (lower.startsWith('task ')) {
+      addTask(query.slice(5));
+      return;
+    }
+    if (lower.startsWith('note ')) {
+      addNote(query.slice(5));
+      return;
+    }
+    const engine = searchEngines[state.settings.searchEngine] || searchEngines.google;
+    window.location.href = engine + encodeURIComponent(query);
   }
 
-  function renderWorkQueue(){
-    const tasks = filteredTasks().slice(0,8);
-    $("#workQueue").innerHTML = `<div class="panel-head"><div><h2>Today work</h2><p>Tasks sorted by priority, due date, and source.</p></div><button data-action="add-task" type="button">Add task</button></div>${tasks.length ? tasks.map(renderTaskRow).join("") : empty("No matching work", "Add a task or clear the current filters.")}`;
+  async function addTask(title) {
+    const clean = String(title || '').trim() || 'New task';
+    state.tasks = [{ id: uid('task'), title: clean, status: 'open', priority: 'medium', due: new Date().toISOString(), source: 'LiveDash' }, ...(state.tasks || [])];
+    pushActivity('Task added', clean);
+    pushNotification('Task added', clean, 'success');
+    await save();
+    showToast('Task added');
+    render();
   }
 
-  function renderTaskRow(task){
-    return `<div class="work-row"><div><div class="work-title"><span class="priority ${h(task.priority)}">${h(task.priority)}</span><strong>${h(task.title)}</strong></div><div class="work-meta"><span>${h(task.status)}</span><span>${h(task.source)}</span><span>${h(task.owner)}</span><span>Due ${h(dateFmt(task.due))}</span></div></div><div class="row-actions"><button data-action="task-detail" data-id="${h(task.id)}" type="button">Open</button><button data-action="complete-task" data-id="${h(task.id)}" type="button">${task.status === "done" ? "Done" : "Complete"}</button></div></div>`;
+  async function addNote(body) {
+    const clean = String(body || '').trim() || 'New quick note';
+    state.notes = [{ id: uid('note'), title: clean.slice(0, 50), body: clean, tag: 'quick', createdAt: new Date().toISOString() }, ...(state.notes || [])];
+    pushActivity('Note added', clean.slice(0, 70));
+    await save();
+    showToast('Note saved');
+    render();
   }
 
-  function renderCaptureInbox(){
-    const captures = state.captures.filter((c) => c.status === "inbox").slice(0,5);
-    $("#captureInbox").innerHTML = `<div class="panel-head"><div><h2>Capture inbox</h2><p>Notes, links, and ideas waiting for triage.</p></div><button data-action="capture-current-tab" type="button">Capture tab</button></div>${captures.length ? captures.map((c) => `<div class="capture-row"><div><strong>${h(c.title)}</strong><div class="work-meta"><span>${h(c.type)}</span><span>${h(rel(c.createdAt))}</span>${c.url ? `<a href="${h(c.url)}" target="_blank" rel="noreferrer">Open source</a>` : ""}</div><small>${h(c.note)}</small></div><div class="row-actions"><button data-action="capture-to-task" data-id="${h(c.id)}" type="button">Task</button><button data-action="archive-capture" data-id="${h(c.id)}" type="button">Archive</button></div></div>`).join("") : empty("Inbox is clear", "Capture a page from the popup, side panel, or command palette.")}`;
+  async function completeTask(id) {
+    state.tasks = state.tasks.map((task) => task.id === id ? { ...task, status: 'done' } : task);
+    pushActivity('Task completed', state.tasks.find((task) => task.id === id)?.title || 'Task');
+    await save();
+    showToast('Task completed');
+    render();
   }
 
-  function renderContext(){
-    renderBrowserContext();
-    $("#agendaPanel").innerHTML = `<div class="panel-head"><div><h2>Next</h2><p>Schedule and focus context.</p></div></div>${state.schedule.slice(0,3).map((item) => `<div class="source-row"><strong>${h(item.time)} · ${h(item.title)}</strong><small>${h(item.prep)}</small></div>`).join("")}`;
-    const alerts = state.alerts.filter((a) => a.status === "open").slice(0,3);
-    $("#alertsPanel").innerHTML = `<div class="panel-head"><div><h2>Alerts</h2><p>Only items that need action.</p></div><button data-action="open-alerts" type="button">View</button></div>${alerts.length ? alerts.map(renderAlertRow).join("") : empty("No open alerts", "You are clear for now.")}`;
-    $("#sourcesPanel").innerHTML = `<div class="panel-head"><div><h2>Source health</h2><p>Freshness and local backup status.</p></div><button data-section="sources" type="button">Inspect</button></div>${state.sources.slice(0,4).map(renderSourceRow).join("")}`;
+  async function deleteTask(id) {
+    state.tasks = state.tasks.filter((task) => task.id !== id);
+    pushActivity('Task removed', 'Removed from local task list.');
+    await save();
+    render();
   }
 
-  async function renderBrowserContext(){
-    const root = $("#browserContext");
-    root.innerHTML = `<div class="panel-head"><div><h2>Browser context</h2><p>Capture the active page into your local work stream.</p></div><button data-action="open-side-panel" type="button">Side panel</button></div><div id="tabContextBody" class="source-row context-ready"><div><strong>No active page available</strong><small>Open a regular web page to capture URL context, notes, or a page-linked task.</small></div><div class="row-actions"><button data-action="capture-current-tab" type="button">Save page</button><button data-action="task-from-tab" type="button">Task</button></div></div>${state.captures.slice(0,2).map((c) => `<div class="source-row"><div><strong>${h(c.title)}</strong><small>${h(c.type)} · ${h(c.status)} · ${h(rel(c.createdAt))}</small></div></div>`).join("")}`;
-    const tab = await getActiveTab();
-    if(tab && tab.url && !tab.url.startsWith("chrome://") && !tab.url.startsWith("chrome-extension://")){
-      const host = (() => { try { return new URL(tab.url).hostname; } catch { return "current page"; } })();
-      $("#tabContextBody").innerHTML = `<div><strong>${h(tab.title || "Current tab")}</strong><small>${h(host)} · available for capture</small></div><div class="row-actions"><button data-action="capture-current-tab" type="button">Save page</button><button data-action="task-from-tab" type="button">Create task</button></div>`;
+  async function saveBookmark() {
+    const name = $('#bookmarkName')?.value.trim() || 'New site';
+    let url = $('#bookmarkUrl')?.value.trim() || '';
+    const icon = $('#bookmarkIcon')?.value.trim() || name[0].toUpperCase();
+    if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
+    state.bookmarkSlots = state.bookmarkSlots.map((slot) => slot.id === bookmarkEditingId ? { ...slot, label: name, url, icon, color: randomColor(name) } : slot);
+    bookmarkEditingId = null;
+    pushActivity('Bookmark updated', name);
+    await save();
+    render();
+  }
+
+  function randomColor(seed) {
+    const colors = ['#536dff', '#18b9d2', '#28b56e', '#f3a51c', '#e94e5d', '#8b5cf6', '#111827'];
+    const total = String(seed).split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return colors[total % colors.length];
+  }
+
+  async function exportBackup() {
+    const backup = await window.LiveDashStore.exportState();
+    window.LiveDashStore.downloadJson(`livedash-backup-${new Date().toISOString().slice(0,10)}.json`, backup);
+    pushActivity('Backup exported', 'Downloaded a local LiveDash backup.');
+    await save();
+    showToast('Backup exported');
+  }
+
+  async function importBackup(file) {
+    try {
+      const payload = await window.LiveDashStore.readJsonFile(file);
+      state = await window.LiveDashStore.importState(payload);
+      pushActivity('Backup imported', 'Dashboard data was restored from file.');
+      showToast('Backup imported');
+      render();
+    } catch (error) {
+      showToast(error.message || 'Import failed');
     }
   }
 
-  function renderSecondary(){
-    const root = $("#secondaryContent");
-    const layouts = sectionModules();
-    root.innerHTML = layouts.map(renderModuleCard).join("");
+  async function resetDashboard() {
+    if (!confirm('Reset LiveDash to the default dashboard? A backup is recommended before reset.')) return;
+    state = await window.LiveDashStore.resetState();
+    showToast('Dashboard reset');
+    render();
   }
 
-  function sectionModules(){
-    const layout = currentLayout();
-    if(state.selectedSection === "today") return layout.filter((m) => !["work-queue","context-rail","capture-inbox","agenda","alerts-list"].includes(m.type));
-    if(state.selectedSection === "work") return layout.filter((m) => ["work-queue","capture-inbox","notes-log","activity"].includes(m.type));
-    if(state.selectedSection === "capture") return layout.filter((m) => ["context-rail","capture-inbox","notes-log","activity"].includes(m.type));
-    if(state.selectedSection === "sources") return layout.filter((m) => ["alerts-list","metric-drilldown","activity"].includes(m.type));
-    if(state.selectedSection === "reports") return layout.filter((m) => ["reports","metric-drilldown","activity"].includes(m.type));
-    if(state.selectedSection === "activity") return layout.filter((m) => ["activity","notes-log","capture-inbox"].includes(m.type));
-    if(state.selectedSection === "alerts") return layout.filter((m) => ["alerts-list","activity","metric-drilldown"].includes(m.type));
-    return layout;
+  function openUrl(url) {
+    if (url) window.location.href = url;
   }
 
-  function renderModuleCard(module){
-    const meta = catalog(module.type);
-    return `<article class="module-card" data-module-id="${h(module.id)}" data-module-type="${h(module.type)}" data-span="${span(module.span)}" tabindex="0"><div class="grid-guide"></div><header class="module-head"><div><h3>${h(meta.name)}</h3><p>${h(meta.dataSource)} · ${h(meta.freshness)}</p></div><div class="module-tools"><button data-action="details" data-id="${h(module.id)}" data-type="${h(module.type)}" type="button">Details</button>${state.editMode ? `<button data-action="select-module" data-id="${h(module.id)}" type="button">Settings</button><button data-action="move-module" data-dir="up" data-id="${h(module.id)}" type="button">Up</button><button data-action="move-module" data-dir="down" data-id="${h(module.id)}" type="button">Down</button><button data-action="resize-module" data-id="${h(module.id)}" type="button">${span(module.span)}</button><button class="danger" data-action="remove-module" data-id="${h(module.id)}" type="button">Remove</button>` : ""}</div></header>${renderModuleBody(module.type)}</article>`;
+  function closeOverlays() {
+    commandOpen = false;
+    drawerOpen = false;
+    loginOpen = false;
+    bookmarkEditingId = null;
   }
 
-  function renderModuleBody(type){
-    if(type === "metric-drilldown") return renderMetrics();
-    if(type === "activity") return state.activity.slice(0,6).map((a) => `<div class="activity-row"><strong>${h(a.title)}</strong><small>${h(a.detail)} · ${h(rel(a.createdAt))}</small></div>`).join("") || empty("No activity", "Changes will appear here.");
-    if(type === "reports") return state.reports.map((r) => `<div class="report-row"><strong>${h(r.title)}</strong><div class="work-meta"><span>${h(r.status)}</span><span>${h(r.timeRange)}</span><span>Generated ${h(rel(r.lastGenerated))}</span></div><button data-action="report-detail" data-id="${h(r.id)}" type="button">Review</button></div>`).join("");
-    if(type === "notes-log") return renderNotesModule();
-    if(type === "alerts-list") return state.alerts.slice(0,5).map(renderAlertRow).join("");
-    if(type === "capture-inbox") return state.captures.slice(0,5).map((c) => `<div class="capture-row"><strong>${h(c.title)}</strong><small>${h(c.note)} · ${h(rel(c.createdAt))}</small></div>`).join("");
-    if(type === "work-queue") return state.tasks.slice(0,5).map(renderTaskRow).join("");
-    if(type === "agenda") return state.schedule.map((e) => `<div class="source-row"><strong>${h(e.time)} · ${h(e.title)}</strong><small>${h(e.prep)}</small></div>`).join("");
-    return `<div class="source-row"><strong>${h(catalog(type).preview)}</strong><small>${h(catalog(type).description)}</small></div>`;
+  async function handleAction(action, button) {
+    if (!action) return;
+    if (['home','apps','explore'].includes(action)) {
+      state.settings.route = action;
+      commandOpen = false;
+      await save();
+      render();
+      return;
+    }
+    const actions = {
+      category: async () => { state.settings.appCategory = button.dataset.category; state.settings.route = 'apps'; await save(); render(); },
+      'open-apps-category': async () => { state.settings.appCategory = button.dataset.category; state.settings.route = 'apps'; await save(); render(); },
+      'open-url': () => openUrl(button.dataset.url),
+      'open-bookmark': () => { const slot = state.bookmarkSlots.find((item) => item.id === button.dataset.id); if (slot?.url) openUrl(slot.url); },
+      'edit-bookmark': () => { bookmarkEditingId = button.dataset.id; render(); },
+      'save-bookmark': saveBookmark,
+      login: () => { loginOpen = true; render(); },
+      'sign-in': async () => { state.profile.email = $('#authEmail')?.value.trim() || ''; state.profile.signedIn = true; loginOpen = false; pushActivity('Profile updated', state.profile.email || 'Signed in locally.'); await save(); showToast('Profile saved locally'); render(); },
+      'google-sign-in': async () => { state.profile.signedIn = true; state.profile.email = 'google-account@example.com'; loginOpen = false; await save(); showToast('Google sign-in placeholder saved locally'); render(); },
+      'password-sign-in': async () => { state.profile.signedIn = true; loginOpen = false; await save(); showToast('Password sign-in placeholder saved locally'); render(); },
+      'close-modal': () => { loginOpen = false; bookmarkEditingId = null; render(); },
+      settings: () => { drawerOpen = true; commandOpen = false; render(); },
+      'close-drawer': () => { drawerOpen = false; render(); },
+      'open-command': () => { commandOpen = true; render(); },
+      'close-command': () => { commandOpen = false; render(); },
+      'toggle-dock': async () => { state.settings.showDock = !state.settings.showDock; await save(); render(); },
+      theme: async () => { state.settings.theme = button.dataset.theme; await save(); showToast('Theme updated'); render(); },
+      engine: async () => { state.settings.searchEngine = button.dataset.engine; await save(); showToast('Search engine updated'); render(); },
+      'add-task': async () => { await addTask(prompt('Task title') || 'New task'); },
+      'add-task-input': async () => { await addTask($('#taskInput')?.value || 'New task'); },
+      'add-note': async () => { await addNote(prompt('Note') || 'New note'); },
+      'complete-task': async () => { await completeTask(button.dataset.id); },
+      'delete-task': async () => { await deleteTask(button.dataset.id); },
+      'delete-note': async () => { state.notes = state.notes.filter((note) => note.id !== button.dataset.id); await save(); render(); },
+      'clear-done': async () => { state.tasks = state.tasks.filter((task) => task.status !== 'done'); await save(); render(); },
+      'mark-read': async () => { state.notifications = state.notifications.map((notice) => ({ ...notice, read: true })); await save(); render(); },
+      'dismiss-notice': async () => { state.notifications = state.notifications.filter((notice) => notice.id !== button.dataset.id); await save(); render(); },
+      'pomo-toggle': async () => { state.focus.running = !state.focus.running; state.focus.lastStartedAt = state.focus.running ? new Date().toISOString() : state.focus.lastStartedAt; await save(); startTimer(); render(); },
+      'pomo-reset': async () => { state.focus.running = false; state.focus.remaining = (state.settings.focusMinutes || 25) * 60; await save(); render(); },
+      'pomo-mode': async () => { state.focus.mode = state.focus.mode === 'work' ? 'break' : 'work'; state.focus.remaining = state.focus.mode === 'work' ? (state.settings.focusMinutes || 25) * 60 : 5 * 60; await save(); render(); },
+      refresh: async () => { pushActivity('Widgets refreshed', 'Rates and local widgets updated.'); await save(); showToast('Widgets refreshed'); },
+      export: exportBackup,
+      reset: resetDashboard
+    };
+    if (actions[action]) await actions[action]();
   }
 
-  function renderMetrics(){
-    const data = metricData();
-    return `<div class="attention-strip metric-strip">${data.map((m) => `<button class="attention-card" type="button" data-action="metric-detail" data-id="${h(m.id)}"><span class="metric-kicker">${h(m.freshness)}</span><strong>${h(m.value)}</strong><span>${h(m.label)}</span><small>${h(m.detail)} · target ${h(m.target)}</small></button>`).join("")}</div><div class="chart-mini" aria-label="Work trend"><svg viewBox="0 0 460 72" width="100%" height="72"><polyline points="10,54 70,44 130,48 190,34 250,38 310,24 370,30 450,18" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/><polyline points="10,62 70,58 130,50 190,52 250,42 310,38 370,32 450,26" fill="none" stroke="var(--context)" stroke-width="2" stroke-linecap="round" opacity=".8"/></svg></div>`;
+  function startTimer() {
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(async () => {
+      if (!state?.focus?.running) return;
+      state.focus.remaining = Math.max(0, (state.focus.remaining || 0) - 1);
+      if (state.focus.remaining === 0) {
+        state.focus.running = false;
+        pushNotification('Focus session complete', 'Take a short break or start another session.', 'success');
+        await save();
+        render();
+        return;
+      }
+      const ring = $('.pomo-ring');
+      const time = $('.pomo-time');
+      if (ring && time) {
+        const total = (state.focus.mode === 'work' ? (state.settings.focusMinutes || 25) : 5) * 60;
+        const minutes = Math.floor(state.focus.remaining / 60).toString().padStart(2, '0');
+        const seconds = (state.focus.remaining % 60).toString().padStart(2, '0');
+        ring.style.setProperty('--pomo-deg', `${360 - (state.focus.remaining / total) * 360}deg`);
+        time.textContent = `${minutes}:${seconds}`;
+      }
+      if (state.focus.remaining % 15 === 0) await save();
+    }, 1000);
   }
 
-  function metricData(){
-    const today = new Date().toISOString().slice(0,10);
-    return [
-      { id:"due", value:state.tasks.filter((t)=>t.due===today&&t.status!=="done").length, label:"Due today", detail:"Open work with today's deadline", delta:"live", freshness:`Tasks · ${rel(sourceState("tasks").updatedAt)}`, target:"0 overdue" },
-      { id:"blocked", value:blockedTasks().length, label:"Blocked", detail:"Needs a decision before progress", delta:blockedTasks().length ? "resolve first" : "clear", freshness:`Tasks · ${rel(sourceState("tasks").updatedAt)}`, target:"0 blockers" },
-      { id:"captures", value:state.captures.filter((c)=>c.status==="inbox").length, label:"Capture inbox", detail:"Pages and notes waiting for triage", delta:"triage", freshness:`Captures · ${rel(sourceState("captures").updatedAt)}`, target:"empty inbox" },
-      { id:"stale", value:state.sources.filter((s)=>s.state!=="fresh").length, label:"Source review", detail:"Data sources outside freshness rules", delta:"refresh", freshness:`Sources · ${rel(state.updatedAt)}`, target:"all fresh" }
-    ];
-  }
+  root.addEventListener('click', async (event) => {
+    const button = event.target.closest('button, [data-action], [data-route]');
+    if (!button) return;
+    const route = button.dataset.route;
+    if (route) {
+      state.settings.route = route;
+      await save();
+      render();
+      return;
+    }
+    await handleAction(button.dataset.action, button);
+  });
 
-  function renderNotesModule(){
-    return `<form id="quickNoteForm" class="quick-capture-form"><label class="sr-only" for="quickNoteText">Quick note</label><textarea id="quickNoteText" placeholder="Capture a decision or follow-up" rows="2"></textarea><button type="submit">Save note</button></form>${state.notes.slice(0,4).map((note) => `<div class="capture-row"><strong>${h(note.title)}</strong><small>${h(note.tags.join(", "))} · ${h(rel(note.updatedAt))}</small><p>${h(note.body)}</p></div>`).join("")}`;
-  }
-
-  function renderAlertRow(alert){
-    const tone = alert.severity === "critical" ? "danger" : alert.severity === "warning" ? "warning" : "info";
-    const reviewAction = alert.source === "Capture inbox" ? "open-inbox" : alert.source === "Reports" ? "open-reports" : "open-work";
-    return `<div class="alert-row alert-${h(tone)}"><span class="severity-rail" aria-hidden="true"></span><div class="alert-main"><div class="alert-line"><span class="severity-dot ${h(tone)}"></span><strong>${h(alert.title)}</strong></div><small>${h(alert.body)}</small><div class="work-meta"><span>${h(alert.source)}</span><span>${h(rel(alert.createdAt))}</span><span>${h(alert.status)}</span></div></div><div class="row-actions"><button class="primary-button" data-action="${reviewAction}" type="button">Review</button><button class="ghost-action" data-action="ack-alert" data-id="${h(alert.id)}" type="button">Acknowledge</button></div></div>`;
-  }
-
-  function renderEdit(){
-    const shell = $("#editShell");
-    shell.hidden = !state.editMode;
-    renderInspector();
-  }
-
-  function renderInspector(){
-    const root = $("#moduleInspector");
-    if(!selectedModuleId){ root.innerHTML = `<div class="empty-state"><strong>No module selected</strong><p>Select a module to configure span, source, refresh, and display density.</p></div>`; return; }
-    const module = currentLayout().find((m) => m.id === selectedModuleId);
-    if(!module){ selectedModuleId = null; renderInspector(); return; }
-    const meta = catalog(module.type);
-    root.innerHTML = `<h3>${h(meta.name)}</h3><p class="meta">${h(meta.description)}</p><div class="settings-grid"><label>Span<select id="inspectorSpan">${allowedSpans.map((s)=>`<option value="${s}" ${span(module.span)===s?"selected":""}>${s} columns</option>`).join("")}</select></label><label>Density<select id="inspectorDensity"><option value="compact">Compact</option><option value="balanced">Balanced</option><option value="spacious">Spacious</option></select></label><label>Refresh<select id="inspectorRefresh"><option value="manual">Manual</option><option value="15m">15 minutes</option><option value="hourly">Hourly</option></select></label></div><div class="button-row"><button id="applyModuleSettings" class="primary-button" type="button">Apply</button><button data-action="remove-module" data-id="${h(module.id)}" class="danger" type="button">Remove</button></div><div class="source-row"><strong>Data source</strong><small>${h(meta.dataSource)} · ${h(meta.permissions)}</small></div>`;
-  }
-
-  function renderLibrary(){
-    const catSelect = $("#moduleCategory");
-    const categories = ["all", ...new Set(state.moduleCatalog.map((m) => m.category))];
-    catSelect.innerHTML = categories.map((c) => `<option value="${h(c)}">${h(c === "all" ? "All categories" : c)}</option>`).join("");
-    const query = ($("#moduleSearch")?.value || "").toLowerCase();
-    const cat = catSelect.value || "all";
-    const modules = state.moduleCatalog.filter((m) => (cat === "all" || m.category === cat) && [m.name,m.description,m.category].join(" ").toLowerCase().includes(query));
-    $("#moduleLibrary").innerHTML = modules.map((m) => `<article class="library-card"><div><h3>${h(m.name)}</h3><p>${h(m.description)}</p></div><div class="library-meta"><span>Category: ${h(m.category)}</span><span>Recommended: ${h(m.span)} columns</span><span>Source: ${h(m.dataSource)}</span><span>Freshness: ${h(m.freshness)}</span><span>Permissions: ${h(m.permissions)}</span></div><button class="primary-button" data-action="add-module" data-type="${h(m.id)}" type="button">Add module</button></article>`).join("") || empty("No modules found", "Try another category or search term.");
-  }
-
-  function renderNotifications(){
-    $("#notificationList").innerHTML = notificationRows(40);
-  }
-
-  function renderSettingsValues(){
-    const views = state.templates.map((v) => `<option value="${h(v.id)}" ${state.settings.defaultView === v.id ? "selected" : ""}>${h(v.name)}</option>`).join("");
-    $("#defaultViewSetting").innerHTML = views;
-    $("#themeSetting").value = state.settings.theme;
-    $("#densitySetting").value = state.settings.density;
-    $("#timeFormatSetting").value = state.settings.timeFormat;
-    $("#nameSetting").value = state.settings.displayName;
-    $("#defaultSpanSetting").value = String(state.settings.defaultModuleSpan || 6);
-  }
-
-  function bindStaticEvents(){
-    document.addEventListener("click", onClick);
-    document.addEventListener("submit", onSubmit);
-    document.addEventListener("keydown", onKeydown);
-    $("#viewSelect").addEventListener("change", async (e) => { await update((draft) => { draft.selectedView = e.target.value; draft.selectedSection = "today"; activity(draft,"view","View changed", templatesName(e.target.value)); }); });
-    $("#moduleSearch").addEventListener("input", renderLibrary);
-    $("#moduleCategory").addEventListener("change", renderLibrary);
-    ["themeSetting","densitySetting","timeFormatSetting","defaultViewSetting","nameSetting","defaultSpanSetting"].forEach((id) => $("#"+id).addEventListener("change", saveSettings));
-    $("#importFile").addEventListener("change", importFile);
-    $("#commandInput").addEventListener("input", renderCommands);
-  }
-
-  async function onClick(event){
-    const close = event.target.closest("[data-close]");
-    if(close){ closeOverlays(); return; }
-    const actionEl = event.target.closest("[data-section], [data-action], #commandOpen, #editToggle, #settingsOpen, #notificationOpen, #openModuleLibrary, #closeModuleLibrary, #closeSettings, #closeNotifications, #closeDetails, #mobileNavToggle, #openSidePanel, #undoLayout, #redoLayout, #restoreModules, #saveEdit, #cancelEdit, #exportBackup, #importBackup, #restoreBackup, #resetDashboard, #applyModuleSettings");
-    if(!actionEl) return;
-    const id = actionEl.id;
-    const action = actionEl.dataset.action;
-    if(id === "commandOpen" || action === "open-command") return openPalette();
-    if(id === "editToggle") return toggleEdit();
-    if(id === "settingsOpen" || action === "open-settings") return openDrawer("settingsDrawer");
-    if(id === "notificationOpen" || action === "open-alerts") return openDrawer("notificationDrawer");
-    if(action === "open-work") return setSection("work");
-    if(action === "open-inbox") return setSection("capture");
-    if(action === "open-reports") return setSection("reports");
-    if(action === "open-sources") return setSection("sources");
-    if(id === "openModuleLibrary" || action === "open-library") return openDrawer("moduleLibraryDrawer");
-    if(id === "closeModuleLibrary" || id === "closeSettings" || id === "closeNotifications" || id === "closeDetails") return closeOverlays();
-    if(id === "mobileNavToggle") return document.body.classList.toggle("nav-open");
-    if(id === "openSidePanel" || action === "open-side-panel") return openSidePanel();
-    if(id === "undoLayout") return undoLayout();
-    if(id === "redoLayout") return redoLayout();
-    if(id === "restoreModules") return applyTemplate(state.selectedView);
-    if(id === "saveEdit") return saveEdit();
-    if(id === "cancelEdit") return cancelEdit();
-    if(id === "exportBackup") return exportBackup();
-    if(id === "importBackup") return $("#importFile").click();
-    if(id === "restoreBackup") return restoreBackup();
-    if(id === "resetDashboard") return resetDashboard();
-    if(id === "applyModuleSettings") return applyModuleSettings();
-    if(actionEl.dataset.section) return setSection(actionEl.dataset.section);
-    if(action === "complete-task") return completeTask(actionEl.dataset.id);
-    if(action === "task-detail") return taskDetail(actionEl.dataset.id);
-    if(action === "add-task") return quickAddTask();
-    if(action === "capture-current-tab") return captureCurrentTab();
-    if(action === "task-from-tab") return taskFromCurrentTab();
-    if(action === "capture-to-task") return captureToTask(actionEl.dataset.id);
-    if(action === "archive-capture") return archiveCapture(actionEl.dataset.id);
-    if(action === "ack-alert") return acknowledgeAlert(actionEl.dataset.id);
-    if(action === "read-notice") return markNotice(actionEl.dataset.id);
-    if(action === "metric-detail") return metricDetail(actionEl.dataset.id);
-    if(action === "source-detail") return sourceDetail(actionEl.dataset.id);
-    if(action === "report-detail") return reportDetail(actionEl.dataset.id);
-    if(action === "details") return moduleDetail(actionEl.dataset.type || actionEl.dataset.id);
-    if(action === "add-module") return addModule(actionEl.dataset.type);
-    if(action === "remove-module") return removeModule(actionEl.dataset.id);
-    if(action === "resize-module") return resizeModule(actionEl.dataset.id);
-    if(action === "move-module") return moveModule(actionEl.dataset.id, actionEl.dataset.dir);
-    if(action === "select-module") { selectedModuleId = actionEl.dataset.id; return renderInspector(); }
-    if(action === "run-command") return runCommand(actionEl.dataset.command);
-  }
-
-  async function onSubmit(event){
-    if(event.target.id === "quickNoteForm"){
+  document.addEventListener('keydown', (event) => {
+    const isCommand = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+    if (isCommand) {
       event.preventDefault();
-      const input = $("#quickNoteText");
-      if(!input.value.trim()) return;
-      await update((draft) => { draft.notes.unshift({ id:defaults.uid("note"), title:"Quick note", body:input.value.trim(), tags:["capture"], sourceUrl:"", createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() }); activity(draft,"note","Note created", input.value.trim().slice(0,80)); notice(draft,"Note saved","Decision log updated.","success"); });
+      commandOpen = true;
+      render();
     }
+    if (event.key === 'Escape') {
+      closeOverlays();
+      render();
+    }
+  });
+
+  async function boot() {
+    state = await window.LiveDashStore.getState();
+    state.settings.route = state.settings.route || 'home';
+    state.settings.showDock = state.settings.showDock !== false;
+    render();
+    startTimer();
+    setInterval(() => {
+      const timeBlock = $('.time-block');
+      if (timeBlock) {
+        const parts = getTimeParts();
+        timeBlock.innerHTML = `<div>${escapeHtml(parts.hour)}</div><div>${escapeHtml(parts.minute)}</div>`;
+      }
+    }, 10000);
   }
 
-  function onKeydown(event){
-    const k = event.key.toLowerCase();
-    if((event.metaKey || event.ctrlKey) && k === "k"){ event.preventDefault(); openPalette(); }
-    if(k === "escape") closeOverlays();
-    if(k === "," && !event.metaKey && !event.ctrlKey && !isTyping(event)){ event.preventDefault(); openDrawer("settingsDrawer"); }
-    if(k === "c" && !isTyping(event)){ event.preventDefault(); openPalette("capture"); }
-  }
-
-  function isTyping(event){ return ["INPUT","TEXTAREA","SELECT"].includes(event.target.tagName); }
-  function openDrawer(id){ $("#"+id).hidden = false; }
-  function closeOverlays(){ $$(".drawer,.command-palette").forEach((el) => el.hidden = true); }
-  function openPalette(seed=""){ $("#commandPalette").hidden = false; $("#commandInput").value = seed; renderCommands(); setTimeout(() => $("#commandInput").focus(), 0); }
-
-  function renderCommands(){
-    const q = ($("#commandInput").value || "").toLowerCase();
-    const commands = commandList().filter((c) => `${c.label} ${c.detail}`.toLowerCase().includes(q));
-    $("#commandHints").innerHTML = ["capture", "task", "report", "view", "settings"].map((s) => `<span class="source-badge">${h(s)}</span>`).join("");
-    $("#commandList").innerHTML = commands.map((c) => `<button class="command-item" type="button" data-action="run-command" data-command="${h(c.id)}"><span><strong>${h(c.label)}</strong><span>${h(c.detail)}</span></span><kbd>${h(c.key || "Enter")}</kbd></button>`).join("") || empty("No command found", "Try add, capture, reports, or settings.");
-  }
-
-  function commandList(){
-    return [
-      { id:"capture-tab", label:"Capture current tab", detail:"Save the active page to the capture inbox", key:"C" },
-      { id:"add-task", label:"Add task", detail:"Create a task in today work" },
-      { id:"add-note", label:"Add note", detail:"Save a note to the decision log" },
-      { id:"open-alerts", label:"Open alerts", detail:"Review actionable notifications" },
-      { id:"open-sources", label:"Open source health", detail:"Review stale local sources" },
-      { id:"open-reports", label:"Open reports", detail:"Switch to report review" },
-      { id:"open-inbox", label:"Open inbox", detail:"Triage captured pages and notes" },
-      { id:"open-work", label:"Open work", detail:"Review tasks and blockers" },
-      { id:"open-library", label:"Open module library", detail:"Add a module in edit mode" },
-      { id:"toggle-edit", label:"Edit layout", detail:"Enter or exit edit mode" },
-      { id:"export", label:"Export backup", detail:"Download a local LiveDash backup" },
-      { id:"settings", label:"Open settings", detail:"Storage, shortcuts, templates, and reset" },
-      ...state.templates.map((v) => ({ id:`view:${v.id}`, label:`Switch to ${v.name}`, detail:v.description }))
-    ];
-  }
-
-  async function runCommand(id){
-    closeOverlays();
-    if(id === "capture-tab") return captureCurrentTab();
-    if(id === "add-task") return quickAddTask();
-    if(id === "add-note") return quickNote();
-    if(id === "open-alerts") return openDrawer("notificationDrawer");
-    if(id === "open-sources") return setSection("sources");
-    if(id === "open-reports") return setSection("reports");
-    if(id === "open-inbox") return setSection("capture");
-    if(id === "open-work") return setSection("work");
-    if(id === "open-library") { if(!state.editMode) await toggleEdit(); return openDrawer("moduleLibraryDrawer"); }
-    if(id === "toggle-edit") return toggleEdit();
-    if(id === "export") return exportBackup();
-    if(id === "settings") return openDrawer("settingsDrawer");
-    if(id.startsWith("view:")) return switchView(id.split(":")[1]);
-  }
-
-  async function update(mutator){
-    state = await storage.updateState((draft) => { mutator(draft); return draft; });
-    renderAll();
-  }
-  function snapshot(){ undoStack.push(defaults.clone(state.layouts)); redoStack = []; }
-  function activity(draft,type,title,detail){ storage.appendActivity(draft,type,title,detail); }
-  function notice(draft,title,body,severity="info"){ storage.appendNotification(draft,title,body,severity); }
-  function span(value){ const n = Number(value); return allowedSpans.includes(n) ? n : 6; }
-  function priorityRank(p){ return { critical:0, high:1, medium:2, low:3 }[p] ?? 4; }
-  function filteredTasks(){ return state.tasks.slice().sort((a,b) => priorityRank(a.priority)-priorityRank(b.priority) || String(a.due).localeCompare(String(b.due))); }
-  function empty(title, body){ return `<div class="empty-state"><strong>${h(title)}</strong><p>${h(body)}</p></div>`; }
-  function templatesName(id){ return (state.templates.find((t) => t.id === id) || {}).name || id; }
-
-  async function setSection(section){
-    if(section === "settings") return openDrawer("settingsDrawer");
-    await update((draft) => { draft.selectedSection = section; activity(draft,"navigation","Section opened", section); });
-  }
-  async function switchView(id){ await update((draft) => { draft.selectedView = id; draft.selectedSection = "today"; activity(draft,"view","View changed", templatesName(id)); }); }
-  async function toggleEdit(){
-    await update((draft) => { draft.editMode = !state.editMode; draft.dirty = draft.editMode; activity(draft,"edit", draft.editMode ? "Edit mode opened" : "Edit mode closed", draft.editMode ? "Layout controls are visible." : "Daily work mode restored."); });
-  }
-  async function saveEdit(){ await update((draft) => { draft.editMode = false; draft.dirty = false; activity(draft,"layout","Layout saved", templatesName(draft.selectedView)); notice(draft,"Layout saved","Your module layout was saved locally.","success"); }); }
-  async function cancelEdit(){ await update((draft) => { draft.editMode = false; draft.dirty = false; }); }
-  async function undoLayout(){ if(!undoStack.length) return toast("Nothing to undo"); const previous = undoStack.pop(); redoStack.push(defaults.clone(state.layouts)); await update((draft) => { draft.layouts = previous; activity(draft,"layout","Layout undo", "Previous layout restored."); }); }
-  async function redoLayout(){ if(!redoStack.length) return toast("Nothing to redo"); const next = redoStack.pop(); undoStack.push(defaults.clone(state.layouts)); await update((draft) => { draft.layouts = next; activity(draft,"layout","Layout redo", "Layout change reapplied."); }); }
-  async function applyTemplate(id){ snapshot(); await update((draft) => { draft.layouts[id] = defaults.layoutFromTemplate(id); draft.editMode = true; draft.dirty = true; activity(draft,"template","Template applied", templatesName(id)); }); }
-  async function addModule(type){ snapshot(); await update((draft) => { const layout = draft.layouts[draft.selectedView]; const meta = draft.moduleCatalog.find((m) => m.id === type); layout.push({ id:defaults.uid("module"), type, span:meta?.span || draft.settings.defaultModuleSpan || 6, order:layout.length, settings:{ density:draft.settings.density, refresh:"manual" } }); draft.editMode = true; draft.dirty = true; activity(draft,"module","Module added", meta?.name || type); notice(draft,"Module added", "Use undo if this was accidental.", "success"); }); closeOverlays(); }
-  async function removeModule(id){ snapshot(); await update((draft) => { const layout = draft.layouts[draft.selectedView]; const item = layout.find((m) => m.id === id); draft.layouts[draft.selectedView] = layout.filter((m) => m.id !== id).map((m,i)=>({ ...m, order:i })); draft.dirty = true; activity(draft,"module","Module removed", catalog(item?.type).name); notice(draft,"Module removed","Undo is available until reload.","warning"); }); }
-  async function resizeModule(id){ snapshot(); await update((draft) => { const m = draft.layouts[draft.selectedView].find((x) => x.id === id); if(m){ const i = allowedSpans.indexOf(span(m.span)); m.span = allowedSpans[(i+1)%allowedSpans.length]; draft.dirty = true; activity(draft,"module","Module resized", `${catalog(m.type).name}: ${m.span} columns`); } }); }
-  async function moveModule(id, dir){ snapshot(); await update((draft) => { const layout = draft.layouts[draft.selectedView].sort(byOrder); const i = layout.findIndex((m) => m.id === id); const j = dir === "up" ? i-1 : i+1; if(i >= 0 && j >= 0 && j < layout.length){ [layout[i], layout[j]] = [layout[j], layout[i]]; layout.forEach((m, index) => m.order = index); draft.layouts[draft.selectedView] = layout; draft.dirty = true; activity(draft,"module","Module reordered", catalog(layout[j].type).name); } }); }
-  async function applyModuleSettings(){ const m = currentLayout().find((x) => x.id === selectedModuleId); if(!m) return; const newSpan = Number($("#inspectorSpan").value); await update((draft) => { const target = draft.layouts[draft.selectedView].find((x) => x.id === selectedModuleId); target.span = newSpan; target.settings = { ...target.settings, density:$("#inspectorDensity").value, refresh:$("#inspectorRefresh").value }; draft.dirty = true; activity(draft,"module","Module settings changed", catalog(target.type).name); }); }
-
-  async function completeTask(id){ await update((draft) => { const task = draft.tasks.find((t) => t.id === id); if(task){ task.status = "done"; task.completedAt = new Date().toISOString(); activity(draft,"task","Task completed", task.title); notice(draft,"Task completed", task.title, "success"); } }); }
-  async function quickAddTask(){ const title = prompt("Task title"); if(!title) return; await update((draft) => { draft.tasks.unshift({ id:defaults.uid("task"), title:title.trim(), priority:"medium", status:"open", due:new Date().toISOString().slice(0,10), source:"Quick capture", owner:"You", notes:"Created from command palette.", createdAt:new Date().toISOString() }); activity(draft,"task","Task added", title.trim()); }); }
-  async function quickNote(){ const body = prompt("Note"); if(!body) return; await update((draft) => { draft.notes.unshift({ id:defaults.uid("note"), title:"Quick note", body:body.trim(), tags:["quick"], sourceUrl:"", createdAt:new Date().toISOString(), updatedAt:new Date().toISOString() }); activity(draft,"note","Note created", body.trim().slice(0,80)); }); }
-  async function captureToTask(id){ const capture = state.captures.find((c) => c.id === id); if(!capture) return; await update((draft) => { draft.tasks.unshift({ id:defaults.uid("task"), title:capture.title, priority:"medium", status:"open", due:new Date().toISOString().slice(0,10), source:"Capture inbox", owner:"You", notes:capture.note, linkedUrl:capture.url, createdAt:new Date().toISOString() }); const c = draft.captures.find((x)=>x.id===id); c.status = "converted"; activity(draft,"task","Task created from capture", capture.title); }); }
-  async function archiveCapture(id){ await update((draft) => { const c = draft.captures.find((x)=>x.id===id); if(c){ c.status = "archived"; activity(draft,"capture","Capture archived", c.title); } }); }
-  async function acknowledgeAlert(id){ await update((draft) => { const a = draft.alerts.find((x)=>x.id===id); if(a){ a.status = "acknowledged"; activity(draft,"alert","Alert acknowledged", a.title); } }); }
-  async function markNotice(id){ await update((draft) => { const n = draft.notifications.find((x)=>x.id===id); if(n){ n.read = true; activity(draft,"notification","Notification read", n.title); } }); }
-
-  async function captureCurrentTab(){
-    const tab = await getActiveTab();
-    if(!tab || !tab.url || tab.url.startsWith("chrome://")){ toast("Open a regular page, then capture from the popup or side panel."); return; }
-    await update((draft) => { draft.captures.unshift({ id:defaults.uid("capture"), type:"page", title:tab.title || tab.url, url:tab.url, note:"Captured from active browser tab.", status:"inbox", createdAt:new Date().toISOString() }); activity(draft,"capture","Current tab captured", tab.title || tab.url); notice(draft,"Page captured", "Saved to capture inbox.", "success"); });
-  }
-
-  async function taskFromCurrentTab(){
-    const tab = await getActiveTab();
-    if(!tab || !tab.url || tab.url.startsWith("chrome://")){ toast("Open a regular page, then create a page-linked task from the popup or side panel."); return; }
-    await update((draft) => { draft.tasks.unshift({ id:defaults.uid("task"), title:tab.title || "Review current page", priority:"medium", status:"open", due:new Date().toISOString().slice(0,10), source:"Current page", owner:"You", notes:tab.url, linkedUrl:tab.url, createdAt:new Date().toISOString() }); activity(draft,"task","Task created from current page", tab.title || tab.url); notice(draft,"Task created", "Saved with the page URL attached.", "success"); });
-  }
-
-  function getActiveTab(){
-    return new Promise((resolve) => {
-      if(typeof chrome === "undefined" || !chrome.tabs || !chrome.tabs.query){ resolve(null); return; }
-      chrome.tabs.query({ active:true, currentWindow:true }, (tabs) => resolve(tabs && tabs[0] ? tabs[0] : null));
-    });
-  }
-  function openSidePanel(){
-    if(typeof chrome !== "undefined" && chrome.sidePanel && chrome.sidePanel.open){ chrome.windows.getCurrent((win) => chrome.sidePanel.open({ windowId:win.id })); }
-    else toast("Side panel is available after loading the extension in Chrome.");
-  }
-
-  function taskDetail(id){ const task = state.tasks.find((t) => t.id === id); if(!task) return; detail("Task", task.title, `<div class="source-row"><strong>Status</strong><small>${h(task.status)} · ${h(task.priority)} · due ${h(dateFmt(task.due))}</small></div><div class="source-row"><strong>Source</strong><small>${h(task.source)} · ${h(task.owner)}</small></div><p>${h(task.notes)}</p>${task.linkedUrl ? `<p><a href="${h(task.linkedUrl)}" target="_blank" rel="noreferrer">Open source page</a></p>` : ""}`); }
-  function metricDetail(id){ const metric = metricData().find((m)=>m.id===id); detail("Metric", metric?.label || "Metric", `<div class="source-row"><strong>${h(metric?.value ?? "")}</strong><small>${h(metric?.detail ?? "Derived from local state")} · ${h(metric?.freshness || "local")}</small></div><div class="source-row"><strong>Target</strong><small>${h(metric?.target || "Review")}</small></div><p>Metric tiles act as live filters. Use Review to open the related work stream.</p><button data-action="${id === "captures" ? "open-inbox" : id === "stale" ? "open-sources" : "open-work"}" type="button">Review related items</button>`); }
-  function sourceDetail(id){ const s = sourceState(id); detail("Source", s.label, `<div class="source-row"><strong>${h(s.state)}</strong><small>Updated ${h(rel(s.updatedAt))} · stored locally</small></div><p>Freshness affects alerts, reports, and the attention summary.</p><button data-action="run-command" data-command="export" type="button">Export backup</button>`); }
-  function reportDetail(id){ const r = state.reports.find((x)=>x.id===id); detail("Report", r?.title || "Report", `<div class="source-row"><strong>${h(r?.status)}</strong><small>${h(r?.timeRange)} · generated ${h(rel(r?.lastGenerated))}</small></div><button data-action="run-command" data-command="export" type="button">Export backup</button>`); }
-  function moduleDetail(type){ const meta = catalog(type); detail("Module", meta.name, `<p>${h(meta.description)}</p><div class="source-row"><strong>Source</strong><small>${h(meta.dataSource)}</small></div><div class="source-row"><strong>States</strong><small>${h(meta.states)}</small></div><div class="source-row"><strong>Permissions</strong><small>${h(meta.permissions)}</small></div>`); }
-  function detail(kind,title,body){ $("#detailsTitle").textContent = `${kind}: ${title}`; $("#detailsSubtitle").textContent = "Source, state, and next action."; $("#detailsBody").innerHTML = body; openDrawer("detailsDrawer"); }
-
-  async function saveSettings(){ await update((draft) => { draft.settings.theme = $("#themeSetting").value; draft.settings.density = $("#densitySetting").value; draft.settings.timeFormat = $("#timeFormatSetting").value; draft.settings.defaultView = $("#defaultViewSetting").value; draft.settings.displayName = $("#nameSetting").value.trim() || "Alex"; draft.settings.defaultModuleSpan = Number($("#defaultSpanSetting").value); activity(draft,"settings","Settings changed","Appearance or defaults updated."); }); }
-  async function exportBackup(){ const data = await storage.exportState(); storage.downloadJson(data, `livedash-v12-backup-${new Date().toISOString().slice(0,10)}.json`); state = await storage.getState(); renderAll(); toast("Backup exported"); }
-  async function importFile(event){ const file = event.target.files[0]; if(!file) return; try{ const text = await file.text(); state = await storage.importState(JSON.parse(text)); renderAll(); closeOverlays(); toast("Backup imported"); } catch(error){ toast(error.message || "Import failed"); } finally{ event.target.value = ""; } }
-  async function restoreBackup(){ try{ state = await storage.restoreBackup(); renderAll(); toast("Restore point loaded"); } catch(error){ toast(error.message || "No restore point"); } }
-  async function resetDashboard(){ if(!confirm("Reset LiveDash to the default v12 dashboard? A restore point will be kept.")) return; state = await storage.resetState(); renderAll(); toast("Dashboard reset"); }
-
-  function toast(message){ const el = document.createElement("div"); el.className = "toast"; el.textContent = message; $("#toastRegion").append(el); setTimeout(() => el.remove(), 2600); }
-
-  init().catch((error) => { document.body.innerHTML = `<main class="options-shell"><section class="settings-panel"><h1>LiveDash could not start</h1><p>${h(error.message || error)}</p></section></main>`; });
+  boot().catch((error) => {
+    root.innerHTML = `<div class="modal-card"><div class="modal-title">LiveDash could not start</div><p>${escapeHtml(error.message)}</p></div>`;
+  });
 })();
