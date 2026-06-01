@@ -1,7 +1,7 @@
 (function(global){
-  const VERSION = 11;
-  const STORAGE_KEY = "livedash:v11:state";
-  const LEGACY_KEYS = ["livedash:v10:state", "livedash:v9:state", "livedash:v8:state", "livedash:v7:state", "livedash:v6:state", "livedash:v5:state", "livedash:v4:state", "livedash:state", "liveDashState"];
+  const VERSION = 12;
+  const STORAGE_KEY = "livedash:v12:state";
+  const LEGACY_KEYS = ["livedash:v11:state", "livedash:v10:state", "livedash:v9:state", "livedash:v8:state", "livedash:v7:state", "livedash:v6:state", "livedash:v5:state", "livedash:v4:state", "livedash:state", "liveDashState"];
   const now = () => new Date().toISOString();
   const uid = (prefix) => `${prefix}-${Math.random().toString(36).slice(2,8)}-${Date.now().toString(36)}`;
   const clone = (value) => JSON.parse(JSON.stringify(value));

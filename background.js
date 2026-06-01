@@ -1,4 +1,4 @@
-const STORAGE_KEY = "livedash:v11:state";
+const STORAGE_KEY = "livedash:v12:state";
 function now(){ return new Date().toISOString(); }
 function getState(){ return new Promise((resolve) => chrome.storage.local.get([STORAGE_KEY], (result) => resolve(result[STORAGE_KEY] || null))); }
 function setState(state){ return new Promise((resolve) => chrome.storage.local.set({ [STORAGE_KEY]: state }, resolve)); }
