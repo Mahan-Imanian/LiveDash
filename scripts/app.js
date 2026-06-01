@@ -8,10 +8,9 @@
   let bookmarkEditingId = null;
 
   const $ = (selector, node = document) => node.querySelector(selector);
-  const $$ = (selector, node = document) => Array.from(node.querySelectorAll(selector));
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
   const uid = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
-  const getNow = () => new Date();
+  const now = () => new Date();
 
   const searchEngines = {
     google: 'https://www.google.com/search?q=',
@@ -19,23 +18,26 @@
     duckduckgo: 'https://duckduckgo.com/?q='
   };
 
-  function formatTime(date = getNow()) {
-    const hour12 = state?.profile?.timeFormat !== '24h';
-    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { hour: '2-digit', minute: '2-digit', hour12 }).format(date);
+  function formatTime(date = now()) {
+    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: state?.profile?.timeFormat !== '24h'
+    }).format(date);
   }
 
-  function formatDate(date = getNow()) {
-    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(date);
-  }
-
-  function formatShortDate(date = getNow()) {
-    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+  function formatShortDate(date = now()) {
+    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    }).format(date);
   }
 
   function getTimeParts() {
-    const time = formatTime();
-    const parts = time.replace(/\s?(AM|PM)$/i, '').split(':');
-    return { hour: parts[0] || '00', minute: parts[1] || '00', suffix: (time.match(/AM|PM/i) || [''])[0] };
+    const clean = formatTime().replace(/\s?(AM|PM)$/i, '');
+    const [hour = '00', minute = '00'] = clean.split(':');
+    return { hour, minute };
   }
 
   function setBodyTheme() {
@@ -75,8 +77,10 @@
     return state.categories.find((category) => category.id === id) || state.categories[0];
   }
 
-  function routeLabel(route) {
-    return ({ home: 'Widgets', apps: 'Apps', explore: 'Explore' })[route] || 'Widgets';
+  function appColor(name) {
+    const colors = ['#5f74ff', '#23bfd3', '#2fc477', '#f2a724', '#f45d72', '#8b65ff', '#1f2937'];
+    const total = String(name).split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return colors[total % colors.length];
   }
 
   function appUrl(app) {
@@ -91,55 +95,74 @@
     </nav>`;
   }
 
+  function renderClockCard() {
+    const parts = getTimeParts();
+    const weekday = new Intl.DateTimeFormat(state.profile.locale || 'en-US', { weekday: 'long' }).format(now());
+    const month = new Intl.DateTimeFormat(state.profile.locale || 'en-US', { month: 'long', year: 'numeric' }).format(now());
+    const day = new Intl.DateTimeFormat(state.profile.locale || 'en-US', { day: '2-digit' }).format(now());
+    return `<section class="widget-card clock-card premium-card" aria-label="Clock and status">
+      <div class="clock-layout">
+        <div class="time-tile" aria-label="Current time"><span>${escapeHtml(parts.hour)}</span><span>${escapeHtml(parts.minute)}</span></div>
+        <div class="date-stack">
+          <div class="weekday">${escapeHtml(weekday)}</div>
+          <div class="day">${escapeHtml(day)}</div>
+          <div class="meta">${escapeHtml(month)}</div>
+          <div class="meta">${escapeHtml(formatShortDate())}</div>
+        </div>
+      </div>
+      <button class="status-row" data-action="open-url" data-url="https://weather.com" type="button"><span>☁️ ${escapeHtml(state.weather.city)} · ${escapeHtml(state.weather.summary)}</span><strong>${escapeHtml(String(state.weather.tempC))}°C</strong></button>
+      <button class="status-row" data-action="open-url" data-url="https://web.telegram.org" type="button"><span>✈ Telegram Web</span><strong>Open</strong></button>
+      <div class="status-row muted"><span>Local dashboard</span><strong>Saved just now</strong></div>
+    </section>`;
+  }
+
+  function renderCurrencyCard() {
+    const flags = { USD: 'US', EUR: 'EU', GBP: 'GB' };
+    return `<section class="widget-card rates-card premium-card" aria-label="Currency rates">
+      <div class="card-title-row"><div><div class="card-title">Rates</div><div class="card-subtitle">Base ${escapeHtml(state.settings.currencyBase || 'USD')}</div></div><button class="mini-button" data-action="refresh" type="button" aria-label="Refresh rates">↻</button></div>
+      <div class="currency-list">
+        ${state.currency.map((item) => `<div class="currency-row">
+          <span class="currency-flag">${escapeHtml(flags[item.code] || item.code.slice(0, 2))}</span>
+          <span class="currency-name">${escapeHtml(item.code)}</span>
+          <strong class="currency-value">${escapeHtml(item.value)}</strong>
+          <span class="currency-arrow ${escapeHtml(item.delta)}">${item.delta === 'flat' ? '→' : '↑'}</span>
+        </div>`).join('')}
+      </div>
+    </section>`;
+  }
+
   function renderSearchHero() {
     const engine = state.settings.searchEngine || 'google';
-    return `<section class="search-hero" aria-label="Search and quick commands">
+    return `<section class="search-hero premium-card" aria-label="Search and quick commands">
       <div class="search-line">
         <div class="search-input-wrap">
-          <span aria-hidden="true">🔎</span>
-          <input id="mainSearch" type="search" placeholder="Search Google or run a LiveDash command" autocomplete="off" aria-label="Search or command">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input id="mainSearch" type="search" placeholder="Search, open an app, or type a LiveDash command" autocomplete="off" aria-label="Search or command">
         </div>
         <select class="search-engine" id="searchEngine" aria-label="Search engine">
           <option value="google" ${engine === 'google' ? 'selected' : ''}>Google</option>
           <option value="bing" ${engine === 'bing' ? 'selected' : ''}>Bing</option>
           <option value="duckduckgo" ${engine === 'duckduckgo' ? 'selected' : ''}>DuckDuckGo</option>
         </select>
-        <button class="icon-button" data-action="open-command" type="button" aria-label="Open command palette">⌘</button>
+        <button class="command-button" data-action="open-command" type="button" aria-label="Open command palette">⌘K</button>
       </div>
       <div class="search-chips" aria-label="Quick actions">
         <button class="search-chip" data-action="open-url" data-url="https://chat.openai.com" type="button">✦ ChatGPT</button>
-        <button class="search-chip" data-action="open-url" data-url="https://calendar.google.com" type="button">📅 Calendar</button>
-        <button class="search-chip" data-action="open-url" data-url="https://mail.google.com" type="button">✉️ Gmail</button>
-        <button class="search-chip" data-action="open-url" data-url="https://drive.google.com" type="button">▲ Drive</button>
-        <button class="search-chip" data-action="add-note" type="button">＋ Quick note</button>
-        <button class="search-chip" data-action="add-task" type="button">✓ Quick task</button>
+        <button class="search-chip" data-action="open-url" data-url="https://calendar.google.com" type="button">Calendar</button>
+        <button class="search-chip" data-action="open-url" data-url="https://mail.google.com" type="button">Gmail</button>
+        <button class="search-chip" data-action="open-url" data-url="https://drive.google.com" type="button">Drive</button>
+        <button class="search-chip" data-action="add-note" type="button">Quick note</button>
+        <button class="search-chip" data-action="add-task" type="button">Quick task</button>
       </div>
-    </section>`;
-  }
-
-  function renderClockCard() {
-    const parts = getTimeParts();
-    return `<section class="widget-card clock-card" aria-label="Clock and weather">
-      <div class="flip-clock">
-        <div class="time-block"><div>${escapeHtml(parts.hour)}</div><div>${escapeHtml(parts.minute)}</div></div>
-        <div class="date-block">
-          <div class="weekday">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { weekday: 'long' }).format(getNow()))}</div>
-          <div class="day">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { day: '2-digit' }).format(getNow()))}</div>
-          <div class="meta">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { month: 'long', year: 'numeric' }).format(getNow()))}</div>
-          <div class="meta">${escapeHtml(formatShortDate())}</div>
-        </div>
-      </div>
-      <div class="weather-pill"><span>☁️ ${escapeHtml(state.weather.city)} · ${escapeHtml(state.weather.summary)}</span><strong>${escapeHtml(String(state.weather.tempC))}°C</strong></div>
-      <button class="telegram-pill" data-action="open-url" data-url="https://web.telegram.org" type="button"><span>✈ Telegram Web</span><span>Open</span></button>
-      <div class="status-pill"><span>Local dashboard</span><span>Saved just now</span></div>
     </section>`;
   }
 
   function renderBookmarkSlots() {
     return `<section class="bookmark-grid" aria-label="Bookmark slots">
-      ${state.bookmarkSlots.map((slot) => {
+      ${state.bookmarkSlots.map((slot, index) => {
         const filled = Boolean(slot.url);
-        return `<button class="bookmark-slot ${filled ? 'filled' : ''}" style="--slot-color:${escapeHtml(slot.color || '#536dff')}" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
+        const color = slot.color || appColor(slot.label || index);
+        return `<button class="bookmark-slot ${filled ? 'filled' : ''}" style="--slot-color:${escapeHtml(color)}" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
           <span class="bookmark-icon">${escapeHtml(filled ? slot.icon : '+')}</span>
           <span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span>
         </button>`;
@@ -148,29 +171,15 @@
   }
 
   function renderPetCard() {
-    return `<section class="widget-card pet-card" aria-label="Daily prompt">
+    const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').length;
+    return `<section class="widget-card pet-card premium-card" aria-label="Daily quick win">
       <div class="pet-banner">
         <div class="pet-avatar">🐶</div>
-        <div><div class="pet-title">Need a quick win?</div><div class="pet-subtitle">Add one task, capture one page, or open your calendar.</div></div>
+        <div><div class="pet-title">Need a quick win?</div><div class="pet-subtitle">${openTasks} open tasks · capture one link or start focus.</div></div>
       </div>
       <div class="pixel-pet" aria-hidden="true">🦊</div>
       <div class="pet-hearts" aria-label="Focus energy">♥♥♥♥♥</div>
       <button class="primary-button" data-action="add-task" type="button">Add today’s task</button>
-    </section>`;
-  }
-
-  function renderCurrencyCard() {
-    const flags = { USD: '🇺🇸', EUR: '🇪🇺', GBP: '🇬🇧' };
-    return `<section class="widget-card compact" aria-label="Currency rates">
-      <div class="card-title-row"><div class="card-title">💱 Rates</div><button class="mini-button" data-action="refresh" type="button" aria-label="Refresh rates">↻</button></div>
-      <div class="currency-list">
-        ${state.currency.map((item) => `<div class="currency-row">
-          <div class="currency-flag">${escapeHtml(flags[item.code] || '◌')}</div>
-          <div class="currency-name">${escapeHtml(item.code)}</div>
-          <div class="currency-value">${escapeHtml(item.value)}</div>
-          <div class="currency-arrow ${escapeHtml(item.delta)}">${item.delta === 'flat' ? '→' : '↑'}</div>
-        </div>`).join('')}
-      </div>
     </section>`;
   }
 
@@ -180,8 +189,8 @@
     const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
     const seconds = (remaining % 60).toString().padStart(2, '0');
     const deg = Math.max(0, Math.min(360, 360 - (remaining / total) * 360));
-    return `<section class="widget-card compact pomodoro-card" aria-label="Pomodoro timer">
-      <div class="card-title-row" style="width:100%"><div class="card-title">⏱ Focus</div><span class="card-subtitle">${state.focus.mode === 'break' ? 'Break' : 'Work'}</span></div>
+    return `<section class="widget-card compact pomodoro-card premium-card" aria-label="Focus timer">
+      <div class="card-title-row"><div><div class="card-title">Focus</div><div class="card-subtitle">${state.focus.mode === 'break' ? 'Break' : 'Work'} session</div></div><span class="mode-pill">${state.focus.running ? 'Live' : 'Ready'}</span></div>
       <div class="pomo-ring" style="--pomo-deg:${deg}deg"><div><div class="pomo-time">${minutes}:${seconds}</div><div class="pomo-label">${state.focus.running ? 'In progress' : 'Ready'}</div></div></div>
       <div class="pomo-controls">
         <button class="mini-button" data-action="pomo-reset" type="button" aria-label="Reset focus timer">↺</button>
@@ -193,21 +202,21 @@
 
   function renderTasks() {
     const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').slice(0, 4);
-    return `<section class="widget-card compact task-card" aria-label="Tasks">
-      <div class="card-title-row"><div class="card-title">☑ Tasks</div><button class="mini-button" data-action="clear-done" type="button" aria-label="Clear completed tasks">⌫</button></div>
+    return `<section class="widget-card compact task-card premium-card" aria-label="Tasks">
+      <div class="card-title-row"><div><div class="card-title">Tasks</div><div class="card-subtitle">Today’s list</div></div><button class="mini-button" data-action="clear-done" type="button" aria-label="Clear completed tasks">⌫</button></div>
       <div class="task-list">
         ${openTasks.length ? openTasks.map((task) => `<div class="task-row ${task.status === 'done' ? 'done' : ''}">
           <button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}">${task.status === 'done' ? '✓' : ''}</button>
-          <div><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-${escapeHtml(task.priority)}">${escapeHtml(task.priority)}</span> · ${escapeHtml(task.source || 'Local')}</div></div>
-          <button class="mini-button" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Delete task">×</button>
-        </div>`).join('') : `<div class="empty-state"><div class="empty-icon">☑</div><div>No tasks to show.<br>Add a task or adjust filters.</div></div>`}
+          <div class="task-copy"><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-${escapeHtml(task.priority)}">${escapeHtml(task.priority)}</span> · ${escapeHtml(task.source || 'Local')}</div></div>
+          <button class="mini-button row-action" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Delete task">×</button>
+        </div>`).join('') : `<div class="empty-state"><div class="empty-icon">✓</div><div>No tasks waiting.<br>Add one from the command bar.</div></div>`}
       </div>
       <div class="task-input-row"><button class="primary-button" data-action="add-task-input" type="button" aria-label="Add task">＋</button><input id="taskInput" placeholder="New task title..." aria-label="New task title"></div>
     </section>`;
   }
 
   function renderCalendar() {
-    const today = getNow();
+    const today = now();
     const start = new Date(today.getFullYear(), today.getMonth(), 1);
     const startOffset = start.getDay();
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
@@ -221,7 +230,7 @@
       const event = !muted && [5, 11, 18, 24].includes(shown);
       cells.push(`<div class="calendar-day ${muted ? 'muted' : ''} ${isToday ? 'today' : ''} ${event ? 'event' : ''}">${shown}</div>`);
     }
-    return `<section class="widget-card compact calendar-card" aria-label="Calendar">
+    return `<section class="widget-card compact calendar-card premium-card" aria-label="Calendar">
       <div class="calendar-header"><button class="mini-button" type="button" aria-label="Previous month">‹</button><div class="calendar-month">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { month: 'long', year: 'numeric' }).format(today))}</div><button class="mini-button" type="button" aria-label="Next month">›</button></div>
       <div class="calendar-grid">
         ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => `<div class="calendar-day-name">${d}</div>`).join('')}
@@ -231,91 +240,86 @@
     </section>`;
   }
 
-  function renderDashboard() {
+  function renderHomePage() {
     return `<main class="dashboard-grid" aria-label="Personal dashboard">
-      ${renderClockCard()}
-      <div class="widgets-main">
+      <div class="left-stack">
+        ${renderClockCard()}
+        ${renderCurrencyCard()}
+      </div>
+      <div class="center-stack">
         ${renderSearchHero()}
         ${renderBookmarkSlots()}
         <div class="lower-widget-grid">
-          ${renderCurrencyCard()}
           ${renderPomodoro()}
           ${renderTasks()}
         </div>
       </div>
-      <div class="right-rail">
+      <div class="right-stack">
         ${renderPetCard()}
         ${renderCalendar()}
       </div>
     </main>`;
   }
 
-  function renderAppsPage() {
-    const selected = categoryById(state.settings.appCategory);
-    const daily = categoryById('daily');
-    const tools = categoryById('tools');
-    const publicServices = categoryById('public');
-    const google = categoryById('google');
-    const ai = categoryById('ai');
-    return `<main class="apps-grid-page" aria-label="Application hub">
-      <section class="app-panel">
-        <div class="app-panel-header"><div class="app-panel-title">${escapeHtml(selected.icon)} ${escapeHtml(selected.label)}</div><span class="badge">Featured</span></div>
-        <div class="app-grid">${selected.apps.slice(0, 18).map(renderAppTile).join('')}</div>
-      </section>
-      <div class="panel-grid">
-        <section class="app-panel">
-          <div class="app-panel-header"><div class="app-panel-title">🛠 Tools</div><span>Utilities</span></div>
-          <div class="app-grid" style="grid-template-columns:repeat(3,1fr)">${tools.apps.slice(0, 9).map(renderAppTile).join('')}</div>
-        </section>
-        <section class="app-panel">
-          <div class="app-panel-header"><div class="app-panel-title">🏛 Public Services</div><span>US / Europe</span></div>
-          <div class="app-grid" style="grid-template-columns:repeat(4,1fr)">${publicServices.apps.slice(0, 8).map(renderAppTile).join('')}</div>
-        </section>
-      </div>
-      <div class="two-col-panels">
-        <section class="app-panel">
-          <div class="app-panel-header"><div class="app-panel-title">🧠 AI</div><span>Assistants</span></div>
-          <div class="app-grid" style="grid-template-columns:repeat(4,1fr)">${ai.apps.slice(0, 8).map(renderAppTile).join('')}</div>
-        </section>
-        <section class="app-panel">
-          <div class="app-panel-header"><div class="app-panel-title">G Google Services</div><span>Workflows</span></div>
-          <div class="app-grid" style="grid-template-columns:repeat(5,1fr)">${google.apps.slice(0, 10).map(renderAppTile).join('')}</div>
-        </section>
-      </div>
-    </main>`;
-  }
-
-  function renderExplorePage() {
-    return `<main class="apps-grid-page" aria-label="Explore and personal shortcuts">
-      <div class="two-col-panels">
-        <section class="app-panel">
-          <div class="app-panel-header"><div class="app-panel-title">🌍 World clocks</div><span>Global teams</span></div>
-          <div class="currency-list">${state.worldClocks.map((clock) => `<div class="currency-row"><div class="currency-flag">🌐</div><div class="currency-name">${escapeHtml(clock.city)}</div><div class="currency-value">${escapeHtml(formatCityTime(clock.offset))}</div><div></div></div>`).join('')}</div>
-        </section>
-        <section class="app-panel">
-          <div class="app-panel-header"><div class="app-panel-title">📝 Notes</div><button class="secondary-button" data-action="add-note" type="button">Add note</button></div>
-          <div class="task-list">${state.notes.slice(0, 5).map((note) => `<div class="task-row"><div class="task-check">#</div><div><div class="task-title">${escapeHtml(note.title)}</div><div class="task-meta">${escapeHtml(note.tag)} · ${escapeHtml(new Date(note.createdAt).toLocaleDateString())}</div></div><button class="mini-button" data-action="delete-note" data-id="${escapeHtml(note.id)}" type="button">×</button></div>`).join('')}</div>
-        </section>
-      </div>
-      <section class="app-panel">
-        <div class="app-panel-header"><div class="app-panel-title">🔔 Notifications</div><button class="secondary-button" data-action="mark-read" type="button">Mark read</button></div>
-        <div class="task-list">${state.notifications.slice(0, 8).map((notice) => `<div class="task-row"><div class="task-check">${notice.read ? '✓' : '!'}</div><div><div class="task-title">${escapeHtml(notice.title)}</div><div class="task-meta">${escapeHtml(notice.body)} · ${escapeHtml(new Date(notice.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</div></div><button class="mini-button" data-action="dismiss-notice" data-id="${escapeHtml(notice.id)}" type="button">×</button></div>`).join('')}</div>
-      </section>
-    </main>`;
-  }
-
   function renderAppTile(app) {
-    return `<a class="app-tile" href="${appUrl(app)}" target="_self" rel="noreferrer">
+    const color = app.color || appColor(app.name);
+    return `<a class="app-tile" style="--app-color:${escapeHtml(color)}" href="${appUrl(app)}" target="_self" rel="noreferrer">
       <span class="app-icon">${escapeHtml(app.icon || app.name[0])}</span>
       <span class="app-label">${escapeHtml(app.name)}</span>
       <span class="app-note">${escapeHtml(app.note || '')}</span>
     </a>`;
   }
 
+  function renderAppPanel(category, options = {}) {
+    const apps = category.apps.slice(0, options.limit || category.apps.length);
+    return `<section class="app-panel premium-card ${options.featured ? 'featured-panel' : ''}">
+      <div class="app-panel-header"><div class="app-panel-title"><span>${escapeHtml(category.icon)}</span>${escapeHtml(category.label)}</div><span class="badge">${escapeHtml(options.badge || (options.featured ? 'Featured' : category.accent || 'Apps'))}</span></div>
+      <div class="app-grid ${options.compact ? 'compact-app-grid' : ''}">${apps.map(renderAppTile).join('')}</div>
+    </section>`;
+  }
+
+  function renderAppsPage() {
+    const selected = categoryById(state.settings.appCategory);
+    const tools = categoryById('tools');
+    const publicServices = categoryById('public');
+    const google = categoryById('google');
+    const ai = categoryById('ai');
+    return `<main class="apps-grid-page" aria-label="Application hub">
+      ${renderAppPanel(selected, { featured: true, badge: 'Featured', limit: 18 })}
+      <div class="panel-grid">
+        ${renderAppPanel(tools, { compact: true, badge: 'Utilities', limit: 9 })}
+        ${renderAppPanel(publicServices, { compact: true, badge: 'US / Europe', limit: 8 })}
+      </div>
+      <div class="two-col-panels">
+        ${renderAppPanel(ai, { compact: true, badge: 'Assistants', limit: 8 })}
+        ${renderAppPanel(google, { compact: true, badge: 'Workflows', limit: 10 })}
+      </div>
+    </main>`;
+  }
+
   function formatCityTime(offset) {
-    const utc = new Date(getNow().getTime() + getNow().getTimezoneOffset() * 60000);
+    const utc = new Date(now().getTime() + now().getTimezoneOffset() * 60000);
     const date = new Date(utc.getTime() + offset * 3600000);
     return new Intl.DateTimeFormat(state.profile.locale || 'en-US', { hour: '2-digit', minute: '2-digit', hour12: state.profile.timeFormat !== '24h' }).format(date);
+  }
+
+  function renderExplorePage() {
+    return `<main class="apps-grid-page explore-grid" aria-label="Notes, clocks, and notifications">
+      <div class="two-col-panels">
+        <section class="app-panel premium-card">
+          <div class="app-panel-header"><div class="app-panel-title">🌍 World clocks</div><span class="badge">Global teams</span></div>
+          <div class="currency-list">${state.worldClocks.map((clock) => `<div class="currency-row"><span class="currency-flag">🌐</span><span class="currency-name">${escapeHtml(clock.city)}</span><strong class="currency-value">${escapeHtml(formatCityTime(clock.offset))}</strong><span></span></div>`).join('')}</div>
+        </section>
+        <section class="app-panel premium-card">
+          <div class="app-panel-header"><div class="app-panel-title">📝 Notes</div><button class="secondary-button" data-action="add-note" type="button">Add note</button></div>
+          <div class="task-list">${state.notes.slice(0, 6).map((note) => `<div class="task-row"><div class="task-check">#</div><div class="task-copy"><div class="task-title">${escapeHtml(note.title)}</div><div class="task-meta">${escapeHtml(note.tag)} · ${escapeHtml(new Date(note.createdAt).toLocaleDateString())}</div></div><button class="mini-button row-action" data-action="delete-note" data-id="${escapeHtml(note.id)}" type="button">×</button></div>`).join('')}</div>
+        </section>
+      </div>
+      <section class="app-panel premium-card">
+        <div class="app-panel-header"><div class="app-panel-title">🔔 Notifications</div><button class="secondary-button" data-action="mark-read" type="button">Mark read</button></div>
+        <div class="timeline-list">${state.notifications.slice(0, 8).map((notice) => `<div class="timeline-row ${notice.read ? 'read' : 'unread'}"><span class="timeline-dot"></span><div><div class="task-title">${escapeHtml(notice.title)}</div><div class="task-meta">${escapeHtml(notice.body)} · ${escapeHtml(new Date(notice.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</div></div><button class="mini-button row-action" data-action="dismiss-notice" data-id="${escapeHtml(notice.id)}" type="button">×</button></div>`).join('')}</div>
+      </section>
+    </main>`;
   }
 
   function renderDock() {
@@ -324,13 +328,13 @@
     return `<nav class="bottom-dock" aria-label="LiveDash navigation">
       <div class="dock-side">
         <button class="dock-button" data-action="login" type="button" aria-label="Account">☻</button>
-        <button class="dock-button" data-action="open-apps-category" data-category="daily" type="button" aria-label="Daily essentials">▢</button>
+        <button class="dock-button" data-action="open-apps-category" data-category="daily" type="button" aria-label="Daily essentials">□</button>
         <button class="dock-button" data-action="settings" type="button" aria-label="Settings">⚙</button>
         <button class="dock-button" data-action="toggle-dock" type="button" aria-label="Hide dock">◌</button>
       </div>
       <div class="dock-center">
         <button class="dock-button ${route === 'apps' ? 'active' : ''}" data-route="apps" type="button" aria-label="App grid">▦</button>
-        <button class="dock-button ${route === 'explore' ? 'active' : ''}" data-route="explore" type="button" aria-label="Explore">🌐</button>
+        <button class="dock-button ${route === 'explore' ? 'active' : ''}" data-route="explore" type="button" aria-label="Explore">◎</button>
         <button class="dock-button ${route === 'home' ? 'active' : ''}" data-route="home" type="button" aria-label="Widgets home">⌂</button>
       </div>
       <div class="brand-side"><span class="brand-text">LiveDash</span><span class="brand-mark">L</span></div>
@@ -343,12 +347,12 @@
         <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">×</button><div class="modal-title">Sign in to LiveDash</div></div>
         <div class="auth-card">
           <div class="auth-title">Sign in or create account</div>
-          <div class="auth-sub">Save your profile, favorites, and dashboard preferences locally first.</div>
+          <div class="auth-sub">Save favorites and dashboard preferences locally first.</div>
           <label><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
           <button class="primary-button" data-action="sign-in" type="button">Continue</button>
         </div>
         <div class="divider">or</div>
-        <div class="auth-actions"><button class="secondary-button" data-action="google-sign-in" type="button">G Continue with Google</button><button class="secondary-button" data-action="password-sign-in" type="button">🔒 Use password</button></div>
+        <div class="auth-actions"><button class="secondary-button" data-action="google-sign-in" type="button">G Continue with Google</button><button class="secondary-button" data-action="password-sign-in" type="button">Use password</button></div>
       </section>` : ''}
       ${bookmarkEditingId ? renderBookmarkModal() : ''}`;
   }
@@ -371,7 +375,7 @@
       <aside class="drawer ${drawerOpen ? 'open' : ''}" aria-label="Settings drawer">
         <div class="modal-head"><div class="modal-title">Customize LiveDash</div><button class="icon-button" data-action="close-drawer" type="button" aria-label="Close settings">×</button></div>
         <section class="drawer-section"><div class="card-title">Background</div><div class="setting-grid">
-          ${['sky','mist','pearl','sunset','forest'].map((theme) => `<button class="setting-tile ${state.settings.theme === theme ? 'active' : ''}" data-action="theme" data-theme="${theme}" type="button">${escapeHtml(theme[0].toUpperCase() + theme.slice(1))}<br><span class="card-subtitle">${theme === 'sky' ? 'Widgetify blue' : 'Dashboard theme'}</span></button>`).join('')}
+          ${['sky','mist','pearl','sunset','forest'].map((theme) => `<button class="setting-tile ${state.settings.theme === theme ? 'active' : ''}" data-action="theme" data-theme="${theme}" type="button">${escapeHtml(theme[0].toUpperCase() + theme.slice(1))}<br><span class="card-subtitle">${theme === 'sky' ? 'Soft blue workspace' : 'Dashboard theme'}</span></button>`).join('')}
         </div></section>
         <section class="drawer-section"><div class="card-title">Search</div><div class="setting-grid">
           ${Object.keys(searchEngines).map((engine) => `<button class="setting-tile ${state.settings.searchEngine === engine ? 'active' : ''}" data-action="engine" data-engine="${engine}" type="button">${escapeHtml(engine)}<br><span class="card-subtitle">Default engine</span></button>`).join('')}
@@ -385,9 +389,9 @@
     const commands = [
       ['home', 'Open widgets home', 'Dashboard widgets and cards', '⌂'],
       ['apps', 'Open app library', 'Daily, tools, public services, Google, AI', '▦'],
-      ['explore', 'Open explore', 'Notes, clocks, notifications', '🌐'],
+      ['explore', 'Open explore', 'Notes, clocks, notifications', '◎'],
       ['add-task', 'Add task', 'Create a quick task', '✓'],
-      ['add-note', 'Add note', 'Create a quick note', '📝'],
+      ['add-note', 'Add note', 'Create a quick note', '✎'],
       ['settings', 'Customize dashboard', 'Themes, search, backup', '⚙'],
       ['export', 'Export backup', 'Download local dashboard data', '↓'],
       ['login', 'Sign in', 'Local-first profile flow', '☻']
@@ -396,7 +400,7 @@
       <section class="command-card ${commandOpen ? 'open' : ''}" role="dialog" aria-label="Command palette">
         <input id="commandInput" placeholder="Type a command, app, or website..." aria-label="Command search">
         <div class="command-list" id="commandList">
-          ${commands.map(([action, title, sub, icon]) => `<button class="command-row" data-action="${escapeHtml(action)}" type="button"><span class="app-icon" style="width:36px;height:36px;border-radius:12px;font-size:18px">${escapeHtml(icon)}</span><span><span class="command-row-title">${escapeHtml(title)}</span><span class="command-row-sub">${escapeHtml(sub)}</span></span><span class="kbd">↵</span></button>`).join('')}
+          ${commands.map(([action, title, sub, icon]) => `<button class="command-row" data-action="${escapeHtml(action)}" type="button"><span class="command-glyph">${escapeHtml(icon)}</span><span><span class="command-row-title">${escapeHtml(title)}</span><span class="command-row-sub">${escapeHtml(sub)}</span></span><span class="kbd">Enter</span></button>`).join('')}
         </div>
       </section>`;
   }
@@ -404,10 +408,10 @@
   function render() {
     setBodyTheme();
     const route = state.settings.route || 'home';
-    root.innerHTML = `<div class="widgetify-shell">
+    root.innerHTML = `<div class="widgetify-shell route-${escapeHtml(route)}">
       ${renderTopTabs()}
       <div class="page-grid">
-        ${route === 'home' ? renderDashboard() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
+        ${route === 'home' ? renderHomePage() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
       </div>
     </div>
     ${renderDock()}
@@ -423,7 +427,6 @@
       search.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') runSearch(search.value);
       });
-      search.addEventListener('focus', () => {});
     }
     const engine = $('#searchEngine');
     if (engine) {
@@ -517,17 +520,11 @@
     let url = $('#bookmarkUrl')?.value.trim() || '';
     const icon = $('#bookmarkIcon')?.value.trim() || name[0].toUpperCase();
     if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
-    state.bookmarkSlots = state.bookmarkSlots.map((slot) => slot.id === bookmarkEditingId ? { ...slot, label: name, url, icon, color: randomColor(name) } : slot);
+    state.bookmarkSlots = state.bookmarkSlots.map((slot) => slot.id === bookmarkEditingId ? { ...slot, label: name, url, icon, color: appColor(name) } : slot);
     bookmarkEditingId = null;
     pushActivity('Bookmark updated', name);
     await save();
     render();
-  }
-
-  function randomColor(seed) {
-    const colors = ['#536dff', '#18b9d2', '#28b56e', '#f3a51c', '#e94e5d', '#8b5cf6', '#111827'];
-    const total = String(seed).split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return colors[total % colors.length];
   }
 
   async function exportBackup() {
@@ -570,7 +567,7 @@
 
   async function handleAction(action, button) {
     if (!action) return;
-    if (['home','apps','explore'].includes(action)) {
+    if (['home', 'apps', 'explore'].includes(action)) {
       state.settings.route = action;
       commandOpen = false;
       await save();
@@ -586,8 +583,8 @@
       'save-bookmark': saveBookmark,
       login: () => { loginOpen = true; render(); },
       'sign-in': async () => { state.profile.email = $('#authEmail')?.value.trim() || ''; state.profile.signedIn = true; loginOpen = false; pushActivity('Profile updated', state.profile.email || 'Signed in locally.'); await save(); showToast('Profile saved locally'); render(); },
-      'google-sign-in': async () => { state.profile.signedIn = true; state.profile.email = 'google-account@example.com'; loginOpen = false; await save(); showToast('Google sign-in placeholder saved locally'); render(); },
-      'password-sign-in': async () => { state.profile.signedIn = true; loginOpen = false; await save(); showToast('Password sign-in placeholder saved locally'); render(); },
+      'google-sign-in': async () => { state.profile.signedIn = true; state.profile.email = 'google-account@example.com'; loginOpen = false; await save(); showToast('Google sign-in saved locally'); render(); },
+      'password-sign-in': async () => { state.profile.signedIn = true; loginOpen = false; await save(); showToast('Password sign-in saved locally'); render(); },
       'close-modal': () => { loginOpen = false; bookmarkEditingId = null; render(); },
       settings: () => { drawerOpen = true; commandOpen = false; render(); },
       'close-drawer': () => { drawerOpen = false; render(); },
@@ -673,10 +670,10 @@
     render();
     startTimer();
     setInterval(() => {
-      const timeBlock = $('.time-block');
+      const timeBlock = $('.time-tile');
       if (timeBlock) {
         const parts = getTimeParts();
-        timeBlock.innerHTML = `<div>${escapeHtml(parts.hour)}</div><div>${escapeHtml(parts.minute)}</div>`;
+        timeBlock.innerHTML = `<span>${escapeHtml(parts.hour)}</span><span>${escapeHtml(parts.minute)}</span>`;
       }
     }, 10000);
   }

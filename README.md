@@ -1,37 +1,24 @@
-# LiveDash
+# LiveDash v13
 
-LiveDash is a Manifest V3 Chrome extension that transforms the new tab into an interactive, engaging, personalized dashboard.
+LiveDash is a Manifest V3 Chrome extension that transforms the new tab page into a polished, interactive, personalized dashboard for search, bookmarks, tasks, focus sessions, calendar context, notes, and quick links.
 
-This build is intentionally close to the Widgetify-style reference: light blue atmosphere, rounded white panels, category tabs, app launcher grids, widget cards, bottom dock, account modal, settings drawer, quick bookmarks, clock, calendar, currency, Pomodoro, tasks, notes, popup actions, and side-panel page capture.
-
-## Install locally
+## Load unpacked
 
 1. Unzip the project.
-2. Open Chrome and go to `chrome://extensions`.
+2. Open `chrome://extensions`.
 3. Enable Developer Mode.
-4. Click **Load unpacked**.
-5. Select the unzipped project folder.
+4. Choose **Load unpacked**.
+5. Select the unzipped LiveDash folder.
 6. Open a new tab.
 
-## Included extension surfaces
+## Included surfaces
 
-- `newtab.html` — primary LiveDash dashboard.
-- `popup.html` — quick capture, tab capture, task, note, and open dashboard actions.
-- `sidepanel.html` — current page workflow and capture surface.
-- `options.html` — theme, search, time format, import/export, reset, and shortcut settings.
-- `background.js` — lightweight MV3 service worker.
-
-## Features
-
-- Widgetify-style top category navigation.
-- App library tailored for US and European users.
-- Daily essentials, public services, tools, Google services, AI, travel/finance, and social categories.
-- Widget dashboard with clock, weather, search, bookmark slots, daily prompt, rates, Pomodoro, task list, calendar, notes, notifications, and world clocks.
-- Local-first persistence using `chrome.storage.local` with localStorage fallback for development.
-- Import/export backup.
-- Safe reset.
-- Cmd/Ctrl+K command palette.
-- Popup and side panel workflows.
+- New tab dashboard
+- Popup quick actions
+- Options/settings page
+- Side panel workflow
+- Background service worker
+- Local-first storage via `chrome.storage.local`
 
 ## Validation
 
@@ -42,6 +29,4 @@ npm run build
 npm run package
 ```
 
-The package command produces:
-
-`/mnt/data/updated-premium-project-v12-widgetify.zip`
+The validator checks Manifest V3 structure, required extension pages, CSP, runtime files, local assets, and packaged ZIP integrity.
