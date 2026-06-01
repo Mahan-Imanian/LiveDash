@@ -24,7 +24,7 @@
         <div class="task-row"><div class="task-check">⌘</div><div><div class="task-title">Open command palette</div><div class="task-meta">Cmd/Ctrl + K from the new tab dashboard</div></div><span></span></div>
         <div class="task-row"><div class="task-check">⎋</div><div><div class="task-title">Close overlays</div><div class="task-meta">Escape closes command palette, modal, or drawer</div></div><span></span></div>
       </section>
-      <section class="options-card"><div class="card-title">About</div><div class="card-subtitle">LiveDash 13.0.0 · English-first · US/EU global defaults · Widgetify-style personalization.</div></section>`;
+      <section class="options-card"><div class="card-title">About</div><div class="card-subtitle">LiveDash 14.0.0 · English-first · US/EU global defaults · Widgetify-style personalization.</div></section>`;
     document.getElementById('theme').value = state.settings.theme || 'sky';
     document.getElementById('density').value = state.settings.density || 'comfortable';
     document.getElementById('timeFormat').value = state.profile.timeFormat || '12h';
