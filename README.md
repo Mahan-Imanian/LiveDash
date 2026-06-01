@@ -1,38 +1,39 @@
-# LiveDash v12
+# LiveDash
 
-LiveDash is a local-first Chrome extension that turns the New Tab page into a focused daily command center.
+LiveDash is a Manifest V3 Chrome extension that transforms the new tab into an interactive, engaging, personalized dashboard.
 
-Version 11 removes the generated-dashboard feel and rebuilds the experience around command, capture, today’s work, browser context, and trustworthy local state.
+This build is intentionally close to the Widgetify-style reference: light blue atmosphere, rounded white panels, category tabs, app launcher grids, widget cards, bottom dock, account modal, settings drawer, quick bookmarks, clock, calendar, currency, Pomodoro, tasks, notes, popup actions, and side-panel page capture.
 
-## Install
+## Install locally
 
 1. Unzip the project.
-2. Open `chrome://extensions`.
+2. Open Chrome and go to `chrome://extensions`.
 3. Enable Developer Mode.
-4. Choose **Load unpacked**.
-5. Select the unzipped LiveDash folder.
+4. Click **Load unpacked**.
+5. Select the unzipped project folder.
 6. Open a new tab.
 
-## Extension surfaces
+## Included extension surfaces
 
-- **New Tab**: daily command surface, work queue, capture inbox, context rail, alerts, reports, modules, settings.
-- **Popup**: quick capture, capture current tab, add task, top work, open dashboard, open side panel.
-- **Side Panel**: focused current-page workflow with page capture and task creation.
-- **Options**: appearance, density, default view, shortcuts, backup, import, restore, reset.
-- **Background service worker**: local freshness checks and stale source notices.
+- `newtab.html` — primary LiveDash dashboard.
+- `popup.html` — quick capture, tab capture, task, note, and open dashboard actions.
+- `sidepanel.html` — current page workflow and capture surface.
+- `options.html` — theme, search, time format, import/export, reset, and shortcut settings.
+- `background.js` — lightweight MV3 service worker.
 
-## Keyboard
+## Features
 
-- `Ctrl K` or `Cmd K`: open command palette.
-- `Esc`: close command palette, drawers, and overlays.
-- `C`: open capture command when not typing.
-- `,`: open settings when not typing.
+- Widgetify-style top category navigation.
+- App library tailored for US and European users.
+- Daily essentials, public services, tools, Google services, AI, travel/finance, and social categories.
+- Widget dashboard with clock, weather, search, bookmark slots, daily prompt, rates, Pomodoro, task list, calendar, notes, notifications, and world clocks.
+- Local-first persistence using `chrome.storage.local` with localStorage fallback for development.
+- Import/export backup.
+- Safe reset.
+- Cmd/Ctrl+K command palette.
+- Popup and side panel workflows.
 
-## Data model
-
-LiveDash stores data in `chrome.storage.local` under schema version 11. Local storage fallback is kept for development contexts. Imports are validated. Reset creates a restore point.
-
-## Validate
+## Validation
 
 Run:
 
@@ -41,15 +42,6 @@ npm run build
 npm run package
 ```
 
-The build validates Manifest V3, required extension pages, CSP, local assets, no inline scripts, no remote scripts, English/global runtime files, JavaScript syntax, and package structure.
+The package command produces:
 
-## Load test checklist
-
-- New Tab opens `newtab.html`.
-- Popup opens and saves a capture.
-- Side panel opens and captures the active page.
-- Options page saves preferences.
-- Command palette opens with `Ctrl K`.
-- Task completion persists after reload.
-- Export/import/reset flows complete.
-- No horizontal overflow at desktop, tablet, and mobile widths.
+`/mnt/data/updated-premium-project-v12-widgetify.zip`

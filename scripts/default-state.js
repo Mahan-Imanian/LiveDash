@@ -1,142 +1,226 @@
-(function(global){
-  const VERSION = 12;
-  const STORAGE_KEY = "livedash:v12:state";
-  const LEGACY_KEYS = ["livedash:v11:state", "livedash:v10:state", "livedash:v9:state", "livedash:v8:state", "livedash:v7:state", "livedash:v6:state", "livedash:v5:state", "livedash:v4:state", "livedash:state", "liveDashState"];
-  const now = () => new Date().toISOString();
-  const uid = (prefix) => `${prefix}-${Math.random().toString(36).slice(2,8)}-${Date.now().toString(36)}`;
-  const clone = (value) => JSON.parse(JSON.stringify(value));
-  const todayISO = () => new Date().toISOString().slice(0,10);
-  const plusDays = (days) => {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return date.toISOString().slice(0,10);
+(function () {
+  const SCHEMA_VERSION = 121;
+
+  const nowIso = () => new Date().toISOString();
+
+  const categories = [
+    {
+      id: 'daily',
+      label: 'Daily Essentials',
+      icon: '🔔',
+      accent: 'rose',
+      apps: [
+        { name: 'Gmail', url: 'https://mail.google.com', icon: '✉️', note: 'Inbox' },
+        { name: 'Google Calendar', url: 'https://calendar.google.com', icon: '📅', note: 'Schedule' },
+        { name: 'Google Drive', url: 'https://drive.google.com', icon: '🟢', note: 'Files' },
+        { name: 'Notion', url: 'https://www.notion.so', icon: 'N', note: 'Docs' },
+        { name: 'Todoist', url: 'https://todoist.com', icon: '✓', note: 'Tasks' },
+        { name: 'Slack', url: 'https://slack.com/signin', icon: '💬', note: 'Teams' },
+        { name: 'Zoom', url: 'https://zoom.us', icon: '🎥', note: 'Calls' },
+        { name: 'Dropbox', url: 'https://www.dropbox.com', icon: '📦', note: 'Cloud' },
+        { name: 'Outlook', url: 'https://outlook.live.com', icon: 'O', note: 'Mail' },
+        { name: 'Microsoft To Do', url: 'https://to-do.office.com', icon: '☑️', note: 'Lists' },
+        { name: '1Password', url: 'https://my.1password.com', icon: '🔐', note: 'Vault' },
+        { name: 'LinkedIn', url: 'https://www.linkedin.com', icon: 'in', note: 'Network' },
+        { name: 'GitHub', url: 'https://github.com', icon: '⌘', note: 'Code' },
+        { name: 'Figma', url: 'https://www.figma.com', icon: '◈', note: 'Design' },
+        { name: 'Canva', url: 'https://www.canva.com', icon: 'C', note: 'Create' },
+        { name: 'Spotify', url: 'https://open.spotify.com', icon: '♫', note: 'Music' },
+        { name: 'YouTube', url: 'https://www.youtube.com', icon: '▶', note: 'Video' },
+        { name: 'Wikipedia', url: 'https://www.wikipedia.org', icon: 'W', note: 'Reference' }
+      ]
+    },
+    {
+      id: 'public',
+      label: 'Public Services',
+      icon: '🏛️',
+      accent: 'slate',
+      apps: [
+        { name: 'IRS', url: 'https://www.irs.gov', icon: '🇺🇸', note: 'US taxes' },
+        { name: 'USPS Tracking', url: 'https://tools.usps.com/go/TrackConfirmAction_input', icon: '📮', note: 'Parcels' },
+        { name: 'GOV.UK', url: 'https://www.gov.uk', icon: '🇬🇧', note: 'UK services' },
+        { name: 'EU Portal', url: 'https://european-union.europa.eu', icon: '🇪🇺', note: 'EU services' },
+        { name: 'NHS', url: 'https://www.nhs.uk', icon: '⚕️', note: 'Health' },
+        { name: 'DHL Tracking', url: 'https://www.dhl.com', icon: '🚚', note: 'Shipping' },
+        { name: 'Royal Mail', url: 'https://www.royalmail.com', icon: '📯', note: 'UK post' },
+        { name: 'UPS', url: 'https://www.ups.com', icon: '📦', note: 'Shipping' }
+      ]
+    },
+    {
+      id: 'tools',
+      label: 'Tools',
+      icon: '🛠️',
+      accent: 'blue',
+      apps: [
+        { name: 'Trello', url: 'https://trello.com', icon: '▣', note: 'Boards' },
+        { name: 'Miro', url: 'https://miro.com', icon: 'M', note: 'Whiteboard' },
+        { name: 'Loom', url: 'https://www.loom.com', icon: '◧', note: 'Screen video' },
+        { name: 'TinyPNG', url: 'https://tinypng.com', icon: '🐼', note: 'Compress' },
+        { name: 'CloudConvert', url: 'https://cloudconvert.com', icon: '☁️', note: 'Convert' },
+        { name: 'Remove.bg', url: 'https://www.remove.bg', icon: '✂️', note: 'Image edit' },
+        { name: 'Unsplash', url: 'https://unsplash.com', icon: '▧', note: 'Photos' },
+        { name: 'Google Translate', url: 'https://translate.google.com', icon: '🌐', note: 'Translate' },
+        { name: 'Speedtest', url: 'https://www.speedtest.net', icon: '⚡', note: 'Network' },
+        { name: 'Archive.org', url: 'https://archive.org', icon: '🏛', note: 'Archive' }
+      ]
+    },
+    {
+      id: 'google',
+      label: 'Google Services',
+      icon: 'G',
+      accent: 'green',
+      apps: [
+        { name: 'Search', url: 'https://www.google.com', icon: 'G', note: 'Web' },
+        { name: 'Maps', url: 'https://maps.google.com', icon: '🗺️', note: 'Places' },
+        { name: 'Drive', url: 'https://drive.google.com', icon: '▲', note: 'Files' },
+        { name: 'Docs', url: 'https://docs.google.com', icon: '📄', note: 'Docs' },
+        { name: 'Sheets', url: 'https://sheets.google.com', icon: '▦', note: 'Sheets' },
+        { name: 'Slides', url: 'https://slides.google.com', icon: '▣', note: 'Slides' },
+        { name: 'Meet', url: 'https://meet.google.com', icon: '🎦', note: 'Calls' },
+        { name: 'Keep', url: 'https://keep.google.com', icon: '💡', note: 'Notes' },
+        { name: 'News', url: 'https://news.google.com', icon: '📰', note: 'News' },
+        { name: 'Photos', url: 'https://photos.google.com', icon: '🌈', note: 'Photos' }
+      ]
+    },
+    {
+      id: 'ai',
+      label: 'AI',
+      icon: '🧠',
+      accent: 'violet',
+      apps: [
+        { name: 'ChatGPT', url: 'https://chat.openai.com', icon: '✦', note: 'Assistant' },
+        { name: 'Claude', url: 'https://claude.ai', icon: '✺', note: 'Assistant' },
+        { name: 'Perplexity', url: 'https://www.perplexity.ai', icon: 'P', note: 'Research' },
+        { name: 'Gemini', url: 'https://gemini.google.com', icon: '◇', note: 'Assistant' },
+        { name: 'Copilot', url: 'https://copilot.microsoft.com', icon: 'C', note: 'Assistant' },
+        { name: 'Hugging Face', url: 'https://huggingface.co', icon: '🤗', note: 'Models' },
+        { name: 'Runway', url: 'https://runwayml.com', icon: 'R', note: 'Video' },
+        { name: 'Midjourney', url: 'https://www.midjourney.com', icon: 'M', note: 'Image' }
+      ]
+    },
+    {
+      id: 'travel',
+      label: 'Travel & Finance',
+      icon: '🏙️',
+      accent: 'amber',
+      apps: [
+        { name: 'Google Flights', url: 'https://www.google.com/travel/flights', icon: '✈️', note: 'Flights' },
+        { name: 'Booking.com', url: 'https://www.booking.com', icon: 'B', note: 'Hotels' },
+        { name: 'Airbnb', url: 'https://www.airbnb.com', icon: 'A', note: 'Stays' },
+        { name: 'Uber', url: 'https://www.uber.com', icon: 'U', note: 'Rides' },
+        { name: 'Wise', url: 'https://wise.com', icon: 'W', note: 'Money' },
+        { name: 'Revolut', url: 'https://www.revolut.com', icon: 'R', note: 'Banking' },
+        { name: 'Yahoo Finance', url: 'https://finance.yahoo.com', icon: '¥', note: 'Markets' },
+        { name: 'XE Currency', url: 'https://www.xe.com', icon: '$', note: 'Rates' }
+      ]
+    },
+    {
+      id: 'social',
+      label: 'Social',
+      icon: 'f',
+      accent: 'indigo',
+      apps: [
+        { name: 'Facebook', url: 'https://www.facebook.com', icon: 'f', note: 'Social' },
+        { name: 'Instagram', url: 'https://www.instagram.com', icon: '◎', note: 'Social' },
+        { name: 'X', url: 'https://x.com', icon: '𝕏', note: 'Social' },
+        { name: 'Reddit', url: 'https://www.reddit.com', icon: 'r', note: 'Forum' },
+        { name: 'Discord', url: 'https://discord.com/app', icon: '🎮', note: 'Chat' },
+        { name: 'WhatsApp', url: 'https://web.whatsapp.com', icon: '☏', note: 'Chat' },
+        { name: 'Telegram', url: 'https://web.telegram.org', icon: '✈', note: 'Chat' },
+        { name: 'Pinterest', url: 'https://www.pinterest.com', icon: 'P', note: 'Ideas' }
+      ]
+    }
+  ];
+
+  const quickLinks = [
+    { id: 'mail', label: 'Mail', url: 'https://mail.google.com', icon: '✉️', color: '#4f7cff' },
+    { id: 'calendar', label: 'Calendar', url: 'https://calendar.google.com', icon: '📅', color: '#2eb67d' },
+    { id: 'drive', label: 'Drive', url: 'https://drive.google.com', icon: '▲', color: '#fbbc05' },
+    { id: 'docs', label: 'Docs', url: 'https://docs.google.com', icon: '📄', color: '#4285f4' },
+    { id: 'chatgpt', label: 'ChatGPT', url: 'https://chat.openai.com', icon: '✦', color: '#10a37f' },
+    { id: 'notion', label: 'Notion', url: 'https://www.notion.so', icon: 'N', color: '#111827' },
+    { id: 'github', label: 'GitHub', url: 'https://github.com', icon: '⌘', color: '#24292f' },
+    { id: 'figma', label: 'Figma', url: 'https://www.figma.com', icon: '◈', color: '#a259ff' },
+    { id: 'youtube', label: 'YouTube', url: 'https://www.youtube.com', icon: '▶', color: '#ff0033' },
+    { id: 'spotify', label: 'Spotify', url: 'https://open.spotify.com', icon: '♫', color: '#1db954' }
+  ];
+
+  const defaultState = {
+    schemaVersion: SCHEMA_VERSION,
+    profile: {
+      name: 'Alex',
+      signedIn: false,
+      email: '',
+      locale: 'en-US',
+      timeFormat: '12h'
+    },
+    settings: {
+      route: 'home',
+      appCategory: 'daily',
+      theme: 'sky',
+      background: 'blue-sky',
+      density: 'comfortable',
+      searchEngine: 'google',
+      showDock: true,
+      showWeather: true,
+      focusMinutes: 25,
+      currencyBase: 'USD',
+      calendarWeekStarts: 'sunday'
+    },
+    categories,
+    quickLinks,
+    bookmarkSlots: [
+      { id: 'slot-1', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-2', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-3', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-4', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-5', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-6', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-7', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-8', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-9', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-10', label: 'Add site', url: '', icon: '+' }
+    ],
+    tasks: [
+      { id: 'task-1', title: 'Review today’s priorities', status: 'open', priority: 'high', due: nowIso(), source: 'LiveDash' },
+      { id: 'task-2', title: 'Capture links for the weekly plan', status: 'open', priority: 'medium', due: nowIso(), source: 'Browser' }
+    ],
+    notes: [
+      { id: 'note-1', title: 'Quick note', body: 'Use LiveDash to capture ideas, links, and tasks without leaving the browser.', tag: 'dashboard', createdAt: nowIso() }
+    ],
+    captures: [],
+    focus: {
+      running: false,
+      remaining: 25 * 60,
+      mode: 'work',
+      lastStartedAt: ''
+    },
+    weather: {
+      city: 'London',
+      country: 'UK',
+      summary: 'Partly cloudy',
+      tempC: 17,
+      tempF: 63
+    },
+    currency: [
+      { code: 'EUR', name: 'Euro', value: '0.92', delta: 'up' },
+      { code: 'GBP', name: 'British Pound', value: '0.78', delta: 'up' },
+      { code: 'USD', name: 'US Dollar', value: '1.00', delta: 'flat' }
+    ],
+    worldClocks: [
+      { city: 'New York', offset: -4 },
+      { city: 'London', offset: 1 },
+      { city: 'Berlin', offset: 2 },
+      { city: 'San Francisco', offset: -7 }
+    ],
+    notifications: [
+      { id: 'n-1', title: 'Welcome to LiveDash', body: 'Your new tab is ready for search, widgets, tasks, and bookmarks.', type: 'info', read: false, createdAt: nowIso() }
+    ],
+    activity: [
+      { id: 'a-1', title: 'Dashboard initialized', body: 'Local-first settings and widgets are ready.', createdAt: nowIso() }
+    ],
+    updatedAt: nowIso()
   };
 
-  const moduleCatalog = [
-    { id:"work-queue", name:"Work Queue", category:"Tasks", description:"Prioritized tasks with status, due date, source, and direct completion.", span:8, sizes:[6,8,12], dataSource:"Local tasks", freshness:"Instant local updates", roles:["Today","Work"], permissions:"None", states:"Empty, stale, offline, conflict", preview:"Top tasks, blockers, next action" },
-    { id:"context-rail", name:"Browser Context", category:"Operations", description:"Capture the active tab, selected text, recent pages, and browser-sourced work.", span:4, sizes:[3,4,6], dataSource:"Current tab and local captures", freshness:"On demand", roles:["Today","Capture"], permissions:"activeTab", states:"No active tab, permission denied", preview:"Save page, task from URL, source note" },
-    { id:"capture-inbox", name:"Capture Inbox", category:"Notes", description:"Unprocessed notes, URLs, and decisions collected from popup, side panel, or command palette.", span:6, sizes:[4,6,8], dataSource:"Local captures", freshness:"Instant local updates", roles:["Today","Capture"], permissions:"None", states:"Empty inbox, conflict", preview:"Captured page, quick note, action required" },
-    { id:"alerts-list", name:"Alerts", category:"Alerts", description:"Actionable local reminders, blocked work, stale reports, and system warnings.", span:4, sizes:[3,4,6], dataSource:"Local alerts", freshness:"Source-level timestamps", roles:["Today","Alerts"], permissions:"None", states:"Empty, acknowledged, stale", preview:"Severity, source, action" },
-    { id:"agenda", name:"Agenda", category:"Operations", description:"Next commitments and focus blocks in user-local time.", span:4, sizes:[3,4,6], dataSource:"Local schedule", freshness:"Local calendar seed", roles:["Today","Work"], permissions:"None", states:"No events", preview:"Next event, prep note" },
-    { id:"activity", name:"Activity", category:"Team Activity", description:"Timeline of local changes, imports, exports, completions, and module edits.", span:6, sizes:[4,6,8,12], dataSource:"Local audit trail", freshness:"Instant local updates", roles:["Today","Activity"], permissions:"None", states:"Empty, filtered", preview:"Changed item, time, source" },
-    { id:"reports", name:"Reports", category:"Reports", description:"Saved local review cards with export status and freshness.", span:6, sizes:[4,6,8], dataSource:"Local reports", freshness:"Last generated timestamp", roles:["Reports","Weekly Review"], permissions:"None", states:"Stale, generated, failed", preview:"Weekly review, export status" },
-    { id:"metric-drilldown", name:"Work State Metrics", category:"Metrics", description:"Actionable metrics tied to tasks, captures, reports, and stale sources.", span:6, sizes:[4,6,8,12], dataSource:"Local records", freshness:"Derived live from local state", roles:["Today","Reports"], permissions:"None", states:"No data, stale source", preview:"Due today, blocked, stale reports" },
-    { id:"notes-log", name:"Decision Log", category:"Notes", description:"Searchable notes with tags, timestamps, source links, and edit history.", span:6, sizes:[4,6,8], dataSource:"Local notes", freshness:"Instant local updates", roles:["Work","Activity"], permissions:"None", states:"Empty, filtered", preview:"Decision, tag, source URL" },
-    { id:"module-library", name:"Module Library", category:"Personal Productivity", description:"Add approved modules with preview, source requirement, and grid span options.", span:12, sizes:[8,12], dataSource:"Local module registry", freshness:"Static registry", roles:["Edit"], permissions:"None", states:"No matches", preview:"Category, preview, recommended size" }
-  ];
-
-  const templates = [
-    { id:"today", name:"Today", description:"Fast new-tab workflow: command, urgent work, schedule, captures, and changes.", modules:["work-queue","context-rail","alerts-list","agenda","capture-inbox","activity","metric-drilldown"] },
-    { id:"work", name:"Work Queue", description:"Task-heavy view for execution and follow-up.", modules:["work-queue","capture-inbox","agenda","alerts-list","notes-log","activity"] },
-    { id:"review", name:"Weekly Review", description:"Reports, metrics, activity, and unresolved work.", modules:["reports","metric-drilldown","activity","alerts-list","work-queue","notes-log"] },
-    { id:"reports", name:"Reports", description:"Export-ready reports and source freshness.", modules:["reports","metric-drilldown","activity","alerts-list"] },
-    { id:"minimal", name:"Minimal", description:"Command, top work, next event, and capture inbox.", modules:["work-queue","context-rail","agenda","capture-inbox"] }
-  ];
-
-  function layoutFromTemplate(templateId){
-    const template = templates.find((item) => item.id === templateId) || templates[0];
-    return template.modules.map((type, index) => {
-      const meta = moduleCatalog.find((item) => item.id === type) || moduleCatalog[0];
-      return { id: uid("module"), type, span: meta.span, order: index, settings:{ density:"compact", refresh:"manual" } };
-    });
-  }
-
-  function createDefaultState(){
-    const createdAt = now();
-    return {
-      schemaVersion: VERSION,
-      createdAt,
-      updatedAt: createdAt,
-      selectedView:"today",
-      selectedSection:"today",
-      editMode:false,
-      dirty:false,
-      commandHistory:["Add task", "Capture current page", "Open reports"],
-      settings:{
-        theme:"dark",
-        density:"compact",
-        timeFormat:"auto",
-        defaultView:"today",
-        displayName:"Alex",
-        reducedMotion:false,
-        showLocalStatus:true,
-        defaultModuleSpan:6,
-        captureMode:"inbox"
-      },
-      templates,
-      moduleCatalog,
-      layouts:{
-        today: layoutFromTemplate("today"),
-        work: layoutFromTemplate("work"),
-        review: layoutFromTemplate("review"),
-        reports: layoutFromTemplate("reports"),
-        minimal: layoutFromTemplate("minimal")
-      },
-      tasks:[
-        { id:uid("task"), title:"Review blocked work before 4 PM", priority:"high", status:"open", due:todayISO(), source:"Weekly review", owner:"You", notes:"Resolve or reschedule blockers before end of day.", createdAt },
-        { id:uid("task"), title:"Prepare Monday dashboard export", priority:"medium", status:"open", due:plusDays(1), source:"Reports", owner:"You", notes:"Export backup and review stale sources.", createdAt },
-        { id:uid("task"), title:"Tag unprocessed capture notes", priority:"medium", status:"blocked", due:todayISO(), source:"Capture inbox", owner:"You", notes:"Five captures need a destination.", createdAt },
-        { id:uid("task"), title:"Archive completed focus notes", priority:"low", status:"done", due:plusDays(-1), source:"Notes", owner:"You", notes:"Completed during last focus block.", createdAt }
-      ],
-      captures:[
-        { id:uid("capture"), type:"page", title:"Chrome extension QA checklist", url:"https://developer.chrome.com/docs/extensions/", note:"Use for MV3 validation and side panel behavior.", status:"inbox", createdAt },
-        { id:uid("capture"), type:"note", title:"Design pass", url:"", note:"Keep first viewport focused on command, urgent work, agenda, and changes.", status:"inbox", createdAt }
-      ],
-      notes:[
-        { id:uid("note"), title:"Operating principle", body:"New tab must answer what changed, what matters, and what to do next.", tags:["product","review"], sourceUrl:"", createdAt, updatedAt:createdAt },
-        { id:uid("note"), title:"Visual system", body:"Use neutral dark surfaces, restrained blue primary action, and semantic state colors only.", tags:["design"], sourceUrl:"", createdAt, updatedAt:createdAt }
-      ],
-      alerts:[
-        { id:uid("alert"), title:"Capture inbox needs triage", body:"Two captured items are still unprocessed.", severity:"warning", status:"open", source:"Capture inbox", createdAt, action:"Open inbox" },
-        { id:uid("alert"), title:"Blocked task due today", body:"One task is blocked and due today.", severity:"critical", status:"open", source:"Tasks", createdAt, action:"Review blockers" }
-      ],
-      reports:[
-        { id:uid("report"), title:"Weekly operating review", status:"ready", timeRange:"7 days", lastGenerated:createdAt, format:"JSON backup" },
-        { id:uid("report"), title:"Task completion summary", status:"stale", timeRange:"30 days", lastGenerated:plusDays(-3), format:"Local report" }
-      ],
-      schedule:[
-        { id:uid("event"), title:"Operating review", time:"4:30 PM", type:"Review", status:"confirmed", prep:"Open blocked tasks and stale reports." },
-        { id:uid("event"), title:"Focus block", time:"Tomorrow 9:00 AM", type:"Focus", status:"planned", prep:"Process capture inbox." }
-      ],
-      sources:[
-        { id:"tasks", label:"Tasks", state:"fresh", updatedAt:createdAt },
-        { id:"captures", label:"Captures", state:"fresh", updatedAt:createdAt },
-        { id:"reports", label:"Reports", state:"stale", updatedAt:plusDays(-3) },
-        { id:"storage", label:"Local backup", state:"fresh", updatedAt:createdAt }
-      ],
-      activity:[
-        { id:uid("activity"), type:"system", title:"Today view prepared", detail:"Local work, capture, and source data are ready.", createdAt },
-        { id:uid("activity"), type:"task", title:"Task captured", detail:"Review blocked work before 4 PM", createdAt }
-      ],
-      notifications:[
-        { id:uid("notice"), title:"Blocked task due today", body:"One high-priority task needs a decision.", severity:"warning", read:false, createdAt },
-        { id:uid("notice"), title:"Capture inbox ready", body:"Two local captures are waiting for triage.", severity:"info", read:false, createdAt }
-      ],
-      offlineQueue:[],
-      lastBackup:null
-    };
-  }
-
-  function mergeArray(defaults, source){
-    return Array.isArray(source) ? source : clone(defaults);
-  }
-
-  function mergeState(source){
-    const base = createDefaultState();
-    if(!source || typeof source !== "object") return base;
-    const next = { ...base, ...source };
-    next.schemaVersion = VERSION;
-    next.settings = { ...base.settings, ...(source.settings || {}) };
-    next.templates = mergeArray(base.templates, source.templates);
-    next.moduleCatalog = mergeArray(base.moduleCatalog, source.moduleCatalog).map((item) => ({ ...item, sizes: Array.isArray(item.sizes) ? item.sizes : [3,4,6,8,12], roles: Array.isArray(item.roles) ? item.roles : ["Today"] }));
-    next.layouts = { ...base.layouts, ...(source.layouts || {}) };
-    ["tasks","captures","notes","alerts","reports","schedule","sources","activity","notifications","offlineQueue"].forEach((key) => { next[key] = mergeArray(base[key], source[key]); });
-    next.selectedView = next.layouts[next.selectedView] ? next.selectedView : "today";
-    next.selectedSection = next.selectedSection || "today";
-    next.editMode = Boolean(source.editMode);
-    next.dirty = Boolean(next.dirty);
-    return next;
-  }
-
-  global.LiveDashDefaults = { VERSION, STORAGE_KEY, LEGACY_KEYS, uid, clone, createDefaultState, mergeState, moduleCatalog, templates, layoutFromTemplate };
-})(globalThis);
+  window.LiveDashDefaults = { SCHEMA_VERSION, defaultState };
+})();

@@ -2,18 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LiveDash Side Panel</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body data-page="sidepanel">
-  <main class="sidepanel-shell">
-    <header class="side-head"><div><strong>LiveDash</strong><span>Current page workflow</span></div><button id="sideOpenDashboard" type="button">New tab</button></header>
-    <section id="sideTabContext" class="context-panel"></section>
-    <form id="sideCaptureForm" class="quick-capture-form"><label>Capture from this page<textarea id="sideCaptureText" rows="4" placeholder="Decision, task, note, or follow-up"></textarea></label><div class="button-row"><button class="primary-button" type="submit">Save capture</button><button id="sideAddTask" type="button">Task from page</button></div></form>
-    <section><h2>Open work</h2><div id="sideTasks" class="mini-list"></div></section>
-    <section><h2>Recent captures</h2><div id="sideCaptures" class="mini-list"></div></section>
-  </main>
+<body class="sidepanel-page">
+  <main id="sidepanel" class="sidepanel-root"></main>
   <script src="scripts/default-state.js"></script>
   <script src="scripts/storage.js"></script>
   <script src="scripts/sidepanel.js"></script>
