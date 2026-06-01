@@ -1,5 +1,5 @@
 (function () {
-  const SCHEMA_VERSION = 121;
+  const SCHEMA_VERSION = 130;
 
   const nowIso = () => new Date().toISOString();
 
@@ -170,11 +170,11 @@
     categories,
     quickLinks,
     bookmarkSlots: [
-      { id: 'slot-1', label: 'Add site', url: '', icon: '+' },
-      { id: 'slot-2', label: 'Add site', url: '', icon: '+' },
-      { id: 'slot-3', label: 'Add site', url: '', icon: '+' },
-      { id: 'slot-4', label: 'Add site', url: '', icon: '+' },
-      { id: 'slot-5', label: 'Add site', url: '', icon: '+' },
+      { id: 'slot-1', label: 'Gmail', url: 'https://mail.google.com', icon: 'G', color: '#ea4335' },
+      { id: 'slot-2', label: 'Calendar', url: 'https://calendar.google.com', icon: '31', color: '#4285f4' },
+      { id: 'slot-3', label: 'ChatGPT', url: 'https://chat.openai.com', icon: 'AI', color: '#10a37f' },
+      { id: 'slot-4', label: 'YouTube', url: 'https://www.youtube.com', icon: '▶', color: '#ff0033' },
+      { id: 'slot-5', label: 'Notion', url: 'https://www.notion.so', icon: 'N', color: '#111827' },
       { id: 'slot-6', label: 'Add site', url: '', icon: '+' },
       { id: 'slot-7', label: 'Add site', url: '', icon: '+' },
       { id: 'slot-8', label: 'Add site', url: '', icon: '+' },

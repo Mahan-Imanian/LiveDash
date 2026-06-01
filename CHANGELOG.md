@@ -1,15 +1,13 @@
 # Changelog
 
-## 12.1.0
+## v13.0.0
 
-- Rebuilt LiveDash to match the uploaded Widgetify-style screenshots much more closely.
-- Replaced the dark operations console with a light-blue personalized new-tab dashboard.
-- Added top rounded category navigation.
-- Added bottom floating dock navigation.
-- Added app hub sections for US/EU/global services.
-- Added widgets for clock, weather, search, bookmarks, currency, Pomodoro, tasks, calendar, notes, notifications, and world clocks.
-- Added account sign-in modal visual flow.
-- Added settings drawer with theme/search/data controls.
-- Added popup quick actions and side-panel current-page capture.
-- Kept Manifest V3 compliance, local assets, no remote scripts, no inline scripts, and local-first persistence.
-- Removed Persian, RTL, Iran-specific services, Persian calendar assumptions, and region-locked defaults.
+- Rebuilt the Widgetify-style new tab surface with a more polished, high-end visual system.
+- Added a tighter viewport-fit dashboard layout with split left, center, and right widget stacks.
+- Improved bottom dock, category tabs, search command surface, card depth, hover states, and motion.
+- Added more useful default bookmark slots for US/EU/global workflows.
+- Updated schema, package metadata, backup target, and validation output to v13.
+
+## v12.1.0
+
+- Repositioned LiveDash as a Widgetify-style personalized new-tab dashboard.
