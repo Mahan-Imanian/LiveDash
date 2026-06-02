@@ -1,1 +1,0 @@
-import{j as e,W as o}from"./newtab-jv5QEBLR.js";function r(){return e.jsx("div",{className:"relative overflow-y-auto h-82 scrollbar-none",children:e.jsx(o,{inComboWidget:!0,enableBackground:!1})})}export{r as ArzSimplify};
