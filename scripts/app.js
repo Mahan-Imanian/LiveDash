@@ -575,7 +575,7 @@
     const src = getFaviconFromUrl(url);
     const initials = getInitials(label);
     if (!src) return `<span class="favicon-icon favicon-icon-${size} favicon-fallback">${escapeHtml(initials)}</span>`;
-    return `<span class="favicon-icon favicon-icon-${size}"><img src="${escapeHtml(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.favicon-icon').classList.add('failed');this.remove();"><span>${escapeHtml(initials)}</span></span>`;
+    return `<span class="favicon-icon favicon-icon-${size}"><img src="${escapeHtml(src)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>${escapeHtml(initials)}</span></span>`;
   }
 
   function renderAppIcon(app, size = 'md') {
@@ -705,7 +705,7 @@
         const filled = Boolean(slot.url);
         return `<button class="bookmark-slot ${filled ? 'filled' : 'empty'}" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
           <span class="bookmark-menu-dot" aria-hidden="true">•••</span>
-          <span class="bookmark-icon">${filled ? renderFaviconIcon(slot.url, slot.label, 'bookmark') : renderIcon('add', 'Add site', 'empty')}</span>
+          <span class="bookmark-icon">${filled ? renderFaviconIcon(slot.url, slot.label, 'bookmark') : '<span class="bookmark-placeholder" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5.8A2.8 2.8 0 0 1 9.8 3h4.4A2.8 2.8 0 0 1 17 5.8v14.1l-5-3.2-5 3.2V5.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 7.8v5.2M9.4 10.4h5.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span>'}</span>
           <span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span>
           <span class="bookmark-shine"></span>
         </button>`;
@@ -930,7 +930,6 @@
     setBodyTheme();
     const route = state.settings.route || 'home';
     root.innerHTML = `<div class="widgetify-shell route-${escapeHtml(route)}">
-      ${renderProfileHeader()}
       ${renderTopTabs()}
       <div class="page-grid">
         ${route === 'home' ? renderHomePage() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
