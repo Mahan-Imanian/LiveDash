@@ -1,8 +1,8 @@
 type infoAlarmType = 'success' | 'done_todo'
 let alarms: Record<infoAlarmType, string> = {
-	success: 'https://cdn.livedash.eu/effects/alarm-success.mp3',
+	success: '/live-assets/alarm-success.wav',
 	done_todo:
-		'https://storage.livedash.eu/effects/alarm_success_todo.mp3',
+		'/live-assets/alarm-todo.wav',
 }
 let audioCache: Partial<Record<infoAlarmType, HTMLAudioElement>> = {}
 

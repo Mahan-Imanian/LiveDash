@@ -7,20 +7,19 @@ import axios, {
 import { getFromStorage, setToStorage } from '@/common/storage'
 import { callEvent } from '@/common/utils/call-event'
 
-const rawGithubApi = axios.create({
-	baseURL: 'https://raw.githubusercontent.com/Mahan-Imanian/LiveDash/main',
-})
+const DEFAULT_API_URL = 'https://livedash.codersays.com'
+
 export let API_URL = ''
+
+export function getApiBaseUrl() {
+	return (import.meta.env.VITE_API || DEFAULT_API_URL).replace(/\/$/, '')
+}
+
 export async function getMainClient(): Promise<AxiosInstance> {
 	let instance: AxiosInstance | undefined
 
 	const token = await getFromStorage('auth_token')
-	API_URL = import.meta.env.VITE_API
-
-	if (!API_URL) {
-		const urlResponse = await rawGithubApi.get('/.github/api.txt')
-		API_URL = urlResponse.data
-	}
+	API_URL = getApiBaseUrl()
 
 	instance = axios.create({
 		baseURL: API_URL,
@@ -35,7 +34,6 @@ export async function getMainClient(): Promise<AxiosInstance> {
 		throw new Error('API base URL is not defined')
 	}
 
-	// Response interceptor to handle token refreshing
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => {
 			return response

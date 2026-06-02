@@ -138,7 +138,7 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 							</Button>
 						</div>
 						<StepImage
-							src="https://cdn.livedash.eu/extension/wizard/1.webp"
+							src="/live-assets/wizard-1.svg"
 							alt="Welcome"
 						/>
 					</StepWrapper>
@@ -194,7 +194,7 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 							</div>
 						</div>
 						<StepImage
-							src="https://cdn.livedash.eu/extension/wizard/2.webp"
+							src="/live-assets/wizard-2.svg"
 							alt="Welcome"
 						/>
 					</StepWrapper>
@@ -261,7 +261,7 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 							</div>
 						</div>
 						<StepImage
-							src="https://cdn.livedash.eu/extension/wizard/3.webp"
+							src="/live-assets/wizard-3.svg"
 							alt="Welcome"
 						/>
 					</StepWrapper>
@@ -336,7 +336,7 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 							</Button>
 						</div>
 						<StepImage
-							src="https://cdn.livedash.eu/extension/wizard/4.webp"
+							src="/live-assets/wizard-4.svg"
 							alt="Welcome"
 						/>
 					</StepWrapper>
@@ -365,7 +365,7 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 							</Button>
 						</div>
 						<StepImage
-							src="https://cdn.livedash.eu/extension/wizard/5.webp"
+							src="/live-assets/wizard-5.svg"
 							alt="Welcome"
 						/>
 					</StepWrapper>

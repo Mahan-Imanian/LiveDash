@@ -117,7 +117,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onComplete }) => {
 					//todo: implement Firefox specific audio playback
 				} else {
 					const audio = new Audio(
-						'https://cdn.livedash.eu/effects/alarm_1.mp3'
+						'/live-assets/alarm-1.wav'
 					)
 					audio.autoplay = true
 					audio.play()

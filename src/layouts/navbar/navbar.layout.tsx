@@ -50,7 +50,7 @@ export function NavbarTabs() {
 					<span
 						className={`
             relative z-10 transition-all duration-300 block
-            ${page === tab.id ? 'text-primary scale-110' : 'nav-btn text-white/20 hover:text-white/40'}
+            ${page === tab.id ? 'text-primary scale-110 drop-shadow-[0_0_10px_rgba(var(--primary-rgb),0.9)]' : 'nav-btn text-white/55 hover:text-white/90'}
         `}
 					>
 						{tab.icon}
@@ -140,9 +140,9 @@ export function NavbarLayout(): JSX.Element {
 			{!isVisible && (
 				<button
 					onClick={() => onToggleNavbar()}
-					className="fixed z-50 bottom-0 left-1/2 -translate-x-1/2 px-10 py-2.5 bg-white/[0.05] backdrop-blur-[40px] backdrop-saturate-[180%] border-t border-x border-white/10 rounded-t-3xl shadow-[0_-0px_30px_rgba(0,0,0,0.3)] transition-all hover:bg-white/[0.08]"
+					className="fixed z-50 bottom-0 left-1/2 -translate-x-1/2 px-10 py-2.5 bg-black/50 backdrop-blur-[40px] backdrop-saturate-[180%] border-t border-x border-white/25 rounded-t-3xl shadow-[0_-14px_44px_rgba(0,0,0,0.45)] transition-all hover:bg-black/60"
 				>
-					<div className="w-10 h-1 rounded-full bg-white/30" />
+					<div className="w-10 h-1 rounded-full bg-white/65" />
 				</button>
 			)}
 
@@ -157,15 +157,15 @@ export function NavbarLayout(): JSX.Element {
 					className="absolute w-full h-10 bg-transparent -bottom-16"
 					id="chrome-footer"
 				></div>
-				<nav className="relative flex items-center gap-1 p-1.5 bg-white/[0.02] backdrop-blur-xs border border-white/[0.08] rounded-[2.5rem]">
+				<nav className="relative flex items-center gap-1 p-1.5 bg-black/45 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] shadow-[0_18px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.16)]">
 					<button
 						onClick={() => onToggleNavbar()}
-						className="relative z-10 p-2 transition-colors cursor-pointer nav-btn text-white/20 hover:text-white/40"
+						className="relative z-10 p-2 transition-colors cursor-pointer nav-btn text-white/55 hover:text-white/90"
 					>
 						<FiChevronDown size={18} />
 					</button>
 
-					<div className="relative z-10 w-[1px] h-6 bg-white/[0.08]" />
+					<div className="relative z-10 w-[1px] h-6 bg-white/18" />
 
 					<div className="relative z-10 flex items-center gap-0.5">
 						<ProfileNav />
@@ -173,7 +173,7 @@ export function NavbarLayout(): JSX.Element {
 						<FriendsList />
 					</div>
 
-					<div className="relative z-10 w-[1px] h-6 bg-white/[0.08]" />
+					<div className="relative z-10 w-[1px] h-6 bg-white/18" />
 
 					<div className="relative z-10 flex items-center gap-0.5">
 						<MarketButton />
@@ -181,7 +181,7 @@ export function NavbarLayout(): JSX.Element {
 						<SettingsDropdown setShowSettings={setShowSettings} />
 					</div>
 
-					<div className="relative z-10 w-[1px] h-6 bg-white/[0.08]" />
+					<div className="relative z-10 w-[1px] h-6 bg-white/18" />
 
 					<div className="relative z-10 flex items-center gap-2 pr-1 ml-0.5">
 						<NavbarTabs />
@@ -189,10 +189,10 @@ export function NavbarLayout(): JSX.Element {
 							href={LIVEDASH_URLS.website}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="flex items-center justify-center w-8 h-8 border rounded-full border-white/10 bg-black/20"
+							className="flex items-center justify-center w-8 h-8 border rounded-full border-white/25 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_6px_18px_rgba(0,0,0,0.24)] hover:bg-white/15 transition-colors"
 						>
 							<img
-								src={'https://cdn.livedash.eu/extension/logo.png'}
+								src={'/live-assets/logo.svg'}
 								alt="Logo"
 								className="object-contain w-5 h-5 opacity-80"
 							/>

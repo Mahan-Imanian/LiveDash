@@ -69,12 +69,10 @@ export default defineConfig({
 			},
 		},
 		host_permissions: [
-			'https://github.com/*',
-			'https://raw.githubusercontent.com/*',
-			'https://api.github.com/*',
-			'https://api.livedash.eu/*',
-			'https://cdn.livedash.eu/*',
-			'https://storage.livedash.eu/*',
+			'https://livedash.codersays.com/*',
+			'https://www.google.com/*',
+			'https://accounts.google.com/*',
+			'https://www.googleapis.com/*',
 			'https://www.google-analytics.com/collect*',
 		],
 		icons: {

@@ -57,7 +57,7 @@ export function RequestNotificationModal({
 						<div className="my-2 overflow-hidden rounded-lg shadow-md">
 							<img
 								src={
-									'https://cdn.livedash.eu/extension/pomodoroTimer-notification.png'
+									'/live-assets/pomodoro-notification.svg'
 								}
 								alt={'Notification preview'}
 								className="object-cover w-full h-auto"
