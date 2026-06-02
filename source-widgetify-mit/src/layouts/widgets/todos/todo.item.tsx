@@ -27,9 +27,9 @@ interface Prop {
 }
 
 const translatedPriority = {
-	low: 'DashLive',
-	medium: 'DashLive',
-	high: 'MayDashLive',
+	low: 'کم',
+	medium: 'متوسط',
+	high: 'مهم',
 }
 
 export function TodoItem({
@@ -50,24 +50,24 @@ export function TodoItem({
 	const isTemp = todo.id.startsWith('temp-')
 
 	const handleDelete = (e: React.MouseEvent) => {
-		if (isTemp) return showToast('DashLiveTask DashLive‌DashLive', 'error')
+		if (isTemp) return showToast('این وظیفه هنوز همگام‌سازی نشده است.', 'error')
 		e.stopPropagation()
 		if (isPending) return
-		if (!isAuthenticated) return showToast('DashLiveDelete DashLive', 'error')
+		if (!isAuthenticated) return showToast('برای حذف باید وارد شوید', 'error')
 		setShowConfirmation(true)
 	}
 
 	const handleEdit = (e: React.MouseEvent) => {
-		if (isTemp) return showToast('DashLiveTask DashLive‌DashLive', 'error')
+		if (isTemp) return showToast('این وظیفه هنوز همگام‌سازی نشده است.', 'error')
 		e.stopPropagation()
-		if (!isAuthenticated) return showToast('DashLiveEdit DashLive', 'error')
+		if (!isAuthenticated) return showToast('برای ویرایش باید وارد شوید', 'error')
 		setShowEditModal(true)
 	}
 
 	const onConfirmDelete = async () => {
 		if (isPending || isSyncing) return
 		const onlineId = todo.onlineId || todo.id
-		if (validate(onlineId)) return showToast('Error in DashLiveTask', 'error')
+		if (validate(onlineId)) return showToast('خطا در شناسه وظیفه', 'error')
 
 		const [err] = await safeAwait(mutateAsync())
 		setShowConfirmation(false)
@@ -90,7 +90,7 @@ export function TodoItem({
 		if (isUpdating || isSyncing) return
 
 		if (!isAuthenticated) {
-			return showToast('DashLiveTask DashLive', 'error')
+			return showToast('برای تغییر وضعیت وظیفه باید وارد شوید', 'error')
 		}
 
 		setIsSyncing(true)
@@ -217,8 +217,8 @@ export function TodoItem({
 					isOpen={showConfirmation}
 					onClose={() => setShowConfirmation(false)}
 					onConfirm={onConfirmDelete}
-					confirmText={isPending ? <IconLoading /> : 'Delete'}
-					message="DashLiveDelete DashLive"
+					confirmText={isPending ? <IconLoading /> : 'حذف'}
+					message="آیا از حذف مطمئن هستید؟"
 					variant="danger"
 				/>
 			)}

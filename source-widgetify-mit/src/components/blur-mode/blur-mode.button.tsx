@@ -12,7 +12,7 @@ export function BlurModeButton() {
 	}
 
 	return (
-		<Tooltip content={blurMode ? 'DashLive' : 'DashLive'}>
+		<Tooltip content={blurMode ? 'نمایش' : 'حالت مخفی'}>
 			<Button
 				size="sm"
 				onClick={handleBlurModeToggle}

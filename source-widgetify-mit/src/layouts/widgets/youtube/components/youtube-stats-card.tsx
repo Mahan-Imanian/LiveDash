@@ -201,7 +201,7 @@ export function YouTubeStatsCard({
 				<div className="w-full px-2 py-1 bg-base-300/75 flex items-center justify-between gap-x-2 rounded-lg">
 					<div className="flex items-center gap-1.5">
 						<FiUsers className="w-3.5 h-3.5 text-red-500" />
-						<span className="text-[10px] text-content opacity-70">DashLive</span>
+						<span className="text-[10px] text-content opacity-70">مشترک</span>
 					</div>
 
 					<p className="text-xs font-medium text-content">
@@ -212,7 +212,8 @@ export function YouTubeStatsCard({
 					<div className="flex items-center gap-1.5">
 						<FiEye className="w-3.5 h-3.5 text-blue-500" />
 						<span className="text-[10px] text-content opacity-70">
-							DashLive</span>
+							بازدید
+						</span>
 					</div>
 
 					<p className="text-xs font-medium text-content">

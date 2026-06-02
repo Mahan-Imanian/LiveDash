@@ -14,14 +14,14 @@ let items: Record<
 	}
 > = {
 	BOOKMARKS: {
-		title: 'DashLive‌DashLiveBookmark‌DashLive',
+		title: 'همگام‌سازی بوکمارک‌ها',
 		message:
-			'DashLiveBookmark‌DashLive‌DashLive‌DashLive‌DashLive',
+			'برخی از بوکمارک‌های شما همگام‌سازی نشده‌اند. لطفاً برای همگام‌سازی دوباره تلاش کنید.',
 	},
 	TODOS: {
-		title: 'DashLive‌DashLiveTasks',
+		title: 'همگام‌سازی وظایف',
 		message:
-			'DashLiveTasks DashLive‌DashLive‌DashLive‌DashLive',
+			'برخی از وظایف شما همگام‌سازی نشده‌اند. لطفاً برای همگام‌سازی دوباره تلاش کنید.',
 	},
 }
 
@@ -53,7 +53,7 @@ export function SyncAlertModal({
 					<div className="p-1 rounded-full bg-error/20">
 						<MdSyncProblem size={20} className="text-error" />
 					</div>
-					<span>DashLive‌DashLive‌DashLive</span>
+					<span>همگام‌سازی داده‌ها</span>
 				</div>
 			}
 			direction="rtl"
@@ -68,9 +68,12 @@ export function SyncAlertModal({
 						</div>
 						<div className="min-w-0">
 							<div className="text-sm font-semibold text-warning">
-								DashLiveBookmark Save DashLive</div>
+								ممکن است آیکون بوکمارک ذخیره نشود!
+							</div>
 							<p className="mt-1 text-xs leading-relaxed text-warning/90">
-								DashLive‌DashLiveBookmark DashLive‌DashLive</p>
+								آیکون‌های سفارشی بوکمارک ممکن است پس از همگام‌سازی نیاز به
+								تنظیم دوباره داشته باشند.
+							</p>
 						</div>
 					</div>
 				)}
@@ -84,7 +87,8 @@ export function SyncAlertModal({
 					loading={isSyncing}
 					className="w-full rounded-xl"
 				>
-					DashLive‌DashLive</Button>
+					همگام‌سـازی
+				</Button>
 			</div>
 		</Modal>
 	)

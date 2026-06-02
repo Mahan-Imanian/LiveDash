@@ -1,10 +1,10 @@
 
 
-# ![logo](./public/icons/icon32.png) DashLive
+# ![logo](./public/icons/icon32.png) Widgetify
 
- DashLive is a browser extensions that adds useful widgets to the new page of your browser. Numerous weather, currency, calendar, to-do list, search, and bookmark widgets can improve your exploring experience.
+ Widgetify is a browser extensions that adds useful widgets to the new page of your browser. Numerous weather, currency, calendar, to-do list, search, and bookmark widgets can improve your exploring experience.
 
-Official Website: [dashlive.ir](https://dashlive.ir)
+Official Website: [widgetify.ir](https://widgetify.ir)
 
 <a href="https://discord.gg/p9TZzEV39e" target="_blank">
          <img src="https://discordapp.com/api/guilds/1375251820326162578/widget.png?style=banner2" alt="total" >
@@ -14,13 +14,13 @@ Official Website: [dashlive.ir](https://dashlive.ir)
 
 ## Contributing | Development
 
-We welcome your contributions to improve DashLive! To contribute please read the following document:
+We welcome your contributions to improve Widgetify! To contribute please read the following document:
 
 [Contribution Guide](./.github/CONTRIBUTING.md).
 
 ## Analytics and privacy
 
-The DashLive extension uses Google Analytics 4 to collect statistical data and improve the user experience. The following Data is collected anonymously:
+The Widgetify extension uses Google Analytics 4 to collect statistical data and improve the user experience. The following Data is collected anonymously:
   
 
 ### Collected Data
@@ -49,7 +49,7 @@ Users can select the "Disable Analytics" option in the extension's general setti
 
 ### Privacy Policy
 
-The collected data never includes personal information or the content of the notes and it's only used to improve the dashlive functionality.
+The collected data never includes personal information or the content of the notes and it's only used to improve the widgetify functionality.
   
 
 ## Feedback and Report
@@ -57,9 +57,9 @@ The collected data never includes personal information or the content of the not
 Please share your comments and suggestions with us through one of the following methods:
 
 
--  [Github issues](https://github.com/dashlive-app/dashlive-extension/issues)
+-  [Github issues](https://github.com/widgetify-app/widgetify-extension/issues)
 
--  [Send feedback](https://feedback.onl/fa/b/dashlive)
+-  [Send feedback](https://feedback.onl/fa/b/widgetify)
 
   
 

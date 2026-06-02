@@ -44,10 +44,10 @@ const DEFAULT_SETTINGS: PetSettings = {
   petType: null,
   petOptions: {
     [PetTypes.DOG_AKITA]: {
-      name: 'DashLive',
+      name: 'آکیتا',
     },
     [PetTypes.CHICKEN]: {
-      name: 'DashLive',
+      name: 'قدقدپور',
     },
     [PetTypes.YOUR_NEW_PET]: { // Add your new pet here
       name: 'Your Pet Name',

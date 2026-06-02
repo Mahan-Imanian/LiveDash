@@ -91,7 +91,7 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 			selectedInterests.length === 0 ||
 			!selectedReferralSource
 		) {
-			showToast('DashLive', 'error')
+			showToast('لطفاً تمام مراحل را تکمیل کنید.', 'error')
 			return
 		}
 
@@ -104,7 +104,7 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 			})
 		)
 		if (err) {
-			showToast('Error in DashLive', 'error')
+			showToast('خطا در ثبت اطلاعات. لطفاً دوباره تلاش کنید.', 'error')
 			Analytics.event('welcome_wizard_completion_failed')
 			return
 		}
@@ -121,9 +121,12 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 						<div className="flex flex-col items-center justify-center w-full p-8 text-center md:w-1/2 md:p-12">
 							<div className="mb-10 space-y-4">
 								<h2 className="text-2xl font-black text-content">
-									DashLive</h2>
+									خوش اومدی!
+								</h2>
 								<p className="text-sm font-medium leading-loose opacity-70">
-									DashLive</p>
+									خیلی خوشحالیم که اینجایی. بیا با هم پروفایلت رو کامل
+									کنیم تا تجربه بهتری داشته باشی.
+								</p>
 							</div>
 							<Button
 								size="sm"
@@ -131,10 +134,11 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 								className="w-full h-12 text-base font-bold text-white shadow-lg rounded-2xl"
 								isPrimary
 							>
-								DashLive</Button>
+								بزن بریم
+							</Button>
 						</div>
 						<StepImage
-							src="https://cdn.dashlive.ir/extension/wizard/1.webp"
+							src="https://cdn.widgetify.ir/extension/wizard/1.webp"
 							alt="Welcome"
 						/>
 					</StepWrapper>
@@ -147,14 +151,17 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 							<div className="w-full">
 								<div className="mb-6 text-right">
 									<h2 className="mb-2 text-2xl font-black text-content">
-										DashLiveWorkDashLive‌DashLive</h2>
+										چه کاره‌ای؟
+									</h2>
 									<p className="text-sm font-medium opacity-60">
-										DashLive‌DashLive</p>
+										حرفه‌ات رو انتخاب کن
+									</p>
 								</div>
 								<div className="flex flex-wrap gap-2 overflow-y-auto max-h-75 scrollbar-none">
 									{occupationsLoading ? (
 										<div className="col-span-2 py-10 text-center animate-pulse">
-											in DashLive</div>
+											در حال بارگذاری...
+										</div>
 									) : (
 										occupations?.map((job) => {
 											const isSelected =
@@ -182,12 +189,12 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 									className="flex-1 h-12 font-bold text-white rounded-2xl"
 									isPrimary
 								>
-									Confirm DashLive Continue
+									تایید و ادامه
 								</Button>
 							</div>
 						</div>
 						<StepImage
-							src="https://cdn.dashlive.ir/extension/wizard/2.webp"
+							src="https://cdn.widgetify.ir/extension/wizard/2.webp"
 							alt="Welcome"
 						/>
 					</StepWrapper>
@@ -200,14 +207,17 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 							<div className="w-full">
 								<div className="mb-6 text-right">
 									<h2 className="mb-2 text-2xl font-black text-content">
-										DashLive</h2>
+										به چی علاقه داری؟
+									</h2>
 									<p className="text-sm font-medium opacity-60">
-										DashLive</p>
+										هر تعداد که دوست داری انتخاب کن
+									</p>
 								</div>
 								<div className="flex flex-wrap gap-2 overflow-y-auto max-h-75 scrollbar-none">
 									{interestsLoading ? (
 										<div className="w-full py-10 text-center animate-pulse">
-											in DashLive</div>
+											در حال بارگذاری...
+										</div>
 									) : (
 										interests?.map((item) => {
 											const isSelected = selectedInterests.includes(
@@ -246,12 +256,12 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 									className="flex-1 h-12 font-bold text-white rounded-2xl"
 									isPrimary
 								>
-									Continue
+									ادامه
 								</Button>
 							</div>
 						</div>
 						<StepImage
-							src="https://cdn.dashlive.ir/extension/wizard/3.webp"
+							src="https://cdn.widgetify.ir/extension/wizard/3.webp"
 							alt="Welcome"
 						/>
 					</StepWrapper>
@@ -263,9 +273,11 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 						<div className="flex flex-col items-center justify-center w-full p-8 text-center md:w-1/2 md:p-12">
 							<div className="mb-10 space-y-4">
 								<h2 className="text-2xl font-black text-content">
-									DashLive4: DashLive</h2>
+									مرحله ۴: از کجا شنیدی؟
+								</h2>
 								<p className="text-sm font-medium leading-loose opacity-70 text-balance">
-									DashLive</p>
+									لطفاً بگو از کجا با ویجتیفای آشنا شدی.
+								</p>
 							</div>
 
 							<div className="w-full max-w-md space-y-4">
@@ -273,19 +285,19 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 									{[
 										{
 											value: ReferralSource.Social,
-											label: 'Network‌DashLive',
+											label: 'شبکه‌های اجتماعی',
 										},
 										{
 											value: ReferralSource.Youtube,
-											label: 'DashLive',
+											label: 'یوتیوب',
 										},
 										{
 											value: ReferralSource.Friends,
-											label: 'DashLive',
+											label: 'دوستان',
 										},
 										{
 											value: ReferralSource.SearchOther,
-											label: 'Search DashLive',
+											label: 'جستجو یا سایر',
 										},
 									].map((option) => (
 										<ItemSelector
@@ -306,7 +318,7 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 										<TextInput
 											value={referralCode}
 											onChange={setReferralCode}
-											placeholder="DashLive"
+											placeholder="کد دعوت را وارد کنید"
 										/>
 									</div>
 								)}
@@ -320,11 +332,11 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 								className="w-full h-12 mt-4 text-base font-bold text-white shadow-lg rounded-2xl"
 								isPrimary
 							>
-								Continue
+								ادامه
 							</Button>
 						</div>
 						<StepImage
-							src="https://cdn.dashlive.ir/extension/wizard/4.webp"
+							src="https://cdn.widgetify.ir/extension/wizard/4.webp"
 							alt="Welcome"
 						/>
 					</StepWrapper>
@@ -336,10 +348,12 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 						<div className="flex flex-col items-center justify-center w-full p-8 text-center md:w-1/2 md:p-12">
 							<div className="mb-10 space-y-4">
 								<h2 className="text-2xl font-black text-content">
-									DashLiveMay DashLive‌DashLive🚀
+									همه چیز آماده‌ست! 🚀
 								</h2>
 								<p className="text-sm font-medium leading-loose opacity-70">
-									Settings DashLive‌DashLive</p>
+									تنظیمات پروفایلت با موفقیت انجام شد. حالا می‌تونی از
+									تمام امکانات استفاده کنی.
+								</p>
 							</div>
 							<Button
 								size="sm"
@@ -347,10 +361,11 @@ export const WelcomeWizard = ({ isOpen, onClose }: WelcomeWizardProps) => {
 								className="w-full h-12 text-base font-bold text-white shadow-lg rounded-2xl"
 								isPrimary
 							>
-								Start DashLive</Button>
+								شروع استفاده
+							</Button>
 						</div>
 						<StepImage
-							src="https://cdn.dashlive.ir/extension/wizard/5.webp"
+							src="https://cdn.widgetify.ir/extension/wizard/5.webp"
 							alt="Welcome"
 						/>
 					</StepWrapper>

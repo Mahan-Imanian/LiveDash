@@ -7,7 +7,7 @@ import Analytics from '@/analytics'
 import { callEvent } from '@/common/utils/call-event'
 import Modal from '@/components/modal'
 import { TabItem, TabManager } from '@/components/tab-manager'
-import { PetSettings } from '../dashlive-card/pets/setting/pet-setting'
+import { PetSettings } from '../widgetify-card/pets/setting/pet-setting'
 import { RssFeedSetting } from '../widgets/news/rss-feed-setting'
 import { WeatherSetting } from '../widgets/weather/weather-setting'
 import { WigiArzSetting } from '../widgets/wigiArz/wigiArz-setting'
@@ -22,40 +22,40 @@ interface WidgetSettingsModalProps {
 }
 const tabs: TabItem[] = [
 	{
-		parentName: 'DashLiveDashDashLive‌DashLive',
+		parentName: 'مدیریت ویجت‌ها',
 		children: [
 			{
-				label: 'DashLiveDashDashLive',
+				label: 'مدیریت ویجت ها',
 				element: <ManageWidgets />,
 				value: WidgetTabKeys.widget_management,
 				icon: <TbApps size={20} />,
 			},
 			{
-				label: 'Dash DashLive',
+				label: 'ویجی پد',
 				element: <WigiPadSetting />,
 				value: WidgetTabKeys.wigiPad,
 				icon: <TbCalendarUser size={20} />,
 			},
 			{
-				label: 'Dash DashLive',
+				label: 'ویجی ارز',
 				element: <WigiArzSetting />,
 				value: WidgetTabKeys.wigiArz,
 				icon: <TbCurrencyDollar size={20} />,
 			},
 			{
-				label: 'Dash DashLive',
+				label: 'ویجی نیوز',
 				element: <RssFeedSetting />,
 				value: WidgetTabKeys.news_settings,
 				icon: <TbNews size={20} />,
 			},
 			{
-				label: 'DashDashLive Weather',
+				label: 'ویجت آب و هوا',
 				element: <WeatherSetting />,
 				value: WidgetTabKeys.weather_settings,
 				icon: <TiWeatherCloudy size={20} />,
 			},
 			{
-				label: 'DashLive',
+				label: 'حیوان خانگی',
 				value: WidgetTabKeys.Pet,
 				icon: <MdPets size={20} />,
 				element: <PetSettings />,
@@ -79,7 +79,7 @@ export function WidgetSettingsModal({
 		<Modal
 			isOpen={isOpen}
 			onClose={onClose}
-			title="Settings DashDashLive"
+			title="تنظیمات ویجت ها"
 			size="xl"
 			direction="rtl"
 			closeOnBackdropClick={true}
@@ -97,7 +97,7 @@ export function WidgetSettingsModal({
 					}}
 				>
 					<VscSettings size={20} className="text-muted" />
-					<span className="text-sm font-light">Settings</span>
+					<span className="text-sm font-light">تنظیمات</span>
 				</button>
 			</TabManager>
 		</Modal>

@@ -12,10 +12,11 @@ export function TimezoneSettings() {
 	}
 
 	return (
-		<SectionPanel title="DashLive‌DashLive" delay={0.1}>
+		<SectionPanel title="منطقه‌ی زمانی" delay={0.1}>
 			<div className="space-y-3">
 				<p className={'text-sm text-muted'}>
-					DashLive‌DashLive</p>
+					منطقه‌ی زمانی مورد نظر خود را انتخاب کنید.
+				</p>
 
 				<div className="relative">
 					<div className="flex items-center gap-2">
@@ -25,7 +26,8 @@ export function TimezoneSettings() {
 							</div>
 						) : error ? (
 							<div className="w-full p-3 text-center text-red-500">
-								Error in inDashLive</div>
+								خطا در دریافت اطلاعات مناطق زمانی
+							</div>
 						) : (
 							<select
 								value={timezone.value}
@@ -35,7 +37,7 @@ export function TimezoneSettings() {
 								}
 							>
 								{!timezone && (
-									<option value="">DashLive</option>
+									<option value="">انتخاب منطقه زمانی...</option>
 								)}
 								{timezones?.map((tz) => (
 									<option

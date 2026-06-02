@@ -5,18 +5,18 @@ import { FiCheck } from 'react-icons/fi'
 import { LuCalendarDays, LuChevronRight } from 'react-icons/lu'
 
 const PERSIAN_MONTHS = [
-	'DashLive',
-	'DashLive',
-	'DashLive',
-	'DashLive',
-	'DashLive',
-	'DashLive',
-	'MayDashLive',
-	'DashLive',
-	'DashLive',
-	'DashLive',
-	'DashLive',
-	'DashLive',
+	'فروردین',
+	'اردیبهشت',
+	'خرداد',
+	'تیر',
+	'مرداد',
+	'شهریور',
+	'مهر',
+	'آبان',
+	'آذر',
+	'دی',
+	'بهمن',
+	'اسفند',
 ]
 
 const MONTH_DAYS = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29]
@@ -114,7 +114,7 @@ export default function JalaliDatePicker({
 					<div className="flex items-center gap-3">
 						<LuCalendarDays size={14} className="text-primary" />
 						<span className={value ? 'text-content' : 'text-muted'}>
-							{value || 'DashLive'}
+							{value || 'انتخاب تاریخ'}
 						</span>
 					</div>
 					<LuChevronRight size={18} className="text-muted" />
@@ -129,21 +129,21 @@ export default function JalaliDatePicker({
 					<div className="min-w-52">
 						<div className="flex gap-3 mb-5">
 							<ScrollWheel
-								label="day"
+								label="روز"
 								value={tempDate.day}
 								max={getDaysInMonth(tempDate.month, tempDate.year)}
 								onChange={handleDayChange}
 								type="number"
 							/>
 							<ScrollWheel
-								label="month"
+								label="ماه"
 								value={tempDate.month}
 								max={12}
 								onChange={handleMonthChange}
 								type="month"
 							/>
 							<ScrollWheel
-								label="year"
+								label="سال"
 								value={tempDate.year}
 								max={80}
 								onChange={handleYearChange}
@@ -159,14 +159,14 @@ export default function JalaliDatePicker({
 								className={`flex-1 rounded-2xl bg-primary hover:bg-primary/90 text-white`}
 							>
 								<FiCheck size={16} className="ml-1" />
-								Confirm{' '}
+								تایید{' '}
 							</Button>
 							<Button
 								onClick={handleCancel}
 								size="sm"
 								className="w-20 rounded-2xl border-muted hover:bg-muted/50 text-content"
 							>
-								Cancel
+								لغو
 							</Button>
 						</div>
 					</div>

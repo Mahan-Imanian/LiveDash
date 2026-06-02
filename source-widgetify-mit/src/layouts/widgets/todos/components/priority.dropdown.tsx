@@ -6,21 +6,21 @@ import { TodoPriority } from '@/context/todo.context'
 const priorityOptions = [
 	{
 		value: TodoPriority.Low,
-		label: 'DashLive',
+		label: 'کم اهمیت',
 		color: 'text-success',
 		bg: 'bg-success/10',
 		border: 'border-success/20',
 	},
 	{
 		value: TodoPriority.Medium,
-		label: 'DashLive',
+		label: 'متوسط',
 		color: 'text-warning',
 		bg: 'bg-warning/10',
 		border: 'border-warning/20',
 	},
 	{
 		value: TodoPriority.High,
-		label: 'MayDashLive',
+		label: 'مهم',
 		color: 'text-error',
 		bg: 'bg-error/10',
 		border: 'border-error/20',
@@ -61,7 +61,8 @@ export function PriorityDropdown({ priority, setPriority }: PriorityDropdownProp
 							: 'text-base-content/60 hover:bg-base-content/5'
 					}`}
 				>
-					DashLive</button>
+					بدون اولویت
+				</button>
 
 				{priorityOptions.map((option) => (
 					<button

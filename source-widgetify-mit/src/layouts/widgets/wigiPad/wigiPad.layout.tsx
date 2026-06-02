@@ -7,8 +7,8 @@ import { MdOutlineCloud, MdOutlineTab } from 'react-icons/md'
 import { InfoWeather } from './info-panel/infoWeather'
 import { NotificationItem } from './info-panel/components/ann-item'
 const sections = [
-	{ id: 'all', label: 'Dash DashLive', icon: <MdOutlineTab size={14} /> },
-	{ id: 'weather', label: 'Weather', icon: <MdOutlineCloud size={14} /> },
+	{ id: 'all', label: 'ویجی تب', icon: <MdOutlineTab size={14} /> },
+	{ id: 'weather', label: 'آب و هوا', icon: <MdOutlineCloud size={14} /> },
 ]
 
 export function WigiPadWidget() {

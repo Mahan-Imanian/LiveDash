@@ -72,7 +72,7 @@ export const UpdateReleaseNotesModal = ({
 		<Modal
 			isOpen={isOpen}
 			onClose={onClose}
-			title={'New version ready!'}
+			title={'🥳 نسخه جدید، آمادست!'}
 			size="lg"
 			direction="rtl"
 			closeOnBackdropClick={false}
@@ -81,7 +81,7 @@ export const UpdateReleaseNotesModal = ({
 				<div className="flex items-center justify-between px-1 pb-1">
 					<div className="flex flex-col">
 						<p className="mt-1 text-xs font-medium text-muted">
-							DashLive1 yearDashLive🎂
+							آپدیت جدید به مناسبت ۱ سالگی ویجتیفای 🎂
 						</p>
 					</div>
 				</div>
@@ -90,7 +90,7 @@ export const UpdateReleaseNotesModal = ({
 					<div className="relative w-full overflow-hidden border-2 shadow-inner rounded-2xl bg-base-300/20 border-base-300">
 						<video
 							ref={videoRef}
-							src={'https://cdn.dashlive.ir/extension/new_ui_update.mp4'}
+							src={'https://cdn.widgetify.ir/extension/new_ui_update.mp4'}
 							autoPlay
 							muted
 							loop
@@ -100,7 +100,8 @@ export const UpdateReleaseNotesModal = ({
 						<div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full">
 							<span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
 							<span className="text-[10px] font-bold text-white/80">
-								DashLiveWorkDashLive</span>
+								آموزش تغییر رابط کاربری
+							</span>
 						</div>
 					</div>
 
@@ -108,19 +109,23 @@ export const UpdateReleaseNotesModal = ({
 						<div className="flex items-center gap-2">
 							<RiLayoutLine className="text-primary shrink-0" size={20} />
 							<h3 className="text-sm font-black text-content">
-								A fresh interface is here!
+								رابط کاربری تازه از راه رسید!
 							</h3>
 						</div>
 						<p className="text-xs leading-6 text-muted">
-							DashLive{' '}
+							یه{' '}
 							<span className="font-bold text-content">
-								Appearance DashLive</span>{' '}
-							DashLiveBack DashLive‌DashLive‌DashLiveWorkDashLive</p>
+								ظاهر و چیدمان تازه
+							</span>{' '}
+							به ویجیتفای اضافه کردیم! رابط قبلی سر جاشه، فقط حالا می‌تونی
+							بین دو سبک مختلف جابه‌جا بشی و اونی که بیشتر به کارت میاد رو
+							انتخاب کنی.
+						</p>
 						<ul className="space-y-1">
 							{[
-								'DashLiveBack DashLivein DashLive',
-								'DashLive‌DashLiveAugust',
-								'DashLiveSettings ← Appearance',
+								'رابط قبلی همچنان در دسترسه',
+								'یه رابط جدید با حس‌وحال متفاوت',
+								'تغییر سریع از مسیر تنظیمات ← ظاهر',
 							].map((item, i) => (
 								<li
 									key={i}
@@ -148,10 +153,11 @@ export const UpdateReleaseNotesModal = ({
 								{activated ? (
 									<span className="flex items-center justify-center gap-2">
 										<RiCheckboxCircleLine size={14} />
-										DashLive</span>
+										رابط جدید فعاله!
+									</span>
 								) : (
 									<span className="flex items-center justify-center gap-2">
-										Try it now
+										همین الان امتحانش کن
 									</span>
 								)}
 							</button>
@@ -160,18 +166,18 @@ export const UpdateReleaseNotesModal = ({
 
 					<div className="flex items-center justify-center gap-2 py-1 text-muted">
 						<RiThumbUpLine size={14} />
-						<span className="text-xs">Thanks for using DashLive</span>
+						<span className="text-xs">دمت گرم که همراه مایی</span>
 					</div>
 				</div>
 
 				<div className="flex items-center justify-between px-4 py-2 border border-t border-base-300/10 bg-base-200/40 rounded-3xl">
 					<a
-						href="https://feedback.dashlive.ir"
+						href="https://feedback.widgetify.ir"
 						target="_blank"
 						rel="noreferrer"
 						className="text-[10px] font-black text-muted hover:text-content transition-all underline decoration-dotted underline-offset-4"
 					>
-						Feedback or report issue
+						پیشنهاد یا گزارش مشکل
 					</a>
 					<Button
 						size="sm"
@@ -180,7 +186,7 @@ export const UpdateReleaseNotesModal = ({
 						className="min-w-[130px] h-11 !rounded-2xl font-black text-xs shadow-lg shadow-primary/10 disabled:shadow-none active:scale-90 transition-all disabled:text-base-content/30"
 						isPrimary={true}
 					>
-						{counter > 0 ? `DashLive(${counter})` : 'Got it'}
+						{counter > 0 ? `یه چند لحظه صبر کن (${counter})` : 'فهمیدم'}
 					</Button>
 				</div>
 			</div>

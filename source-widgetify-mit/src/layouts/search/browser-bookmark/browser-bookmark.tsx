@@ -74,13 +74,13 @@ export function BrowserBookmark() {
 								size={20}
 								className="text-base-content/60"
 							/>
-							<p className="font-medium text-base-content/60">Explore</p>
+							<p className="font-medium text-base-content/60">کاوش</p>
 						</div>
 					</div>
 				</div>
 
 				<div ref={iconRef} className="flex items-center justify-center shrink-0">
-					<Tooltip content="Bookmark‌DashLive">
+					<Tooltip content="بوکمارک‌های مرورگر">
 						<div
 							className="flex items-center cursor-pointer group"
 							onClick={handleTogglePopover}

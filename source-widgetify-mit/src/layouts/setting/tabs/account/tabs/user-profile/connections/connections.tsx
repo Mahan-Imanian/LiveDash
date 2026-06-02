@@ -36,16 +36,16 @@ export function Connections() {
 
 	const handleConnectionClick = (platformId: string) => {
 		if (!profile?.verified) {
-			return showToast('DashLiveAccount DashLive', 'error')
+			return showToast('لطفا اول حساب کاربری خود را تأیید کنید.', 'error')
 		}
 
 		const platform = platforms.find((p) => p.id === platformId)
 		if (!platform) {
-			return showToast('DashLivein DashLive', 'error')
+			return showToast('این پلتفرم در حال حاضر غیرفعال است.', 'error')
 		}
 
 		if (!platform.isActive && !platform.connected) {
-			return showToast('DashLive', 'error')
+			return showToast('این پلتفرم هنوز آماده نیست.', 'error')
 		}
 
 		setSelectedPlatform(platform)
@@ -73,7 +73,7 @@ export function Connections() {
 					)
 				)
 
-				showToast(`DashLive${selectedPlatform.name} DashLive`, 'success')
+				showToast(`اتصال به ${selectedPlatform.name} قطع شد.`, 'success')
 			} else {
 				const api = await getMainClient()
 				const response = await api.post(`/${selectedPlatform.id}/connect`)
@@ -88,7 +88,7 @@ export function Connections() {
 			)
 
 			showToast(
-				`Error in DashLive${selectedPlatform.name}. DashLive`,
+				`خطا در ارتباط با ${selectedPlatform.name}. لطفا دوباره تلاش کنید.`,
 				'error'
 			)
 		}
@@ -131,7 +131,7 @@ export function Connections() {
 									<p
 										className={`text-[10px]  font-medium truncate ${platform.connected ? 'text-success' : 'text-muted'}`}
 									>
-										{platform.connected ? 'Online DashLive' : 'DashLive'}
+										{platform.connected ? 'متصل شده' : 'عدم اتصال'}
 									</p>
 								</div>
 							</div>
@@ -147,9 +147,9 @@ export function Connections() {
 								{platform.isLoading ? (
 									<div className="w-3 h-3 border-2 border-current rounded-full animate-spin border-t-transparent" />
 								) : platform.connected ? (
-									'DashLive'
+									'قطع'
 								) : (
-									'DashLive'
+									'اتصال'
 								)}
 							</div>
 						</div>

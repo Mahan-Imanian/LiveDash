@@ -23,14 +23,16 @@ export function WallpaperSetting() {
 							onClick={() => setActiveTab('gallery')}
 							className={`inline-block cursor-pointer p-4 border-b-2 rounded-t-lg ${getTabStyle(activeTab === 'gallery')}`}
 						>
-							DashLive</button>
+							تصاویر
+						</button>
 					</li>
 					<li className="mr-2">
 						<button
 							onClick={() => setActiveTab('gradient')}
 							className={`inline-block cursor-pointer p-4 border-b-2 rounded-t-lg ${getTabStyle(activeTab === 'gradient')}`}
 						>
-							DashLive</button>
+							گرادیان
+						</button>
 					</li>
 				</ul>
 			</div>

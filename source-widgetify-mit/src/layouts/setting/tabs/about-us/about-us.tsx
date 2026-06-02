@@ -44,26 +44,29 @@ export function AboutUsTab() {
 						'mb-1 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600'
 					}
 				>
-					DashLive
+					ویجتیفای
 				</h1>
 				<div
 					className={
 						'inline-flex items-center px-3 py-1 mb-2 text-xs font-medium border rounded-full backdrop-blur-sm text-primary/80'
 					}
 				>
-					<span>DashLive"{ConfigKey.VERSION_NAME}"</span>
+					<span>نسخه "{ConfigKey.VERSION_NAME}"</span>
 				</div>
 
 				{/* Description */}
 				<p className={'max-w-lg mb-2 text-sm leading-relaxed text-content'}>
-					DashLive‌DashLiveToolsDashLive WorkDashLiveWorkDashLive‌DashLive‌DashLive</p>
+					ویجتیفای یک افزونه متن‌باز برای مرورگر شماست که صفحه جدید را با
+					ابزارهای کاربردی و سبک زیبا به محیطی کارآمد و شخصی‌سازی شده تبدیل
+					می‌کند.
+				</p>
 			</div>
 
 			{/* Links Section */}
-			<SectionPanel title="Link‌DashLive" size="sm">
+			<SectionPanel title="لینک‌های ارتباطی" size="sm">
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
 					<a
-						href="https://dashlive.ir/donate"
+						href="https://widgetify.ir/donate"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`flex flex-col items-center justify-center p-4 transition-all duration-200 border rounded-xl backdrop-blur-sm hover:-translate-y-1 ${getDonateCardStyle()}`}
@@ -73,13 +76,14 @@ export function AboutUsTab() {
 						>
 							<FaDonate size={24} />
 						</div>
-						<h3 className={'text-sm font-medium text-content'}>DashLive</h3>
+						<h3 className={'text-sm font-medium text-content'}>حمایت مالی</h3>
 						<p className={'mt-1 text-xs text-center text-content'}>
-							DashLive</p>
+							کمک به توسعه ویجتیفای
+						</p>
 					</a>
 
 					<a
-						href="https://github.com/dashlive-app"
+						href="https://github.com/widgetify-app"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`flex flex-col items-center justify-center p-4 transition-all duration-200 border rounded-xl backdrop-blur-sm hover:-translate-y-1 ${getGithubCardStyle()}`}
@@ -89,13 +93,14 @@ export function AboutUsTab() {
 						>
 							<FaGithub size={24} />
 						</div>
-						<h3 className={'text-sm font-medium text-content'}>DashLive‌DashLive</h3>
+						<h3 className={'text-sm font-medium text-content'}>گیت‌هاب</h3>
 						<p className={'mt-1 text-xs text-center text-content'}>
-							DashLive</p>
+							مشاهده کد منبع
+						</p>
 					</a>
 
 					<a
-						href="https://feedback.dashlive.ir"
+						href="https://feedback.widgetify.ir"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`flex flex-col items-center justify-center p-4 transition-all duration-200 border rounded-xl backdrop-blur-sm hover:-translate-y-1 ${getFeedbackCardStyle()}`}
@@ -105,13 +110,14 @@ export function AboutUsTab() {
 						>
 							<MdFeedback size={24} />
 						</div>
-						<h3 className={'text-sm font-medium text-content'}>DashLive</h3>
+						<h3 className={'text-sm font-medium text-content'}>بازخورد</h3>
 						<p className={'mt-1 text-xs text-center text-content'}>
-							DashLiveyear agoDashLive</p>
+							ارسال پیشنهاد و انتقاد
+						</p>
 					</a>
 
 					<a
-						href="https://dashlive.ir"
+						href="https://widgetify.ir"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`flex flex-col items-center justify-center p-4 transition-all duration-200 border rounded-xl backdrop-blur-sm hover:-translate-y-1 ${getWebsiteCardStyle()}`}
@@ -121,9 +127,10 @@ export function AboutUsTab() {
 						>
 							<FaGlobe size={24} />
 						</div>
-						<h3 className={'text-sm font-medium text-content'}>DashLive‌DashLive</h3>
+						<h3 className={'text-sm font-medium text-content'}>وب‌سایت</h3>
 						<p className={'mt-1 text-xs text-center text-content'}>
-							DashLive</p>
+							مشاهده سایت رسمی
+						</p>
 					</a>
 				</div>
 			</SectionPanel>
@@ -134,13 +141,14 @@ export function AboutUsTab() {
 					'flex items-center justify-center mt-8 space-x-1 space-x-reverse text-sm text-content opacity-75'
 				}
 			>
-				<span>DashLive</span>
+				<span>ساخته شده با</span>
 				<FaHeart className="mx-1 text-red-500 animate-pulse" size={14} />
-				<span>in DashLive</span>
+				<span>در ایران</span>
 			</div>
 
 			<div className={'mt-2 mb-4 text-xs text-center text-content opacity-55'}>
-				© DashLive</div>
+				© ویجتیفای - تمامی حقوق محفوظ است
+			</div>
 		</div>
 	)
 }

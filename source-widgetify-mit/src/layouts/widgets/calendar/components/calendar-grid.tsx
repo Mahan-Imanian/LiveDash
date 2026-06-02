@@ -3,18 +3,18 @@ import { useGeneralSetting } from '@/context/general-setting.context'
 import { useGetEvents } from '@/services/hooks/date/getEvents.hook'
 import type React from 'react'
 import { useState } from 'react'
-import { type DashLiveDate, formatDateStr } from '../utils'
+import { type WidgetifyDate, formatDateStr } from '../utils'
 import { DayItem } from './day/day'
 import { ClickableTooltip } from '@/components/clickableTooltip'
 import { CalendarDayDetails } from './day/toolTipContent'
 import { useGetCalendarData } from '@/services/hooks/calendar/get-calendarData.hook'
 
-const WEEKDAYS = ['DashLive', 'DashLive', 'DashLive', 'DashLive', 'DashLive', 'DashLive', 'DashLive']
+const WEEKDAYS = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج']
 
 interface CalendarGridProps {
-	currentDate: DashLiveDate
-	selectedDate: DashLiveDate
-	setSelectedDate: (date: DashLiveDate) => void
+	currentDate: WidgetifyDate
+	selectedDate: WidgetifyDate
+	setSelectedDate: (date: WidgetifyDate) => void
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({

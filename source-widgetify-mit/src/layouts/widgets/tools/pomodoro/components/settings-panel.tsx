@@ -70,7 +70,7 @@ export const PomodoroSettingsPanel: React.FC<PomodoroSettingsPanelProps> = ({
 		<Modal
 			isOpen={isOpen}
 			onClose={onClose}
-			title="Settings DashLivePomodoro"
+			title="تنظیمات تایمر پومودورو"
 			direction="rtl"
 		>
 			<div className={'rounded-xl'}>
@@ -79,12 +79,12 @@ export const PomodoroSettingsPanel: React.FC<PomodoroSettingsPanelProps> = ({
 						'pb-2 text-sm font-medium text-base-content border-b border-b-base-300'
 					}
 				>
-					Settings DashLive(minute)
+					تنظیمات زمان (دقیقه)
 				</h4>
 
 				<div className="my-2">
 					<SettingInput
-						label="DashLiveWork:"
+						label="زمان کار:"
 						value={settings.workTime}
 						onChange={(value) => {
 							handleSettingChange('workTime', value)
@@ -93,7 +93,7 @@ export const PomodoroSettingsPanel: React.FC<PomodoroSettingsPanelProps> = ({
 					/>
 
 					<SettingInput
-						label="Break DashLive:"
+						label="استراحت کوتاه:"
 						value={settings.shortBreakTime}
 						onChange={(value) => {
 							handleSettingChange('shortBreakTime', value)
@@ -120,9 +120,12 @@ export const PomodoroSettingsPanel: React.FC<PomodoroSettingsPanelProps> = ({
 							className="cursor-pointer"
 						>
 							<p className={'font-medium text-content'}>
-								DashLive‌DashLive</p>
+								فعال‌سازی هشدار صوتی
+							</p>
 							<p className={'text-sm font-light text-muted'}>
-								DashLive‌DashLivein Finish DashLiveWorkDashLive</p>
+								با فعال‌سازی این گزینه، در پایان هر دوره کاری، یک هشدار
+								صوتی پخش خواهد شد.
+							</p>
 						</div>
 					</div>
 				</div>
@@ -133,7 +136,7 @@ export const PomodoroSettingsPanel: React.FC<PomodoroSettingsPanelProps> = ({
 						isPrimary={true}
 						className="w-full rounded-xl"
 					>
-						Save DashLive Close
+						ذخیره و بستن
 					</Button>
 				</div>
 			</div>

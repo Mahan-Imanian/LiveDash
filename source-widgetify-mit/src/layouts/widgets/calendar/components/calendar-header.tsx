@@ -2,12 +2,12 @@ import { useGeneralSetting } from '@/context/general-setting.context'
 import type React from 'react'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6'
 import { TfiBackRight } from 'react-icons/tfi'
-import { type DashLiveDate, getCurrentDate } from '../utils'
+import { type WidgetifyDate, getCurrentDate } from '../utils'
 
 interface CalendarHeaderProps {
-	currentDate: DashLiveDate
-	selectedDate: DashLiveDate
-	setCurrentDate: (date: DashLiveDate) => void
+	currentDate: WidgetifyDate
+	selectedDate: WidgetifyDate
+	setCurrentDate: (date: WidgetifyDate) => void
 	goToToday: () => void
 }
 
@@ -46,7 +46,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 	return (
 		<div className="flex items-center justify-between">
 			<h3 className={'font-medium text-xs text-content'}>
-				{currentDate.format('ddddDashLive jD jMMMM jYYYY')}
+				{currentDate.format('dddd، jD jMMMM jYYYY')}
 			</h3>{' '}
 			<div className="flex gap-0.5">
 				{showTodayButton && (

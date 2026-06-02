@@ -101,7 +101,7 @@ const OtpInput: React.FC<OtpInputProps> = ({ otp, setOtp, isError }) => {
 					inputMode="numeric"
 					maxLength={1}
 					value={digit}
-					aria-label={`DashLiveConfirm DashLive${index + 1}`}
+					aria-label={`کد تایید رقم ${index + 1}`}
 					onChange={(e) => handleChange(index, e.target.value)}
 					onKeyDown={(e) => handleKeyDown(index, e)}
 					onPaste={handlePaste}

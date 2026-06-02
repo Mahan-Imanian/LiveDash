@@ -121,24 +121,29 @@ export function Dropdown({
 			})
 		}
 
-		// DashLiveconst initialTimeout = setTimeout(calculatePosition, 10)
+		// محاسبه اولیه با تاخیر کوچک
+		const initialTimeout = setTimeout(calculatePosition, 10)
 
 		// Event listeners
 		window.addEventListener('resize', calculatePosition)
 		window.addEventListener('scroll', calculatePosition, true)
 
-		// ResizeObserver DashLivetrack DashLiveconst resizeObserver = new ResizeObserver(() => {
-			// DashLiverequestAnimationFrame DashLivecallback
-			// DashLivesmooth DashLiveloop DashLiverequestAnimationFrame(calculatePosition)
+		// ResizeObserver برای track کردن تغییرات سایز
+		const resizeObserver = new ResizeObserver(() => {
+			// استفاده از requestAnimationFrame فقط برای این callback
+			// تا smooth باشد اما loop نداشته باشیم
+			requestAnimationFrame(calculatePosition)
 		})
 
-		// Track trigger DashLiveMay parent DashLivelet element: HTMLElement | null = dropdownRef.current
+		// Track trigger و همه parent هاش
+		let element: HTMLElement | null = dropdownRef.current
 		while (element) {
 			resizeObserver.observe(element)
 			element = element.parentElement
 		}
 
-		// Track DashLivedropdown DashLiveif (dropdownContentRef.current) {
+		// Track خود dropdown هم
+		if (dropdownContentRef.current) {
 			resizeObserver.observe(dropdownContentRef.current)
 		}
 

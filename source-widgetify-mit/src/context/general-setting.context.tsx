@@ -29,9 +29,9 @@ const DEFAULT_SETTINGS: GeneralData = {
 	blurMode: false,
 	analyticsEnabled: import.meta.env.FIREFOX ? false : true,
 	selected_timezone: {
-		label: 'Europe / London',
-		value: 'Europe/London',
-		offset: '+00:00',
+		label: 'آسیا / تهران',
+		value: 'Asia/Tehran',
+		offset: '+03:30',
 	},
 	browserBookmarksEnabled: false,
 	browserTabsEnabled: false,

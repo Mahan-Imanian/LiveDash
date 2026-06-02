@@ -73,7 +73,7 @@ export function BookmarkPopover({ isOpen, onClose, coords }: BookmarkPopoverProp
 	}
 
 	const c =
-		fetchedBookmarks.find((b) => b.id === currentFolderId)?.title || 'Bookmark‌DashLive'
+		fetchedBookmarks.find((b) => b.id === currentFolderId)?.title || 'بوکمارک‌های من'
 
 	return createPortal(
 		<div
@@ -89,16 +89,19 @@ export function BookmarkPopover({ isOpen, onClose, coords }: BookmarkPopoverProp
 					<div className="flex items-center justify-center w-8 h-8 mx-auto mb-3 rounded-full bg-primary/10">
 						<FiLock className="text-primary" size={18} />
 					</div>
-					<p className="mb-1 text-sm font-bold">DashLiveBookmark‌DashLive</p>
+					<p className="mb-1 text-sm font-bold">دسترسی به بوکمارک‌ها</p>
 					<p className="mb-4 text-xs leading-relaxed text-muted">
-						DashLiveBookmark‌DashLivein DashLive</p>
+						برای مشاهده بوکمارک‌های مرورگر در این بخش، نیاز به دسترسی شما
+						داریم.
+					</p>
 					<Button
 						size="sm"
 						onClick={() => handlePermission()}
 						className="w-full rounded-2xl"
 						isPrimary
 					>
-						DashLive‌DashLive</Button>
+						فعال‌سازی دسترسی
+					</Button>
 				</div>
 			) : (
 				<div className="flex flex-col max-h-[420px]">
@@ -111,7 +114,8 @@ export function BookmarkPopover({ isOpen, onClose, coords }: BookmarkPopoverProp
 								className="text-[10px] btn-ghost text-muted rounded-xl flex items-center gap-1!"
 							>
 								<HiChevronRight />
-								DashLive</Button>
+								بازگشت
+							</Button>
 						)}
 					</div>
 
@@ -153,7 +157,8 @@ export function BookmarkPopover({ isOpen, onClose, coords }: BookmarkPopoverProp
 							))
 						) : (
 							<div className="py-8 text-xs text-center text-muted">
-								Folder DashLive</div>
+								پوشه خالی است
+							</div>
 						)}
 					</div>
 				</div>

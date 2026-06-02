@@ -35,7 +35,8 @@ export const OccupationSelector = ({
 		<div className="w-64 p-1 ">
 			{isLoading ? (
 				<div className="py-4 text-xs italic font-medium text-center animate-pulse">
-					inDashLive</div>
+					درحال بارگذاری...
+				</div>
 			) : (
 				<div className="flex flex-row flex-wrap gap-2 overflow-x-hidden overflow-y-auto scrollbar-none max-h-40">
 					{occupations.map((occupation) => {
@@ -70,14 +71,14 @@ export const OccupationSelector = ({
 					className={`flex-1 rounded-2xl bg-primary hover:bg-primary/90 text-white`}
 				>
 					<FiCheck size={16} className="ml-1" />
-					Confirm{' '}
+					تایید{' '}
 				</Button>
 				<Button
 					onClick={() => setIsOpen(!isOpen)}
 					size="sm"
 					className="w-20 rounded-2xl border-muted hover:bg-muted/50 text-content"
 				>
-					Cancel
+					لغو
 				</Button>
 			</div>
 		</div>

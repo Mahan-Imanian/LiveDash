@@ -1,142 +1,142 @@
 const errorTranslations: Record<string, string> = {
 	// Authentication errors
-	INVALID_PASS_MAIL: 'Email DashLivePassword DashLive',
-	INVALID_CREDENTIALS: 'DashLiveSign in NameDashLive',
-	EMAIL_ALREADY_EXISTS: 'DashLiveEmail DashLive',
-	USER_NOT_FOUND: 'WorkDashLive',
-	TOKEN_EXPIRED: 'DashLive',
-	INVALID_TOKEN: 'DashLiveNameDashLive',
-	UNAUTHORIZED: 'DashLive',
-	FORBIDDEN: 'DashLive',
+	INVALID_PASS_MAIL: 'ایمیل یا رمز عبور اشتباه است',
+	INVALID_CREDENTIALS: 'اطلاعات ورود نامعتبر است',
+	EMAIL_ALREADY_EXISTS: 'این ایمیل قبلا ثبت شده است',
+	USER_NOT_FOUND: 'کاربر یافت نشد',
+	TOKEN_EXPIRED: 'نشست شما منقضی شده است. لطفا دوباره وارد شوید',
+	INVALID_TOKEN: 'توکن احراز هویت نامعتبر است',
+	UNAUTHORIZED: 'شما مجوز دسترسی به این بخش را ندارید',
+	FORBIDDEN: 'دسترسی به این بخش محدود شده است',
 
 	// Password reset errors
 	FORGOT_PASSWORD_REQUEST_LIMIT:
-		'DashLiveinDashLive‌DashLivePassword DashLive',
+		'تعداد درخواست‌های بازیابی رمز عبور به حد مجاز رسیده است. لطفاً بعداً تلاش کنید',
 	RESET_TOKEN_EXPIRED:
-		'Link DashLivePassword DashLiveinDashLiveyear DashLive',
-	INVALID_RESET_TOKEN: 'Link DashLivePassword NameDashLive',
+		'لینک بازیابی رمز عبور منقضی شده است. لطفا درخواست جدید ارسال کنید',
+	INVALID_RESET_TOKEN: 'لینک بازیابی رمز عبور نامعتبر است',
 
 	// Validation errors
-	WEAK_PASSWORD: 'Password DashLive',
-	PASSWORD_TOO_SHORT: 'Password DashLive8 WorkDashLive',
-	INVALID_EMAIL_FORMAT: 'DashLiveEmail NameDashLive',
-	NAME_REQUIRED: 'Username DashLive',
-	INVALID_INPUTS: 'DashLiveNameDashLive',
+	WEAK_PASSWORD: 'رمز عبور ضعیف است. از حروف، اعداد و نمادها استفاده کنید',
+	PASSWORD_TOO_SHORT: 'رمز عبور باید حداقل 8 کاراکتر باشد',
+	INVALID_EMAIL_FORMAT: 'فرمت ایمیل نامعتبر است',
+	NAME_REQUIRED: 'نام کاربری الزامی است',
+	INVALID_INPUTS: 'اطلاعات وارد شده نامعتبر است',
 
 	// HTTP status errors
-	INTERNAL_SERVER_ERROR: 'ErrorDashLive',
-	SERVICE_UNAVAILABLE: 'DashLivein DashLivein DashLive',
-	TOO_MANY_REQUESTS: 'DashLiveinDashLive‌DashLive',
-	BAD_REQUEST: 'inDashLiveNameDashLive',
-	NOT_FOUND: 'Resource not found',
+	INTERNAL_SERVER_ERROR: 'خطای داخلی سرور رخ داده است',
+	SERVICE_UNAVAILABLE: 'سرویس در حال حاضر در دسترس نیست',
+	TOO_MANY_REQUESTS: 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی صبر کنید',
+	BAD_REQUEST: 'درخواست نامعتبر است',
+	NOT_FOUND: 'منبع درخواستی یافت نشد',
 	ACTIVITY_UPDATE_RATE_LIMIT_EXCEEDED:
-		'DashLiveinDashLive‌DashLivedayDashLive"DashLive" DashLive',
+		'تعداد درخواست‌ها برای بروزرسانی "وضعیت" بیش از حد مجاز است. لطفاً کمی صبر کنید',
 	// Friend-related errors
-	CANT_REQUEST_YOURSELF: 'DashLive‌DashLiveinDashLiveyear DashLive',
-	FRIEND_REQUEST_ALREADY_SENT: 'inDashLiveyear DashLive',
-	FRIEND_REQUEST_ALREADY_EXISTS: 'inDashLive',
-	FAILED_TO_FETCH_FRIENDS: 'Error in inDashLive',
-	FAILED_TO_SEND_REQUEST: 'Error in DashLiveyear inDashLive',
-	FAILED_TO_ACCEPT_REQUEST: 'Error in DashLiveinDashLive',
-	FAILED_TO_REMOVE_FRIEND: 'Error in Delete DashLive',
-	FRIEND_REQUEST_SENT: 'inDashLiveyear DashLive',
-	FRIEND_REQUEST_NOT_FOUND: 'inDashLive',
-	SET_USERNAME_FIRST: 'DashLiveUsername DashLive',
+	CANT_REQUEST_YOURSELF: 'نمی‌توانید به خودتان درخواست دوستی ارسال کنید',
+	FRIEND_REQUEST_ALREADY_SENT: 'درخواست دوستی قبلاً ارسال شده است',
+	FRIEND_REQUEST_ALREADY_EXISTS: 'درخواست دوستی قبلاً وجود دارد',
+	FAILED_TO_FETCH_FRIENDS: 'خطا در دریافت لیست دوستان',
+	FAILED_TO_SEND_REQUEST: 'خطا در ارسال درخواست دوستی',
+	FAILED_TO_ACCEPT_REQUEST: 'خطا در پذیرش درخواست دوستی',
+	FAILED_TO_REMOVE_FRIEND: 'خطا در حذف دوست',
+	FRIEND_REQUEST_SENT: 'درخواست دوستی ارسال شد',
+	FRIEND_REQUEST_NOT_FOUND: 'درخواست دوستی یافت نشد',
+	SET_USERNAME_FIRST: 'لطفاً ابتدا نام کاربری خود را تنظیم کنید',
 
 	// Translate-related errors
-	SOURCE_AND_TARGET_LANG_MUST_BE_DIFFERENT: 'DashLive‌DashLive',
-	TARGET_LANG_CANNOT_BE_AUTO: 'DashLive‌DashLiveWork DashLive',
-	TRANSLATION_FAILED: 'Error in DashLiveMay DashLive',
-	FAILED_TO_FETCH_LANGUAGES: 'Error in inDashLive‌DashLive',
-	INVALID_LANGUAGE_CODE: 'DashLiveNameDashLive',
-	TEXT_TOO_LONG: 'DashLiveMay DashLive',
-	EMPTY_TEXT: 'DashLiveMay DashLive‌DashLive',
-	TRANSLATION_QUOTA_EXCEEDED: 'DashLiveMay DashLiveFinish DashLive',
+	SOURCE_AND_TARGET_LANG_MUST_BE_DIFFERENT: 'زبان مبدأ و مقصد نمی‌توانند یکسان باشند',
+	TARGET_LANG_CANNOT_BE_AUTO: 'زبان مقصد نمی‌تواند تشخیص خودکار باشد',
+	TRANSLATION_FAILED: 'خطا در ترجمه متن',
+	FAILED_TO_FETCH_LANGUAGES: 'خطا در دریافت لیست زبان‌ها',
+	INVALID_LANGUAGE_CODE: 'کد زبان نامعتبر است',
+	TEXT_TOO_LONG: 'متن برای ترجمه خیلی طولانی است',
+	EMPTY_TEXT: 'متن برای ترجمه نمی‌تواند خالی باشد',
+	TRANSLATION_QUOTA_EXCEEDED: 'سهمیه ترجمه شما به پایان رسیده است',
 	// Success messages
-	SUCCESS: 'Done successfully',
+	SUCCESS: 'عملیات با موفقیت انجام شد',
 
 	// Widget-related errors
-	WIDGET_NOT_FOUND: 'DashDashLive',
-	WIDGET_ALREADY_EXISTS: 'DashLiveDashDashLive',
-	INVALID_WIDGET_POSITION: 'DashLiveDashDashLive NameDashLive',
-	MAX_WIDGETS_REACHED: 'DashLiveDashDashLive‌DashLive',
+	WIDGET_NOT_FOUND: 'ویجت مورد نظر یافت نشد',
+	WIDGET_ALREADY_EXISTS: 'این ویجت قبلاً اضافه شده است',
+	INVALID_WIDGET_POSITION: 'موقعیت ویجت نامعتبر است',
+	MAX_WIDGETS_REACHED: 'به حداکثر تعداد مجاز ویجت رسیده‌اید',
 
 	// Network errors
-	NETWORK_ERROR: 'ErrorDashLive Network. DashLive',
-	CONNECTION_TIMEOUT: 'DashLiveFinish DashLive',
-	CONNECTION_REFUSED: 'DashLive',
+	NETWORK_ERROR: 'خطای شبکه. لطفا اتصال اینترنت خود را بررسی کنید',
+	CONNECTION_TIMEOUT: 'زمان اتصال به پایان رسید. لطفا مجدداً تلاش کنید',
+	CONNECTION_REFUSED: 'اتصال رد شد. لطفا بعداً تلاش کنید',
 
-	FIRST_VERIFY_YOUR_ACCOUNT: 'DashLive‌ WorkDashLiveConfirm DashLive',
-	USERNAME_ALREADY_EXISTS: 'DashLiveUsername DashLive',
-	INVALID_FILE_TYPE: 'DashLiveNameDashLive',
-	NOT_ENOUGH_COINS: 'Dash‌DashLive‌DashLive😕',
-	INVALID_REFERRAL_CODE: 'DashLiveNameDashLive',
-	ITEM_ALREADY_EXISTS: 'DashLiveDash‌DashLive— DashLive',
+	FIRST_VERIFY_YOUR_ACCOUNT: 'اول باید حساب‌ کاربری رو تایید کنی!',
+	USERNAME_ALREADY_EXISTS: 'این نام کاربری قبلا وجود داشته است',
+	INVALID_FILE_TYPE: 'نوع فایل نامعتبر است',
+	NOT_ENOUGH_COINS: 'ویج‌کوین‌هات کافی نیست 😕',
+	INVALID_REFERRAL_CODE: 'کد دعوت نامعتبر است',
+	ITEM_ALREADY_EXISTS: 'این رو قبلاً با ویج‌کوین گرفتی — نیازی به خرید دوباره نیست.',
 
-	INVALID_ID: 'DashLiveNameDashLive',
+	INVALID_ID: 'آیدی نامعتبر است',
 
-	DATE_OUT_OF_RANGE: 'DashLive',
+	DATE_OUT_OF_RANGE: 'تاریخ انتخاب شده خارج از محدوده مجاز است',
 
-	ITEM_NOT_FOUND: 'DashLive',
-	TODO_NOT_FOUND: 'Task DashLive',
-	INVALID_OTP_CODE: 'DashLiveConfirm NameDashLive',
-	USE_EMAIL_FOR_OTP: 'DashLiveEmail DashLiveinDashLiveConfirm DashLive',
-	USE_PHONE_FOR_OTP: 'DashLivePhone number DashLiveinDashLiveConfirm DashLive',
+	ITEM_NOT_FOUND: 'آیتم مورد نظر یافت نشد',
+	TODO_NOT_FOUND: 'وظیفه مورد نظر یافت نشد',
+	INVALID_OTP_CODE: 'کد تایید نامعتبر است',
+	USE_EMAIL_FOR_OTP: 'لطفا موقتاََ از ایمیل برای دریافت کد تایید استفاده کنید',
+	USE_PHONE_FOR_OTP: 'لطفا موقتاََ از شماره موبایل برای دریافت کد تایید استفاده کنید',
 
-	INVALID_OCCUPATION_ID: 'DashLiveNameDashLive',
+	INVALID_OCCUPATION_ID: 'شغل نامعتبری انتخاب کردی!',
 	ONE_OR_MORE_INVALID_INTEREST_IDS:
-		'DashLive‌DashLive‌DashLiveNameDashLive',
+		'یک یا چندتا از علاقه‌مندی‌هایی که انتخاب کردی نامعتبر هستن!',
 
-	TOO_MANY_ATTEMPTS: 'DashLive',
-	OTP_EXPIRED: 'DashLive',
-	INVALID_PHONE_NUMBER_FORMAT: 'DashLiveNameDashLive',
-	CANNOT_CHANGE_PHONE_NUMBER: 'DashLivePhone number DashLive',
+	TOO_MANY_ATTEMPTS: 'بیش از حد',
+	OTP_EXPIRED: 'کد منقضی شده!',
+	INVALID_PHONE_NUMBER_FORMAT: 'فرمت شماره وارد شده نامعتبره!',
+	CANNOT_CHANGE_PHONE_NUMBER: 'نمیتونی شماره موبایل رو تغییر بدی!',
 
-	SAME_PHONE_NUMBER_ERROR: 'Phone number DashLive',
-	PHONE_NUMBER_ALREADY_EXISTS: 'DashLivePhone number DashLive',
-	INVALID_VERIFICATION_CODE: 'DashLiveConfirm NameDashLive',
-	CANNOT_CHANGE_EMAIL: 'DashLiveEmail DashLive',
-	SAME_EMAIL_ERROR: 'Email DashLive',
-	FIRST_SET_EMAIL: 'DashLiveEmail DashLive',
+	SAME_PHONE_NUMBER_ERROR: 'شماره موبایل تکراریه!',
+	PHONE_NUMBER_ALREADY_EXISTS: 'این شماره موبایل قبلا رزرو شده!',
+	INVALID_VERIFICATION_CODE: 'کد تایید نامعتبره!',
+	CANNOT_CHANGE_EMAIL: 'نمیتونی ایمیل رو تغییر بدی!',
+	SAME_EMAIL_ERROR: 'ایمیل تکراریه!',
+	FIRST_SET_EMAIL: 'هنوز ایمیل ست نکردی!',
 }
 
 const validationTranslations: Record<string, string> = {
 	'password must be longer than or equal to 8 characters':
-		'Password DashLive8 WorkDashLive',
+		'رمز عبور باید حداقل 8 کاراکتر باشد',
 	'password must contain at least 1 uppercase letter':
-		'Password DashLive',
+		'رمز عبور باید حداقل شامل یک حرف بزرگ باشد',
 	'password must contain at least 1 lowercase letter':
-		'Password DashLive',
-	'password must contain at least 1 number': 'Password DashLive',
+		'رمز عبور باید حداقل شامل یک حرف کوچک باشد',
+	'password must contain at least 1 number': 'رمز عبور باید حداقل شامل یک عدد باشد',
 	'password must contain at least 1 symbol':
-		'Password DashLive(DashLive@#$%) DashLive',
-	'password must be a string': 'Password DashLive',
-	'password should not be empty': 'Password DashLive‌DashLive',
+		'رمز عبور باید حداقل شامل یک نماد (مانند @#$%) باشد',
+	'password must be a string': 'رمز عبور باید متن باشد',
+	'password should not be empty': 'رمز عبور نمی‌تواند خالی باشد',
 
-	'email must be an email': 'DashLiveEmail NameDashLive',
-	'email should not be empty': 'Email DashLive‌DashLive',
-	'email must be a string': 'Email DashLive',
+	'email must be an email': 'فرمت ایمیل نامعتبر است',
+	'email should not be empty': 'ایمیل نمی‌تواند خالی باشد',
+	'email must be a string': 'ایمیل باید متن باشد',
 
-	'name should not be empty': 'Username DashLive‌DashLive',
-	'name must be a string': 'Username DashLive',
+	'name should not be empty': 'نام کاربری نمی‌تواند خالی باشد',
+	'name must be a string': 'نام کاربری باید متن باشد',
 	'name must be longer than or equal to 3 characters':
-		'Username DashLive3 WorkDashLive',
+		'نام کاربری باید حداقل 3 کاراکتر باشد',
 	'name must be shorter than or equal to 50 characters':
-		'Username DashLive50 WorkDashLive',
+		'نام کاربری باید حداکثر 50 کاراکتر باشد',
 
 	// Widget-specific validation messages
-	'widget title should not be empty': 'Title DashDashLive‌DashLive',
-	'widget position must be valid': 'DashLiveDashDashLive NameDashLive',
-	'widget size must be valid': 'DashLiveDashDashLive NameDashLive',
+	'widget title should not be empty': 'عنوان ویجت نمی‌تواند خالی باشد',
+	'widget position must be valid': 'موقعیت ویجت نامعتبر است',
+	'widget size must be valid': 'اندازه ویجت نامعتبر است',
 
 	// Friend-related validation messages
-	'username should not be empty': 'Username DashLive‌DashLive',
-	'username does not exist': 'DashLiveUsername DashLive',
+	'username should not be empty': 'نام کاربری نمی‌تواند خالی باشد',
+	'username does not exist': 'این نام کاربری وجود ندارد',
 	'cannot send friend request to yourself':
-		'DashLive‌DashLiveinDashLiveyear DashLive',
-	'friend request already sent': 'inDashLiveyear DashLive',
+		'نمی‌توانید به خودتان درخواست دوستی ارسال کنید',
+	'friend request already sent': 'درخواست دوستی قبلا ارسال شده است',
 	'name must be longer than or equal to 2 characters':
-		'DashLiveSkip Username DashLive',
+		'وارد کردن نام کاربری الزامی است',
 }
 
 export function translateValidationMessage(message: string): string {
@@ -144,7 +144,7 @@ export function translateValidationMessage(message: string): string {
 }
 
 export function translateError(error: any): string | Record<string, string> {
-	const defaultMessage = 'ErrorDashLive'
+	const defaultMessage = 'خطایی رخ داده است. لطفا دوباره تلاش کنید'
 
 	if (!error) return defaultMessage
 

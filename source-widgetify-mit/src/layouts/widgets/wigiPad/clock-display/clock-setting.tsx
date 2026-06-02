@@ -9,14 +9,14 @@ import { type ClockSettings, ClockType } from './clock-setting.interface'
 const CLOCK_OPTIONS = [
 	{
 		key: 'digital',
-		label: 'hour DashLive',
-		description: 'DashLivehour DashLive',
+		label: 'ساعت دیجیتال',
+		description: 'نمایش ساعت به صورت عددی',
 		value: ClockType.Digital as const,
 	},
 	{
 		key: 'analog',
-		label: 'hour DashLive',
-		description: 'DashLivehour DashLive‌DashLive',
+		label: 'ساعت آنالوگ',
+		description: 'نمایش ساعت به صورت عقربه‌ای',
 		value: ClockType.Analog as const,
 	},
 ]
@@ -82,7 +82,7 @@ export function ClockSetting() {
 	return (
 		<div className="space-y-3">
 			<div>
-				<p className="mb-3 text-sm text-muted">DashLivehour DashLive:</p>
+				<p className="mb-3 text-sm text-muted">نوع نمایش ساعت را انتخاب کنید:</p>
 				<div className="flex gap-2">
 					{CLOCK_OPTIONS.map((option) => (
 						<ItemSelector
@@ -101,22 +101,22 @@ export function ClockSetting() {
 				<CheckBoxWithDescription
 					isEnabled={clockSettings.showSeconds}
 					onToggle={onToggleSeconds}
-					title="DashLive"
-					description="DashLivein hour DashLive"
+					title="نمایش ثانیه"
+					description="نمایش ثانیه در ساعت دیجیتال"
 				/>
 
 				<CheckBoxWithDescription
 					isEnabled={clockSettings.showTimeZone}
 					onToggle={onToggleTimeZone}
-					title="DashLive"
-					description="DashLiveName DashLivehour"
+					title="نمایش منطقه زمانی"
+					description="نمایش نام منطقه زمانی زیر ساعت"
 				/>
 
 				<CheckBoxWithDescription
 					isEnabled={clockSettings.useSelectedFont ?? false}
 					onToggle={onToggleUseSelectedFont}
-					title="DashLive"
-					description="DashLivein Settings DashLivehour"
+					title="استفاده از فونت انتخابی"
+					description="استفاده از فونت انتخابی در تنظیمات برای نمایش ساعت"
 				/>
 			</div>
 		</div>

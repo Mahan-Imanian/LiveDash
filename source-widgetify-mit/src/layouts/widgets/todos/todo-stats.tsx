@@ -49,17 +49,17 @@ export function TodoStats() {
 	const stats = calculateTodoStats()
 	return (
 		<div className={'p-2 mt-2  rounded-lg'}>
-			<h4 className={'mb-1 text-sm font-medium text-content'}>DashLive</h4>
+			<h4 className={'mb-1 text-sm font-medium text-content'}>آمار کلی</h4>
 
 			<div className="flex flex-col gap-1">
 				<div className={'p-1 rounded-lg border border-content'}>
-					<span className={'text-xs text-content'}>DashLive</span>
+					<span className={'text-xs text-content'}>تکمیل شده</span>
 					<div className="flex items-end justify-between">
 						<span className={'text-lg text-content'}>
 							{stats.completedTodos}
 						</span>
 						<span className={'text-xs text-content'}>
-							DashLive{stats.totalTodos}
+							از {stats.totalTodos}
 						</span>
 					</div>
 					<div className={'h-1 mt-1 bg-base-300 rounded-full'}>
@@ -71,7 +71,7 @@ export function TodoStats() {
 				</div>
 
 				<div className={'p-2 rounded-lg  border border-content'}>
-					<span className={'text-xs text-content'}>DashLive‌DashLive</span>
+					<span className={'text-xs text-content'}>اولویت‌ها</span>
 					<div className="flex justify-between mt-1">
 						<div className="text-center">
 							<div className="flex items-end h-8">
@@ -82,7 +82,7 @@ export function TodoStats() {
 									}}
 								></div>
 							</div>
-							<span className={'text-xs text-content'}>MayDashLive</span>
+							<span className={'text-xs text-content'}>مهم</span>
 						</div>
 						<div className="text-center">
 							<div className="flex items-end h-8">
@@ -93,7 +93,7 @@ export function TodoStats() {
 									}}
 								></div>
 							</div>
-							<span className={'text-xs text-content'}>DashLive</span>
+							<span className={'text-xs text-content'}>متوسط</span>
 						</div>
 						<div className="text-center">
 							<div className="flex items-end h-8">
@@ -104,7 +104,7 @@ export function TodoStats() {
 									}}
 								></div>
 							</div>
-							<span className={'text-xs text-content'}>DashLive</span>
+							<span className={'text-xs text-content'}>کم</span>
 						</div>
 					</div>
 				</div>

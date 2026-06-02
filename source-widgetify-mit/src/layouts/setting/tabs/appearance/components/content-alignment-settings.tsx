@@ -6,25 +6,25 @@ export function ContentAlignmentSettings() {
 	const { contentAlignment, setContentAlignment, ui } = useAppearanceSetting()
 	if (ui === 'SIMPLE') return null
 	return (
-		<SectionPanel title="Settings DashLive" delay={0.3} size="sm">
+		<SectionPanel title="تنظیمات چیدمان" delay={0.3} size="sm">
 			<div className={`space-y-3`}>
-				<p className="text-xs text-muted">DashLive</p>
+				<p className="text-xs text-muted">موقعیت عمودی محتوا</p>
 				<div className="flex gap-3">
 					<ItemSelector
 						isActive={contentAlignment === 'center'}
 						onClick={() => setContentAlignment('center')}
-						label="DashLive"
+						label="وسط"
 						key="center"
 						className="w-1/2"
-						description="DashLivein DashLive‌DashLive"
+						description="چیدمان محتوا در وسط صفحه قرار می‌گیرد."
 					/>
 					<ItemSelector
 						isActive={contentAlignment === 'top'}
 						onClick={() => setContentAlignment('top')}
-						label="DashLive"
+						label="بالا"
 						key="top"
 						className="w-1/2"
-						description="DashLivein DashLive‌DashLive"
+						description="چیدمان محتوا در بالا صفحه قرار می‌گیرد."
 					/>
 				</div>
 			</div>

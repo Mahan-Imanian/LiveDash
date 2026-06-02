@@ -24,9 +24,9 @@ const renderPendingNotification = (pendingCount: number) => (
 
 const getTooltipContent = (user: any) => {
 	return user?.inCache ? (
-		<span className="text-error">Error in DashLive</span>
+		<span className="text-error">خطا در بارگیری پروفایل</span>
 	) : (
-		'DashLiveWorkDashLive'
+		'پروفایل کاربری'
 	)
 }
 
@@ -74,7 +74,7 @@ export function ProfileNav() {
 	return (
 		<>
 			{!isAuth ? (
-				<Tooltip content="Sign in DashLiveAccount">
+				<Tooltip content="ورود به حساب کاربری">
 					<div
 						className="relative p-2 transition-all cursor-pointer nav-btn text-white/40 hover:text-white active:scale-90"
 						id="profile-and-friends-list"

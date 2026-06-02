@@ -82,7 +82,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
 				className={
 					'w-full py-3 px-2 text-xs font-medium text-content rounded-xl bg-base-300/70 outline-none'
 				}
-				placeholder="Title Notes..."
+				placeholder="عنوان یادداشت..."
 				value={currentTitle}
 				onChange={(e) => handleInputChange('title', e.target.value, e.target)}
 				dir="rtl"
@@ -93,7 +93,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
 				className={
 					'w-full h-full px-2 pt-1 pb-4 text-sm flex-grow resize-none rounded-xl bg-base-300/70 outline-none font-light'
 				}
-				placeholder="DashLiveNotes..."
+				placeholder="متن یادداشت..."
 				value={currentBody}
 				onChange={(e) => handleInputChange('body', e.target.value, e.target)}
 				rows={3}
@@ -121,7 +121,7 @@ export function NoteEditor({ note }: NoteEditorProps) {
 						isPrimary={true}
 						className="!p-0 !h-full !w-14  rounded-2xl !px-2"
 					>
-						<span className="!text-[12px]">DashLive</span>
+						<span className="!text-[12px]">ذخیـره</span>
 					</Button>
 				</div>
 			</div>

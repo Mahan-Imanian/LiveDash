@@ -40,7 +40,7 @@ export function ChangeCityModal({ show, onClose }: Prop) {
 						onClick={() => onClickSave()}
 						className="text-sm shadow-xs flex-2 rounded-xl shadow-primary/20"
 					>
-						Save
+						ذخیره
 					</Button>
 					<Button
 						size="sm"
@@ -48,7 +48,8 @@ export function ChangeCityModal({ show, onClose }: Prop) {
 						onClick={onCancel}
 						className="flex-1 text-sm font-medium border-none rounded-2xl bg-content"
 					>
-						DashLive</Button>
+						انصراف
+					</Button>
 				</div>
 			</div>
 		</Modal>

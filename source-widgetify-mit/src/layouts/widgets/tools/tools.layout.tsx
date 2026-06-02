@@ -13,17 +13,17 @@ import {
 const tabs = [
 	{
 		id: 'pomodoro' as ToolsTabType,
-		label: 'Pomodoro',
+		label: 'پومودورو',
 		icon: <MdOutlineTimer size={14} />,
 	},
 	{
 		id: 'religious-time' as ToolsTabType,
-		label: 'DashLive',
+		label: 'اوقات شرعی',
 		icon: <MdOutlineMosque size={14} />,
 	},
 	{
 		id: 'currency-converter' as ToolsTabType,
-		label: 'DashLive',
+		label: 'تبدیل',
 		icon: <MdOutlineCurrencyExchange size={14} />,
 	},
 ]

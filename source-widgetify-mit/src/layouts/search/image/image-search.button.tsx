@@ -8,7 +8,7 @@ export function ImageSearchButton({ onClick }: { onClick: () => void }) {
 	}
 
 	return (
-		<Tooltip content="SearchDashLive">
+		<Tooltip content="جستجوی با تصویر">
 			<button
 				type="button"
 				onClick={() => onClickHandle()}

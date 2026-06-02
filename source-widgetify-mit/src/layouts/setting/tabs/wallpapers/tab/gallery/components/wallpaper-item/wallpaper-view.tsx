@@ -69,7 +69,7 @@ export function WallpaperView({
 					folderPath={[
 						{
 							id: 'subfolder',
-							title: selectedCategory?.name || 'Folder',
+							title: selectedCategory?.name || 'پوشه',
 						},
 					]}
 					onNavigate={onBackToCategories}

@@ -30,11 +30,11 @@ export const AllFriendsTab = () => {
 	return (
 		<>
 			<FriendRequestsTab />
-			<SectionPanel title="DashLive" size="sm">
+			<SectionPanel title="لیست دوستان" size="sm">
 				<FriendsList
 					status="ACCEPTED"
 					renderFriendActions={renderFriendActions}
-					emptyMessage="DashLive‌DashLive"
+					emptyMessage="هنوز هیچ دوستی اضافه نکرده‌اید"
 				/>
 			</SectionPanel>
 		</>

@@ -15,12 +15,12 @@ export function ImageSearchPortal({ onClose }: { onClose: () => void }) {
 	const [uploadProgress, setUploadProgress] = useState(0)
 	const handleUpload = async (file: File) => {
 		if (!file.type.startsWith('image/')) {
-			showToast('DashLive', 'error')
+			showToast('لطفاً فقط فایل تصویری انتخاب کنید', 'error')
 			return
 		}
 
 		if (file.size > 1 * 1024 * 1024) {
-			showToast('DashLive1 DashLive', 'error')
+			showToast('حجم فایل نباید بیشتر از ۱ مگابایت باشد', 'error')
 			return
 		}
 
@@ -73,10 +73,11 @@ export function ImageSearchPortal({ onClose }: { onClose: () => void }) {
 		<div className="absolute top-0 left-0 w-full min-h-[160px] z-[60] bg-content  rounded-2xl portal shadow-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-200">
 			<div className="flex items-center justify-between px-2 mb-4">
 				<span className="text-sm font-black text-base-content/80">
-					SearchDashLive</span>
+					جستجوی تصویر با گوگل
+				</span>
 				<div className="flex flex-row items-center gap-1">
 					<a
-						href="https://dashlive.ir/privacy?target=search"
+						href="https://widgetify.ir/privacy?target=search"
 						className="p-1 transition-colors rounded-full cursor-pointer hover:bg-base-200 text-base-content/50"
 						target="_blank"
 						rel="noreferrer"
@@ -143,9 +144,10 @@ export function ImageSearchPortal({ onClose }: { onClose: () => void }) {
 							</svg>
 						</div>
 						<p className="text-xs font-bold text-base-content/60">
-							DashLive{' '}
+							یک تصویر را اینجا بکشید یا{' '}
 							<span className="text-primary hover:underline">
-								DashLive</span>
+								فایل را انتخاب کنید
+							</span>
 						</p>
 						{isUploading && (
 							<div className="absolute inset-0 z-10 flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-base-100">
@@ -162,8 +164,8 @@ export function ImageSearchPortal({ onClose }: { onClose: () => void }) {
 									<div className="flex flex-col items-center gap-1">
 										<span className="text-xs font-black text-base-content">
 											{uploadProgress < 100
-												? 'in DashLiveyear DashLive'
-												: 'in DashLiveSearch Google...'}
+												? 'در حال ارسال تصویر...'
+												: 'در حال جستجو در گوگل...'}
 										</span>
 										<span className="text-[10px] font-bold text-base-content/40 tracking-widest">
 											{uploadProgress}%
@@ -189,7 +191,7 @@ export function ImageSearchPortal({ onClose }: { onClose: () => void }) {
 						type="url"
 						value={imageUrl}
 						onChange={(v) => setImageUrl(v)}
-						placeholder="Link DashLive"
+						placeholder="لینک تصویر را پیست کنید..."
 						className="flex-1 py-2 text-xs bg-transparent border-none! outline-none! ring-transparent! focus:placeholder:opacity-50"
 						onKeyDown={(e) => e.key === 'Enter' && handleUrlSearch()}
 						direction={imageUrl ? 'auto' : 'rtl'}
@@ -200,7 +202,7 @@ export function ImageSearchPortal({ onClose }: { onClose: () => void }) {
 						isPrimary={true}
 						className="w-20 rounded-2xl"
 					>
-						Search
+						جستجو
 					</Button>
 				</div>
 			</div>

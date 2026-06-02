@@ -48,7 +48,7 @@ export const CalendarEvent = ({
 				<div className="flex-1 min-w-0 flex flex-col gap-0.5">
 					<div className="flex items-center min-w-0 gap-1">
 						<span className="text-[11px] font-bold truncate flex-1 text-base-content">
-							{event.summary || 'DashLiveTitle'}
+							{event.summary || 'بدون عنوان'}
 						</span>
 						{event.hangoutLink ? (
 							<button
@@ -59,7 +59,8 @@ export const CalendarEvent = ({
 								className="flex items-center gap-1 px-2 py-0.5 mb-1 rounded-lg bg-primary text-white text-[9px]  cursor-pointer transition-all hover:brightness-110 active:scale-95 shrink-0 font-medium"
 							>
 								<HiOutlineVideoCamera size={9} />
-								Sign in DashLive</button>
+								ورود به جلسه
+							</button>
 						) : event.location ? (
 							<></>
 						) : null}
@@ -71,9 +72,11 @@ export const CalendarEvent = ({
 							<span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-primary" />
 						</span>
 						<span className="text-[9px] font-bold text-primary">
-							in DashLive</span>
+							در حال برگزاری
+						</span>
 						<span className="text-[9px] text-base-content/40 tabular-nums">
-							· {minsLeft} minute DashLive</span>
+							· {minsLeft} دقیقه مانده
+						</span>
 					</div>
 				</div>
 
@@ -123,7 +126,7 @@ export const CalendarEvent = ({
 								: 'text-base-content'
 						}`}
 					>
-						{event.summary || 'DashLiveTitle'}
+						{event.summary || 'بدون عنوان'}
 					</span>
 					{event.hangoutLink && (
 						<HiOutlineVideoCamera
@@ -142,7 +145,7 @@ export const CalendarEvent = ({
 				<div className="flex items-center min-w-0 gap-2">
 					{isNext && (
 						<span className="text-[9px] font-bold text-warning shrink-0">
-							Next
+							بعدی
 						</span>
 					)}
 					{event.location && (

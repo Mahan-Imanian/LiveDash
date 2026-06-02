@@ -40,7 +40,7 @@ const StepOne = ({ onGetStarted }: StepOneProps) => {
 		<>
 			<div className="mb-3">
 				<h3 className={'mb-0 text-2xl font-bold text-content'}>
-					Welcome to DashLive! 🎉
+					به ویجتیفای خوش آمدید! 🎉
 				</h3>
 			</div>
 
@@ -52,7 +52,7 @@ const StepOne = ({ onGetStarted }: StepOneProps) => {
 				<div className="flex items-center justify-center">
 					<img
 						src={keepItImage}
-						alt="How to activate the extension"
+						alt="نحوه فعالسازی افزونه"
 						className="h-auto max-w-full rounded-lg shadow-xl"
 						style={{ maxHeight: '220px' }}
 					/>
@@ -65,7 +65,7 @@ const StepOne = ({ onGetStarted }: StepOneProps) => {
 				}
 			>
 				<p className="font-bold text-muted">
-					⚠️ To activate the extension, click "Keep It" Click.
+					⚠️ برای فعالسازی افزونه، روی دکمه "Keep It" کلیک کنید.
 				</p>
 			</div>
 
@@ -75,7 +75,7 @@ const StepOne = ({ onGetStarted }: StepOneProps) => {
 				className="w-full text-base font-light shadow-sm rounded-2xl shadow-primary outline-none!"
 				isPrimary={true}
 			>
-				Get Started
+				شروع کنید
 			</Button>
 		</>
 	)
@@ -110,17 +110,18 @@ const StepFirefoxConsent = ({ onGetStarted }: StepFirefoxConsentProps) => {
 		<div className="w-full overflow-clip">
 			<h3 className="mb-3 text-2xl font-bold text-content">
 				{' '}
-				Privacy Notice (Privacy)
+				Privacy Notice (حریم خصوصی)
 			</h3>
-			<p className="mb-2 font-semibold">DashLive‌DashLiveyear DashLive:</p>
+			<p className="mb-2 font-semibold">لطفاً انتخاب کنید چه داده‌هایی ارسال شوند:</p>
 
 			<div className="w-full px-2">
 				<ul className="w-full h-32 p-2 mb-2 space-y-1 overflow-y-auto text-xs list-disc list-inside border border-content rounded-2xl">
-					<li>Settings DashLive: DashLiveMay Settings DashLivein DashLiveSave DashLive‌DashLive</li>
+					<li>تنظیمات محلی: همه تنظیمات شما در دستگاه خودتان ذخیره می‌شود.</li>
 					<li>
-						DashLive‌DashLive‌DashLive: DashLive‌DashLive(DashLive)
+						آیکون وب‌سایت‌ها: دامنه سایت خوانده می‌شود تا از سرویس گوگل آیکون
+						بگیرد. (به رضایت آمار نیاز دارد)
 					</li>
-					<li>DashLive‌DashLiveCalendar: DashLivein DashLive‌DashLive</li>
+					<li>همگام‌سازی و تقویم: فقط در صورت لاگین فعال می‌شوند.</li>
 				</ul>
 
 				<div className="mb-3 space-y-2">
@@ -130,7 +131,7 @@ const StepFirefoxConsent = ({ onGetStarted }: StepFirefoxConsentProps) => {
 							onChange={() => setAllowAnalytics(!allowAnalytics)}
 						/>
 						<span className="mr-2">
-							DashLiveyear DashLive(DashLive)
+							ارسال آمار فنی غیرشخصی (برای بهبود افزونه)
 						</span>
 					</label>
 
@@ -139,18 +140,18 @@ const StepFirefoxConsent = ({ onGetStarted }: StepFirefoxConsentProps) => {
 							checked={allowIcon}
 							onChange={() => setAllowIcon(!allowIcon)}
 						/>
-						<span className="mr-2">DashLive‌DashLiveBookmark</span>
+						<span className="mr-2">نمایش آیکون‌های بوکمارک</span>
 					</label>
 				</div>
 
 				<a
-					href="https://dashlive.ir/privacy"
+					href="https://widgetify.ir/privacy"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="flex items-center justify-center font-medium underline text-primary gap-0.5 mb-2"
 				>
 					<FaExternalLinkAlt />
-					DashLivePrivacy
+					سیاست کامل حریم خصوصی
 				</a>
 			</div>
 
@@ -160,13 +161,14 @@ const StepFirefoxConsent = ({ onGetStarted }: StepFirefoxConsentProps) => {
 					size="md"
 					className="flex items-center justify-center w-40 btn btn-error rounded-xl"
 				>
-					🚫 Delete DashLive</Button>
+					🚫 حذف افزونه
+				</Button>
 				<Button
 					onClick={handleConfirm}
 					size="md"
 					className="w-40 btn btn-success rounded-xl"
 				>
-					✅ DashLiveContinue
+					✅ تأیید و ادامه
 				</Button>
 			</div>
 		</div>

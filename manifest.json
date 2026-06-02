@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "DashLive",
-  "description": "DashLive transforms your new tab into an interactive personalized dashboard.",
-  "version": "30.0.0",
+  "description": "A polished personalized new tab dashboard for Chrome.",
+  "version": "31.0.0",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -11,7 +11,7 @@
   },
   "permissions": [
     "storage",
-    "search",
+    "bookmarks",
     "identity"
   ],
   "optional_permissions": [
@@ -22,11 +22,11 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "dashlive@codersays.com"
+      "id": "widgetify@widgetify-app.github.io"
     }
   },
   "action": {
-    "default_title": "Open DashLive Dashboard",
+    "default_title": "Open LiveDash Dashboard",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -35,10 +35,12 @@
     }
   },
   "host_permissions": [
-    "https://api.github.com/*",
-    "https://github.com/*",
     "https://livedash.codersays.com/*",
-    "https://raw.githubusercontent.com/*"
+    "https://accounts.google.com/*",
+    "https://www.googleapis.com/*",
+    "https://www.google.com/*",
+    "https://cdn.widgetify.ir/*",
+    "https://widgetify-ir.storage.c2.liara.space/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -46,5 +48,8 @@
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
-  "short_name": "DashLive"
+  "short_name": "DashLive",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+  }
 }

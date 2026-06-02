@@ -8,14 +8,14 @@ import { WigiPadDateType } from './date-setting.interface'
 const DateOptions = [
 	{
 		key: 'jalali',
-		label: 'DashLive',
-		description: 'DashLive',
+		label: 'هجری شمسی',
+		description: 'نمایش تاریخ به صورت هجری شمسی',
 		value: WigiPadDateType.Jalali as const,
 	},
 	{
 		key: 'gregorian',
-		label: 'Calendar DashLive',
-		description: 'DashLive',
+		label: 'تقویم میلادی',
+		description: 'نمایش تاریخ به صورت میلادی',
 		value: WigiPadDateType.Gregorian as const,
 	},
 ]
@@ -46,7 +46,7 @@ export function WigiPadDateSettingsModal() {
 	return (
 		<div className="space-y-3">
 			<div>
-				<p className="mb-3 text-sm text-muted">DashLive:</p>
+				<p className="mb-3 text-sm text-muted">نوع نمایش تاریخ را انتخاب کنید:</p>
 
 				<div className="flex gap-2">
 					{DateOptions.map((option) => (

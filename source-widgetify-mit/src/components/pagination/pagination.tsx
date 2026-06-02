@@ -38,7 +38,7 @@ export function Pagination({
 			</Button>
 
 			<span className="mx-2 text-sm text-muted">
-				DashLive{currentPage} DashLive{totalPages}
+				صفحه {currentPage} از {totalPages}
 			</span>
 
 			<Button

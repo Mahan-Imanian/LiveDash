@@ -35,7 +35,7 @@ export const InterestsSelector = ({
 		<div className="w-64 p-1">
 			{isLoading ? (
 				<div className="py-3 text-[10px] italic font-medium text-center animate-pulse text-muted">
-					Please wait...
+					صبر کنید...
 				</div>
 			) : (
 				<div className="flex flex-wrap gap-2 p-1 overflow-x-hidden overflow-y-auto scrollbar-none max-h-40">
@@ -74,14 +74,14 @@ export const InterestsSelector = ({
 					className={`flex-1 rounded-2xl bg-primary hover:bg-primary/90 text-white`}
 				>
 					<FiCheck size={16} className="ml-1" />
-					Confirm{' '}
+					تایید{' '}
 				</Button>
 				<Button
 					onClick={() => setIsOpen(!isOpen)}
 					size="sm"
 					className="w-20 rounded-2xl border-muted hover:bg-muted/50 text-content"
 				>
-					Cancel
+					لغو
 				</Button>
 			</div>
 		</div>

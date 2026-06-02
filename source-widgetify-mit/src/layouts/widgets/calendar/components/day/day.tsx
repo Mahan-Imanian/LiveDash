@@ -119,7 +119,7 @@ export function DayItem({
 			return (
 				<img
 					src={eventIcons[0]}
-					alt="DashLive"
+					alt="مناسبت"
 					className="object-contain w-6 h-6 transition-all rounded-full"
 					loading="lazy"
 				/>

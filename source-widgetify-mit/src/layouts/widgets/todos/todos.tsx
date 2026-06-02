@@ -34,18 +34,18 @@ import { Button } from '@/components/button/button'
 import Tooltip from '@/components/toolTip'
 
 const filterOptions = [
-	{ value: 'all', label: 'DashLiveMay' },
-	{ value: 'today', label: 'Today' },
-	{ value: 'thisMonth', label: 'DashLivemonth' },
-	{ value: 'done', label: 'DashLive‌DashLive' },
-	{ value: 'pending', label: 'in DashLive' },
+	{ value: 'all', label: 'همه' },
+	{ value: 'today', label: 'امروز' },
+	{ value: 'thisMonth', label: 'این ماه' },
+	{ value: 'done', label: 'تکمیل‌شده' },
+	{ value: 'pending', label: 'در انتظار' },
 ]
 
 const sortOptions = [
-	{ value: 'def', label: 'agoDashLive' },
-	{ value: 'high', label: 'MayDashLive' },
-	{ value: 'medium', label: 'DashLive' },
-	{ value: 'low', label: 'DashLive' },
+	{ value: 'def', label: 'پیشفرض' },
+	{ value: 'high', label: 'مهم' },
+	{ value: 'medium', label: 'متوسط' },
+	{ value: 'low', label: 'کم اهمیت' },
 ]
 const TagList = ['', '-all-']
 
@@ -199,7 +199,7 @@ export function TodosLayout() {
 			})) || []
 	if (tagFilterOptions.length) {
 		tagFilterOptions.unshift({
-			label: 'DashLiveMay',
+			label: 'همه',
 			value: '-all-',
 		})
 	}
@@ -240,7 +240,7 @@ export function TodosLayout() {
 									)
 								}
 								onChange={onDateFilterChange}
-								placeholder="DashLive"
+								placeholder="فیلتر"
 								buttonClassName={`truncate gap-1.5`}
 							/>
 							<FilterTooltip
@@ -257,7 +257,7 @@ export function TodosLayout() {
 								options={tagFilterOptions}
 								value={tagFilter || '-all-'}
 								onChange={onTagFilterChange}
-								placeholder="DashLive‌DashLive"
+								placeholder="دسته‌بندی"
 							/>
 							<FilterTooltip
 								icon={
@@ -273,7 +273,7 @@ export function TodosLayout() {
 								options={sortOptions}
 								value={sort}
 								onChange={onSortChange}
-								placeholder="DashLive"
+								placeholder="ترتیب"
 								buttonClassName="truncate gap-2"
 							/>
 						</div>
@@ -281,7 +281,7 @@ export function TodosLayout() {
 					<div className="flex items-center gap-1">
 						{isPending ? <IconLoading /> : null}
 						<BlurModeButton />
-						<Tooltip content="DashLive">
+						<Tooltip content="بارگزاری مجدد">
 							<Button
 								size="sm"
 								className={`px-2 py-0! border-none! rounded-xl text-base-content/40 shrink-0 active:scale-95 h-7!`}
@@ -331,9 +331,11 @@ export function TodosLayout() {
 									<FiList className="text-content" size={24} />
 								</div>
 								<p className="mt-1 text-center text-content">
-									Task‌DashLiveday DashLive</p>
+									وظیفه‌ای برای این روز وجود ندارد.
+								</p>
 								<p className="text-center text-[.65rem] text-content opacity-75">
-									DashLiveTask DashLive</p>
+									یک وظیفه جدید اضافه کنید.
+								</p>
 							</div>
 						)}
 					</div>
@@ -345,7 +347,7 @@ export function TodosLayout() {
 				<AuthRequiredModal
 					isOpen={showAuthModal}
 					onClose={() => setShowAuthModal(false)}
-					message="DashLiveTasksDashLiveAccount DashLive"
+					message="برای استفاده از وظایف، لطفاً وارد حساب کاربری خود شوید."
 				/>
 			)}
 		</>

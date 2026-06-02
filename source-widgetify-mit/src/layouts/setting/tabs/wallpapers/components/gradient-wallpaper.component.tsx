@@ -8,14 +8,14 @@ interface GradientWallpaperProps {
 }
 
 const predefinedGradients: { from: string; to: string; name: string }[] = [
-	{ from: '#ff9a9e', to: '#fad0c4', name: 'DashLive' },
-	{ from: '#a1c4fd', to: '#c2e9fb', name: 'DashLive' },
-	{ from: '#d4fc79', to: '#96e6a1', name: 'DashLive' },
-	{ from: '#ffecd2', to: '#fcb69f', name: 'DashLive' },
-	{ from: '#84fab0', to: '#8fd3f4', name: 'DashLivedayDashLive‌DashLive' },
-	{ from: '#cfd9df', to: '#e2ebf0', name: 'DashLive' },
-	{ from: '#a6c0fe', to: '#f68084', name: 'DashLive' },
-	{ from: '#fbc2eb', to: '#a6c1ee', name: 'DashLive' },
+	{ from: '#ff9a9e', to: '#fad0c4', name: 'صورتی ملایم' },
+	{ from: '#a1c4fd', to: '#c2e9fb', name: 'آبی آسمانی' },
+	{ from: '#d4fc79', to: '#96e6a1', name: 'سبز بهاری' },
+	{ from: '#ffecd2', to: '#fcb69f', name: 'نارنجی پاییزی' },
+	{ from: '#84fab0', to: '#8fd3f4', name: 'فیروزه‌ای' },
+	{ from: '#cfd9df', to: '#e2ebf0', name: 'خاکستری روشن' },
+	{ from: '#a6c0fe', to: '#f68084', name: 'آبی به صورتی' },
+	{ from: '#fbc2eb', to: '#a6c1ee', name: 'بنفش ملایم' },
 ]
 
 export function GradientWallpaper({
@@ -84,7 +84,7 @@ export function GradientWallpaper({
 
 	return (
 		<div className="space-y-4">
-			<SectionPanel title="DashLive‌DashLiveago‌DashLive">
+			<SectionPanel title="گرادیان‌های پیش‌فرض">
 				<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 					{predefinedGradients.map((gradient, index) => (
 						<div

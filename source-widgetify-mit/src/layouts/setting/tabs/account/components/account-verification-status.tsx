@@ -14,15 +14,17 @@ export const AccountVerificationStatus = ({
 	onSendVerificationEmail,
 }: AccountVerificationStatusProps) => {
 	return (
-		<SectionPanel title="DashLiveConfirm DashLive" size="xs" delay={0.1}>
+		<SectionPanel title="وضعیت تایید حساب" size="xs" delay={0.1}>
 			<div className="flex items-center justify-between p-3 border rounded-2xl bg-warning/10 border-warning/20">
 				<div className="flex items-center gap-3">
 					<FiMail className="text-warning" size={24} />
 					<div>
 						<p className="text-sm font-medium text-warning">
-							⚠️ DashLiveConfirm DashLive</p>
+							⚠️ حساب شما تایید نشده است
+						</p>
 						<p className="text-xs text-warning/90">
-							DashLiveEmail DashLiveEmail DashLiveinDashLive</p>
+							لطفاً ایمیل خود را بررسی کنید یا ایمیل جدید درخواست کنید.
+						</p>
 					</div>
 				</div>
 				<Button
@@ -34,12 +36,12 @@ export const AccountVerificationStatus = ({
 					{sendVerificationMutation.isPending ? (
 						<>
 							<div className="w-4 h-4 border-2 rounded-full border-white/30 border-t-white animate-spin" />
-							in DashLiveyear...
+							در حال ارسال...
 						</>
 					) : (
 						<>
 							<FiMail size={16} />
-							DashLiveyear Email Confirm
+							ارسال ایمیل تایید
 						</>
 					)}
 				</Button>

@@ -19,7 +19,7 @@ export function GalleryTab() {
 
 	return (
 		<>
-			<SectionPanel title="Gallery DashLive" size="xs">
+			<SectionPanel title="گالری تصاویر" size="xs">
 				<div className="p-4">
 					{!selectedCategory ? (
 						<CategoryView onCategorySelect={setSelectedCategory} />
@@ -32,7 +32,7 @@ export function GalleryTab() {
 				</div>
 			</SectionPanel>
 
-			<SectionPanel title="DashLive" size="xs">
+			<SectionPanel title="تصویر دلخواه" size="xs">
 				<div className="p-4">
 					<UploadArea
 						customWallpaper={customWallpaper}

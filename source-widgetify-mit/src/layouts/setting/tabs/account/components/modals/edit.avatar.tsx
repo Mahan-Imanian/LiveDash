@@ -22,12 +22,12 @@ export function EditAvatarModal({ show, onClose }: Prop) {
 	const onChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (file && file.size > 1024 * 1024) {
-			showToast('DashLive1 DashLive', 'error')
+			showToast('فایل بزرگتر از ۱ مگابایت است', 'error')
 			return
 		}
 		const validTypes = ['image/png', 'image/jpeg', 'image/webp']
 		if (file && !validTypes.includes(file.type)) {
-			showToast('DashLiveNameDashLive', 'error')
+			showToast('فرمت فایل نامعتبر است', 'error')
 			return
 		}
 		setAvatar(file || null)
@@ -54,7 +54,7 @@ export function EditAvatarModal({ show, onClose }: Prop) {
 			showCloseButton={false}
 		>
 			<div className="flex flex-col justify-between w-full h-52">
-				<SectionPanel title="DashLive" size="xs">
+				<SectionPanel title="تغییر آواتار" size="xs">
 					<div
 						className="flex items-center justify-center mx-auto mt-8 transition-all duration-200 ease-out border border-dashed rounded-full cursor-pointer active:scale-95 text-muted h-14 w-14 border-base-content/70 hover:scale-95"
 						onClick={() => avatarRef.current?.click()}
@@ -87,7 +87,7 @@ export function EditAvatarModal({ show, onClose }: Prop) {
 						onClick={() => onSave()}
 						className="text-sm shadow-xs flex-2 rounded-xl shadow-primary/20"
 					>
-						{updateProfileMutation.isPending ? 'in DashLiveSave...' : 'Save'}
+						{updateProfileMutation.isPending ? 'در حال ذخیره...' : 'ذخیره'}
 					</Button>
 					<Button
 						size="sm"
@@ -96,7 +96,8 @@ export function EditAvatarModal({ show, onClose }: Prop) {
 						onClick={() => onClose()}
 						className="flex-1 text-sm font-medium border-none rounded-2xl bg-content"
 					>
-						DashLive</Button>
+						انصراف
+					</Button>
 				</div>
 			</div>
 		</Modal>

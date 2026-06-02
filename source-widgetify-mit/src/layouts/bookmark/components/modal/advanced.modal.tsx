@@ -162,7 +162,7 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 			<div className={'flex flex-col gap-4 rounded-lg'}>
 				<div>
 					<label className={'block text-sm font-medium mb-1.5 text-content'}>
-						DashLive(DashLive)
+						رنگ پس زمینه (اختیاری)
 					</label>
 					<div className="relative flex flex-1">
 						<TextInput
@@ -187,7 +187,7 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 
 				<div>
 					<label className={'block text-sm  font-medium mb-1.5 text-content'}>
-						DashLive(DashLive)
+						رنگ متن (اختیاری)
 					</label>
 					<div className="relative flex flex-1">
 						<TextInput
@@ -212,7 +212,7 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 
 				<div className="relative" ref={emojiPopoverRef}>
 					<label className={'block text-sm font-medium mb-1.5 text-content'}>
-						DashLive(DashLive)
+						انتخاب استیکر (اختیاری)
 					</label>
 
 					<div className="flex items-center gap-2 mt-1">
@@ -244,10 +244,11 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 										</span>
 									)}
 									<span className="text-xs font-medium">
-										DashLive</span>
+										تغییر استیکر
+									</span>
 								</>
 							) : (
-								<span className="text-xs font-medium">DashLive</span>
+								<span className="text-xs font-medium">انتخاب استیکر</span>
 							)}
 						</Button>
 
@@ -259,7 +260,7 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 									'px-3 py-1.5 cursor-pointer text-xs rounded-md text-red-600 hover:bg-red-50'
 								}
 							>
-								Delete
+								حذف
 							</button>
 						)}
 					</div>
@@ -279,7 +280,7 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 
 				<div className="pt-2 space-y-2">
 					<label className={'block text-sm font-medium text-content'}>
-						ago‌DashLive:
+						پیش‌نمایش:
 					</label>
 					<div
 						className="flex justify-center p-4 overflow-hidden rounded-lg"
@@ -298,8 +299,8 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 									sticker: sticker,
 									order: null,
 									icon: bookmark.icon,
-									title: bookmark.title || 'ago‌DashLive',
-									url: 'https://dashlive.ir',
+									title: bookmark.title || 'پیش‌نمایش',
+									url: 'https://widgetify.ir',
 									id: 'preview',
 									isLocal: false,
 									onlineId: null,
@@ -320,7 +321,7 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 							'btn btn-circle !bg-base-300 hover:!bg-error/10 text-muted hover:!text-error px-10 border-none shadow-none !rounded-2xl transition-colors duration-300 ease-in-out'
 						}
 					>
-						Cancel
+						لغو
 					</Button>
 					<Button
 						type="submit"
@@ -331,7 +332,7 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 							'btn btn-circle !w-fit px-8 border-none shadow-none text-secondary !rounded-2xl transition-colors duration-300 ease-in-out'
 						}
 					>
-						Save
+						ذخیره
 					</Button>
 				</div>
 			</div>

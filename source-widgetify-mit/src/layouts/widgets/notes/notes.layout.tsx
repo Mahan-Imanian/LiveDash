@@ -18,9 +18,10 @@ function NotesContent() {
 				className={`flex flex-col items-center justify-center h-full ${blurMode ? 'blur-mode' : 'disabled-blur-mode'}`}
 			>
 				<PiNotepad size={42} className={'mb-2 text-content opacity-50'} />
-				<p className={'text-sm text-muted'}>NotesDashLive</p>
+				<p className={'text-sm text-muted'}>یادداشتی پیدا نشد</p>
 				<span className="font-light text-muted">
-					DashLiveStart DashLive</span>
+					منتظر چی هستی؟ شروع کن به نوشتن!
+				</span>
 			</div>
 		)
 	}

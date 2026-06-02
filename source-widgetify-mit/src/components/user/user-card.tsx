@@ -25,7 +25,7 @@ export function UserCard({ user, className = '' }: UserCardProps) {
 			{ username: user.username },
 			{
 				onSuccess: () => {
-					showToast('inDashLiveyear DashLive', 'success')
+					showToast('درخواست دوستی با موفقیت ارسال شد', 'success')
 				},
 				onError: (err) => {
 					const message = translateError(err)
@@ -67,11 +67,12 @@ export function UserCard({ user, className = '' }: UserCardProps) {
 												className="flex items-center  !text-[10px]  text-gray-100"
 												isPrimary={true}
 												loading={isSending}
-												loadingText="in DashLiveyear..."
+												loadingText="در حال ارسال..."
 												onClick={() => onAddClick()}
 											>
 												<TbUsersPlus size={14} />
-												inDashLive</Button>
+												درخواست
+											</Button>
 										)}
 
 										{user.friendshipStatus === 'PENDING' && (
@@ -80,7 +81,8 @@ export function UserCard({ user, className = '' }: UserCardProps) {
 													'text-sm text-content opacity-70 bg-content bg-glass rounded-2xl px-1'
 												}
 											>
-												DashLiveyear DashLive</p>
+												ارسال شده
+											</p>
 										)}
 									</div>
 								</div>

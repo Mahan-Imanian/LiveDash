@@ -34,29 +34,29 @@ interface SettingModalProps {
 }
 const tabs: TabItem[] = [
 	{
-		parentName: 'Account',
+		parentName: 'حساب کاربری',
 		needAuth: true,
 		children: [
 			{
-				label: 'DashLive',
+				label: 'پروفایل من',
 				value: 'profile',
 				icon: <BiUserCircle size={20} />,
 				element: <AccountTab />,
 			},
 			{
-				label: 'DashLive‌DashLive',
+				label: 'پلتفرم‌ها',
 				value: 'platforms',
 				icon: <RiApps2AiLine size={20} />,
 				element: <ConnectionPlatformsTab />,
 			},
 			{
-				label: 'DashLive‌DashLive',
+				label: 'ماموریت‌ها و پاداش',
 				value: 'tasks',
 				icon: <FiGift size={20} />,
 				element: <RewardsTab />,
 			},
 			{
-				label: 'DashLive',
+				label: 'دوستان',
 				value: 'friends',
 				icon: <FiUsers size={20} />,
 				element: <AllFriendsTab />,
@@ -64,35 +64,35 @@ const tabs: TabItem[] = [
 		],
 	},
 	{
-		parentName: 'Settings',
+		parentName: 'تنظیمات',
 		children: [
 			{
-				label: 'General',
+				label: 'عمومی',
 				value: 'general',
 				icon: <VscSettingsGear size={20} />,
 				element: <GeneralSettingTab />,
 			},
 
 			{
-				label: 'Privacy',
+				label: 'حریم خصوصی',
 				value: 'access',
 				icon: <MdOutlinePrivacyTip size={20} />,
 				element: <PrivacySettings key="privacy" />,
 			},
 			{
-				label: 'AppearanceDashLive',
+				label: 'ظاهری',
 				value: 'appearance',
 				icon: <VscColorMode size={20} />,
 				element: <AppearanceSettingTab />,
 			},
 			{
-				label: 'DashLive',
+				label: 'تصویر زمینه ها',
 				value: 'wallpapers',
 				icon: <VscPaintcan size={20} />,
 				element: <WallpaperSetting />,
 			},
 			{
-				label: 'Shortcuts',
+				label: 'میانبرها',
 				value: 'shortcuts',
 				icon: <VscRecordKeys size={20} />,
 				element: <ShortcutsTab />,
@@ -100,10 +100,10 @@ const tabs: TabItem[] = [
 		],
 	},
 	{
-		parentName: 'DashLive',
+		parentName: 'ویجتیفای',
 		children: [
 			{
-				label: 'About',
+				label: 'درباره ما',
 				value: 'about',
 				icon: <VscInfo size={20} />,
 				element: <AboutUsTab />,
@@ -133,7 +133,7 @@ export const SettingModal = ({ isOpen, onClose, selectedTab }: SettingModalProps
 			isOpen={isOpen}
 			onClose={onClose}
 			size="xl"
-			title="Settings"
+			title="تنظیمات"
 			direction="rtl"
 		>
 			<TabManager
@@ -149,14 +149,14 @@ export const SettingModal = ({ isOpen, onClose, selectedTab }: SettingModalProps
 						onClick={() => openWidgetSettings()}
 					>
 						<TbApps size={20} className="text-muted" />
-						<span className="text-sm font-light">DashLiveDashDashLive</span>
+						<span className="text-sm font-light">مدیریت ویجت ها</span>
 					</button>
 					<button
 						className={`relative  items-center flex gap-3 px-4 py-3 rounded-full transition-all duration-200 ease-in-out justify-start cursor-pointer whitespace-nowrap active:scale-[0.98] text-muted hover:bg-base-300 w-42`}
 						onClick={() => setUpdateModalOpen(true)}
 					>
 						<VscMegaphone size={20} />
-						<span className="text-sm font-light">DashLive</span>
+						<span className="text-sm font-light">تغییرات اخیر</span>
 					</button>
 				</div>
 			</TabManager>

@@ -15,10 +15,10 @@ export function NetworkPingCard({ ping }: NetworkPingCardProps) {
 	const feedbackText =
 		ping !== null
 			? ping < 150
-				? 'DashLive'
+				? 'پینگ شما عالی هست.'
 				: ping < 300
-					? 'DashLive'
-					: 'DashLive'
+					? 'پینگ شما متوسط است.'
+					: 'پینگ شما ضعیف است.'
 			: 'N/A'
 	return (
 		<div className="grid grid-cols-1 gap-2">
@@ -26,7 +26,8 @@ export function NetworkPingCard({ ping }: NetworkPingCardProps) {
 				<div className="flex items-center gap-2 mb-1">
 					<MdRouter className={`w-4 h-4 text-muted`} />
 					<span className="text-xs font-medium text-muted">
-						DashLive</span>
+						پینگ - زمان پاسخگویی
+					</span>
 				</div>
 				<Tooltip content={feedbackText}>
 					<div className="flex items-center text-sm font-bold gap-0.5">

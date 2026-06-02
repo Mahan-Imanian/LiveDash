@@ -46,10 +46,10 @@ export function ConfirmationModal({
 	isOpen,
 	onClose,
 	onConfirm,
-	title = 'DashLive',
-	message = 'DashLive',
-	confirmText = 'DashLive',
-	cancelText = 'DashLive',
+	title = 'تأیید عملیات',
+	message = 'آیا از انجام این عملیات اطمینان دارید؟',
+	confirmText = 'تأیید',
+	cancelText = 'انصراف',
 	variant = 'danger',
 	isLoading = false,
 	icon,
@@ -104,7 +104,7 @@ export function ConfirmationModal({
 						loadingText={
 							<div className="flex items-center gap-1">
 								<IconLoading className="!mx-0 !text-white" />
-								<span className="text-xs">in DashLive</span>
+								<span className="text-xs">در حال انجام...</span>
 							</div>
 						}
 						className={`flex-1 ${config.confirmBg} ${config.confirmText} border-none rounded-2xl`}

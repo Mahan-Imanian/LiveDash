@@ -19,9 +19,10 @@ export function ManageWidgets() {
 		<WidgetSettingWrapper>
 			{ui === 'SIMPLE' && (
 				<div className="alert alert-warning rounded-2xl ring-4 ring-warning/10">
-					in DashLiveAppearanceDashLiveDashDashLive</div>
+					در حالت ظاهری ساده، امکان مدیریت ویجت ها نیست!
+				</div>
 			)}
-			<SectionPanel title="DashLiveDashDashLive‌DashLive" size="sm">
+			<SectionPanel title="انتخاب ویجت‌ها برای نمایش" size="sm">
 				<div
 					className={`grid grid-cols-2 gap-2 ${ui === 'SIMPLE' ? 'pointer-events-none blur-xs' : ''}`}
 				>
@@ -86,17 +87,19 @@ function WidgetItemComponent({
 					<div className="flex gap-0.5">
 						{widget.isNew && (
 							<span className="text-white badge badge-primary badge-xs">
-								DashLive</span>
+								جدید
+							</span>
 						)}
 						{widget.popular && (
 							<span className="badge badge-success badge-soft badge-sm">
-								DashLive</span>
+								محبوب
+							</span>
 						)}
 						{isDisabled && (
-							<span className="badge badge-error badge-xs">DashLive</span>
+							<span className="badge badge-error badge-xs">غیرفعال</span>
 						)}
 						{isSoon && (
-							<span className="badge badge-warning badge-xs">DashLive</span>
+							<span className="badge badge-warning badge-xs">به زودی</span>
 						)}
 					</div>
 				</div>

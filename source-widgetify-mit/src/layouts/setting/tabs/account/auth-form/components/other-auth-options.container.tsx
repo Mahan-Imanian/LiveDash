@@ -21,7 +21,8 @@ const OtherOptionsContainer: React.FC<OtherOptionsContainerProps> = ({
 
 				<div className="relative z-10 flex justify-center">
 					<span className="px-4 md:px-6 py-1.5 md:py-2 text-xs md:text-sm font-medium border rounded-full text-content border-content bg-content">
-						DashLive</span>
+						یا
+					</span>
 				</div>
 			</div>
 			<div className="flex flex-col items-stretch gap-2 sm:flex-row md:gap-3">

@@ -1,7 +1,7 @@
 import type { FetchedAllEvents } from '@/services/hooks/date/getEvents.hook'
 import type { GoogleCalendarEvent } from '@/services/hooks/date/getGoogleCalendarEvents.hook'
 import {
-	type DashLiveDate,
+	type WidgetifyDate,
 	filterGoogleEventsByDate,
 	getGregorianEvents,
 	getHijriEvents,
@@ -21,7 +21,7 @@ export interface CombinedEvent {
 
 export function combineAndSortEvents(
 	events: FetchedAllEvents,
-	currentDate: DashLiveDate,
+	currentDate: WidgetifyDate,
 	googleEvents: GoogleCalendarEvent[] = []
 ): CombinedEvent[] {
 	const shamsiEvents = getShamsiEvents(events, currentDate)

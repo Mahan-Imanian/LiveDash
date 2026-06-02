@@ -57,12 +57,12 @@ export function ComboWidget() {
 					tabs={[
 						{
 							id: 'currency',
-							label: 'Rates',
+							label: 'ارزها',
 							icon: <HiOutlineCurrencyBangladeshi size={14} />,
 						},
 						{
 							id: 'news',
-							label: 'News',
+							label: 'اخبار',
 							icon: <HiOutlineNewspaper size={14} />,
 						},
 					]}

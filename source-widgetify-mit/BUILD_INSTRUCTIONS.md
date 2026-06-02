@@ -1,4 +1,4 @@
-# Build Instructions for DashLive Extension
+# Build Instructions for Widgetify Extension
 
 ## Environment Setup
 This extension must be built with the following environment:
@@ -36,7 +36,7 @@ docker compose up --build
 1. Clone or extract the source code to a directory
 2. Navigate to the project directory
 ```bash
-cd dashlive-extension
+cd widgetify-extension
 ```
 
 3. Install dependencies with exact versions specified in package.json

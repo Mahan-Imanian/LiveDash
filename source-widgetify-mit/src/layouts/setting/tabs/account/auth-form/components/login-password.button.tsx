@@ -21,7 +21,7 @@ const LoginPasswordButton: React.FC<LoginPasswordButtonProps> = ({
 		>
 			<FiLock className="flex-shrink-0 w-4 h-4 transition-all duration-200 md:w-5 md:h-5 group-hover:scale-110" />
 			<span className="transition-all duration-200 group-hover:scale-105 whitespace-nowrap text-base-content/80 group-hover:text-base-content">
-				Sign in DashLivePassword
+				ورود با رمز عبور
 			</span>
 		</button>
 	)

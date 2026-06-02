@@ -45,7 +45,7 @@ export const TranslateComponent: React.FC = () => {
 
 	const handleTranslate = async () => {
 		if (!isEnabled) {
-			showToast('DashLive', 'error')
+			showToast('برای استفاده از مترجم لطفا وارد شوید', 'error')
 			return
 		}
 
@@ -131,7 +131,7 @@ export const TranslateComponent: React.FC = () => {
 				<div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
 					<TbLanguage className="w-6 h-6 text-primary animate-pulse" />
 				</div>
-				<p className="text-sm text-content">DashLive‌DashLive</p>
+				<p className="text-sm text-content">بارگذاری زبان‌ها...</p>
 			</div>
 		)
 	}
@@ -211,20 +211,22 @@ export const TranslateComponent: React.FC = () => {
 							{fetchedLanguages?.isAvailableService === false ? (
 								<div className="flex items-center gap-1 text-muted">
 									<TbLanguage className="w-3 h-3" />
-									DashLivein DashLive</div>
+									خدمات در دسترس نیست.
+								</div>
 							) : translateMutation.isPending ? (
 								<>
 									<div className="loading loading-spinner loading-xs"></div>
-									DashLiveMay...
+									ترجمه...
 								</>
 							) : rateLimitTimer > 0 ? (
 								<>
 									<TbLanguage className="w-3 h-3" />
-									{rateLimitTimer}DashLive</>
+									{rateLimitTimer}ثانیه
+								</>
 							) : (
 								<>
 									<TbLanguage className="w-3 h-3" />
-									DashLiveMay
+									ترجمه
 								</>
 							)}
 						</Button>

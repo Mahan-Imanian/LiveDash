@@ -65,7 +65,7 @@ export const NewsLayout: React.FC<NewsLayoutProps> = ({
 					}}
 				>
 					<NewsHeader
-						title="Dash DashLive"
+						title="ویجی نیوز"
 						onSettingsClick={() =>
 							callEvent('openWidgetsSettings', {
 								tab: WidgetTabKeys.news_settings,

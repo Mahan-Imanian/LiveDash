@@ -34,7 +34,7 @@ export const UserProfile = () => {
 	const handleSendVerificationEmail = async () => {
 		try {
 			await sendVerificationMutation.mutateAsync()
-			showToast('Email Confirm DashLiveyear DashLive', 'success')
+			showToast('ایمیل تایید با موفقیت ارسال شد!', 'success')
 		} catch (err: any) {
 			showToast(translateError(err) as string, 'error')
 		}
@@ -43,10 +43,10 @@ export const UserProfile = () => {
 	const getMessageError = () => {
 		// @ts-expect-error
 		if (failureReason?.status === 401) {
-			return 'DashLiveSign in DashLiveAccount DashLive'
+			return 'نیاز به ورود مجدد به حساب کاربری دارید.'
 		}
 
-		return 'Error in DashLiveWorkDashLive'
+		return 'خطا در بارگذاری پروفایل کاربری. لطفاً دوباره تلاش کنید.'
 	}
 
 	if (isLoading) {
@@ -67,7 +67,7 @@ export const UserProfile = () => {
 					size="md"
 				>
 					<FiLogOut size={16} />
-					DashLiveAccount
+					خروج از حساب کاربری
 				</Button>
 			</div>
 		)
@@ -91,10 +91,10 @@ export const UserProfile = () => {
 			)}
 			<ActivityInput activity={profile?.activity || ''} />
 
-			<SectionPanel title="Account" delay={0.3} size="xs">
+			<SectionPanel title="حساب کاربری" delay={0.3} size="xs">
 				<div className="p-2 space-y-3 transition-colors rounded-lg">
 					<p className={'text-sm font-light text-content'}>
-						DashLiveAccount DashLiveMay DashLiveClick.
+						برای خروج از حساب کاربری خود، روی دکمه زیر کلیک کنید.
 					</p>
 					<Button
 						onClick={() => logout()}
@@ -102,7 +102,7 @@ export const UserProfile = () => {
 						size="md"
 					>
 						<FiLogOut size={16} />
-						DashLiveAccount
+						خروج از حساب کاربری
 					</Button>{' '}
 				</div>
 			</SectionPanel>

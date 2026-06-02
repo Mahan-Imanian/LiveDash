@@ -6,7 +6,7 @@ import { Pet } from './pets/pet'
 import { PetProvider } from './pets/pet.context'
 import { BlurModeButton } from '@/components/blur-mode/blur-mode.button'
 
-export const DashLiveLayout = () => {
+export const WidgetifyLayout = () => {
 	const { user, isAuthenticated, isLoadingUser } = useAuth()
 
 	const [userName, setUserName] = useState<string>('')
@@ -30,7 +30,7 @@ export const DashLiveLayout = () => {
 					<div className={'flex items-center w-full justify-between'}>
 						<div className="flex items-center gap-2">
 							<p className="w-32 text-xs font-semibold truncate">
-								DashLive{userName || '👋'}
+								سلام {userName || '👋'}
 							</p>
 						</div>
 

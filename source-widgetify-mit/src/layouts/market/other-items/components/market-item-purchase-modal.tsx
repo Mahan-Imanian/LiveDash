@@ -39,7 +39,7 @@ export function MarketItemPurchaseModal({
 			{ itemId: item.id },
 			{
 				onSuccess: (_response) => {
-					showToast(`${item.name} DashLive🎉`, 'success', {
+					showToast(`${item.name} با موفقیت خریداری شد! 🎉`, 'success', {
 						alarmSound: true,
 					})
 					Analytics.event('market_item_purchased')
@@ -47,7 +47,7 @@ export function MarketItemPurchaseModal({
 				},
 				onError: (error) => {
 					showToast(
-						(translateError(error) as string) || 'Error in DashLive',
+						(translateError(error) as string) || 'خطا در خرید آیتم',
 						'error'
 					)
 
@@ -61,7 +61,7 @@ export function MarketItemPurchaseModal({
 		<Modal
 			isOpen={isOpen}
 			onClose={onClose}
-			title="Confirm DashLive"
+			title="تایید خرید"
 			size="md"
 			direction="rtl"
 			closeOnBackdropClick={!isPending}
@@ -78,17 +78,17 @@ export function MarketItemPurchaseModal({
 
 				<div className="p-3 space-y-2 border rounded-xl border-primary/20 bg-primary/5">
 					<div className="flex items-center justify-between">
-						<span className="text-sm text-content">DashLive:</span>
+						<span className="text-sm text-content">موجودی فعلی:</span>
 						<UserCoin coins={userCoins} />
 					</div>
 					<div className="flex items-center justify-between">
-						<span className="text-sm text-content">DashLive:</span>
+						<span className="text-sm text-content">قیمت آیتم:</span>
 						<ItemPrice price={item.price} />
 					</div>
 					<hr className="border-primary/20" />
 					<div className="flex items-center justify-between">
 						<span className="text-sm font-medium text-content">
-							DashLive‌DashLive:
+							موجودی باقی‌مانده:
 						</span>
 						<UserCoin coins={Math.max(0, remainingCoins)} />
 					</div>
@@ -100,9 +100,12 @@ export function MarketItemPurchaseModal({
 							<FiX className="w-5 h-5 mt-0.5 text-warning flex-shrink-0" />
 							<div>
 								<p className="text-sm font-medium text-warning">
-									DashLive</p>
+									موجودی ناکافی
+								</p>
 								<p className="text-xs text-warning/80">
-									DashLive{item.price - userCoins} Dash‌DashLive</p>
+									برای خرید این آیتم به {item.price - userCoins} ویج‌کوین
+									بیشتر نیاز دارید
+								</p>
 							</div>
 						</div>
 					</div>
@@ -116,14 +119,14 @@ export function MarketItemPurchaseModal({
 					disabled={isPending}
 					className="flex-1 rounded-2xl border-muted hover:bg-muted/50 text-content"
 				>
-					Cancel
+					لغو
 				</Button>
 				<Button
 					onClick={handlePurchase}
 					size="md"
 					disabled={!canAfford || isPending}
 					loading={isPending}
-					loadingText="in DashLive"
+					loadingText="در حال خرید..."
 					className={`flex-1 rounded-2xl ${
 						canAfford
 							? 'bg-primary hover:bg-primary/90 text-white'
@@ -131,7 +134,8 @@ export function MarketItemPurchaseModal({
 					}`}
 				>
 					<FiCheck size={16} className="ml-1" />
-					Confirm DashLive</Button>
+					تایید خرید
+				</Button>
 			</div>
 		</Modal>
 	)

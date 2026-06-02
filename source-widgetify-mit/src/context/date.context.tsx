@@ -3,20 +3,20 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import {
 	convertShamsiToHijri,
 	getCurrentDate,
-	type DashLiveDate,
+	type WidgetifyDate,
 } from '@/layouts/widgets/calendar/utils'
 import { useGeneralSetting } from './general-setting.context'
 
 interface DateContextType {
-	currentDate: DashLiveDate
-	selectedDate: DashLiveDate
-	today: DashLiveDate
+	currentDate: WidgetifyDate
+	selectedDate: WidgetifyDate
+	today: WidgetifyDate
 	todayIsHoliday: boolean
-	setCurrentDate: (date: DashLiveDate) => void
-	setSelectedDate: (date: DashLiveDate) => void
+	setCurrentDate: (date: WidgetifyDate) => void
+	setSelectedDate: (date: WidgetifyDate) => void
 	goToToday: () => void
-	isToday: (date: DashLiveDate) => boolean
-	getHijriDate: (date: DashLiveDate) => string
+	isToday: (date: WidgetifyDate) => boolean
+	getHijriDate: (date: WidgetifyDate) => string
 }
 
 const DateContext = createContext<DateContextType | undefined>(undefined)
@@ -25,9 +25,9 @@ export const DateProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	const { selected_timezone: timezone } = useGeneralSetting()
 	const activeDate = getCurrentDate(timezone.value)
 
-	const [currentDate, setCurrentDate] = useState<DashLiveDate>(activeDate)
-	const [selectedDate, setSelectedDate] = useState<DashLiveDate>(activeDate)
-	const [today, setToday] = useState<DashLiveDate>(activeDate)
+	const [currentDate, setCurrentDate] = useState<WidgetifyDate>(activeDate)
+	const [selectedDate, setSelectedDate] = useState<WidgetifyDate>(activeDate)
+	const [today, setToday] = useState<WidgetifyDate>(activeDate)
 
 	// Update today date every minute to ensure it stays current
 	useEffect(() => {
@@ -51,7 +51,7 @@ export const DateProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		setSelectedDate(newToday.clone())
 	}
 
-	const isToday = (date: DashLiveDate): boolean => {
+	const isToday = (date: WidgetifyDate): boolean => {
 		return (
 			date.jDate() === today.jDate() &&
 			date.jMonth() === today.jMonth() &&
@@ -59,7 +59,7 @@ export const DateProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		)
 	}
 
-	const getHijriDate = (date: DashLiveDate): string => {
+	const getHijriDate = (date: WidgetifyDate): string => {
 		const hijriDate = convertShamsiToHijri(date)
 		return `${hijriDate.iYear()}/${hijriDate.iMonth() + 1}/${hijriDate.iDate()}`
 	}

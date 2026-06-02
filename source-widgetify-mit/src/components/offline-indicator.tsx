@@ -20,7 +20,7 @@ export const OfflineIndicator = ({ mode, message }: OfflineIndicatorProps) => {
 		return (
 			<div className="text-xs mt-1 py-0.5 px-2 rounded border offline-indicator-status inline-flex items-center gap-1">
 				<TbCloudOff className="text-xs" />
-				<span className="font-light">{message || 'DashLive'}</span>
+				<span className="font-light">{message || 'حالت آفلاین'}</span>
 			</div>
 		)
 	}
@@ -30,7 +30,7 @@ export const OfflineIndicator = ({ mode, message }: OfflineIndicatorProps) => {
 			<TbCloudOff className="flex-shrink-0 text-lg" />
 			<p>
 				{message ||
-					'DashLiveWorkDashLive‌DashLive'}
+					'اطلاعات کاربری از حافظه محلی بارگذاری شده‌اند. اتصال اینترنت خود را بررسی کنید.'}
 			</p>
 		</div>
 	)

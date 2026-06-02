@@ -22,7 +22,7 @@ export const RequireAuth = ({ children, fallback, mode = 'block' }: RequireAuthP
 			<div className="flex items-center justify-center h-full">
 				<div className="text-center">
 					<div className="w-10 h-10 mx-auto border-t-2 border-b-2 rounded-full animate-spin border-primary"></div>
-					<p className="mt-2">in DashLive</p>
+					<p className="mt-2">در حال بارگذاری...</p>
 				</div>
 			</div>
 		)
@@ -41,17 +41,19 @@ export const RequireAuth = ({ children, fallback, mode = 'block' }: RequireAuthP
 						}
 					>
 						<h3 className="text-lg font-semibold">
-							DashLiveSign in DashLiveAccount
+							نیاز ورود به حساب کاربری
 						</h3>
 						<p className={'text-xs text-content text-center'}>
-							DashLiveAccount DashLive</p>
+							برای دسترسی به این بخش، لطفاً وارد حساب کاربری خود شوید.
+						</p>
 						<Button
 							onClick={handleAuthClick}
 							size="sm"
 							isPrimary={true}
 							className="btn mt-2 !w-fit px-6 border-none shadow-none text-white rounded-3xl transition-colors duration-300 ease-in-out"
 						>
-							Sign in DashLive</Button>
+							ورود به حساب
+						</Button>
 					</div>
 				</div>
 			)
@@ -67,16 +69,18 @@ export const RequireAuth = ({ children, fallback, mode = 'block' }: RequireAuthP
 					'flex h-full flex-col items-center justify-center p-4 text-center rounded-md text-content'
 				}
 			>
-				<h3 className="mb-2 text-xl font-semibold">DashLiveSign in DashLiveAccount</h3>
+				<h3 className="mb-2 text-xl font-semibold">نیاز ورود به حساب کاربری</h3>
 				<p className={'text-xs mb-4 text-content text-center'}>
-					DashLiveAccount DashLive</p>
+					برای دسترسی به این بخش، لطفاً وارد حساب کاربری خود شوید.
+				</p>
 				<Button
 					onClick={handleAuthClick}
 					size="sm"
 					isPrimary={true}
 					className="btn mt-2 !w-fit px-6 border-none shadow-none text-white rounded-3xl transition-colors duration-300 ease-in-out"
 				>
-					Sign in DashLive</Button>
+					ورود به حساب
+				</Button>
 			</motion.div>
 		)
 	}

@@ -108,7 +108,7 @@ export const BasePetContainer: React.FC<BasePetContainerProps> = ({
 				{showToolTip && (
 					<PetTooltip
 						direction={direction}
-						content={isHungry ? 'DashLive' : name}
+						content={isHungry ? 'غذاااا بدهه' : name}
 						emoji={isHungry ? '🍽️' : undefined}
 						isAnimation={isHungry}
 					/>

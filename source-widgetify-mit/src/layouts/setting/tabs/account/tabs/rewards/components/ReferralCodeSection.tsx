@@ -11,10 +11,10 @@ export const ReferralCodeSection = ({ code, className }: ReferralCodeSectionProp
 	const handleCopyCode = async () => {
 		try {
 			await navigator.clipboard.writeText(code)
-			showToast('DashLive', 'success')
+			showToast('کد دعوت کپی شد!', 'success')
 		} catch (error) {
 			console.error('Failed to copy code:', error)
-			showToast('Error in DashLive', 'error')
+			showToast('خطا در کپی کردن کد', 'error')
 		}
 	}
 
@@ -22,7 +22,7 @@ export const ReferralCodeSection = ({ code, className }: ReferralCodeSectionProp
 		<SectionPanel
 			title={
 				<div className="flex items-center gap-2">
-					<span>DashLive</span>
+					<span>کد دعوت شما</span>
 				</div>
 			}
 			size="sm"
@@ -32,7 +32,7 @@ export const ReferralCodeSection = ({ code, className }: ReferralCodeSectionProp
 					className={`flex items-center justify-between p-4 bg-base-200 rounded-2xl ${className}`}
 				>
 					<div>
-						<p className="mb-1 text-sm text-muted">DashLive</p>
+						<p className="mb-1 text-sm text-muted">کد دعوت</p>
 						<p
 							className="font-mono text-lg font-semibold cursor-pointer text-content hover:underline"
 							onClick={handleCopyCode}
@@ -46,10 +46,12 @@ export const ReferralCodeSection = ({ code, className }: ReferralCodeSectionProp
 						className="rounded-2xl"
 						isPrimary={true}
 					>
-						DashLive</Button>
+						کپی کد
+					</Button>
 				</div>
 				<p className="flex text-sm text-muted gap-0.5 items-center">
-					DashLiveDash‌DashLiveinDashLive{' '}
+					از این کد برای دعوت دوستان خود استفاده کنید و هر دو ویج‌کوین دریافت
+					کنید!{' '}
 				</p>
 			</div>
 		</SectionPanel>
