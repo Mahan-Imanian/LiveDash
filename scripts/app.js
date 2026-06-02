@@ -668,7 +668,7 @@
     const avatar = state?.profile?.avatarUrl
       ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">`
       : `<span>${escapeHtml(profileInitials())}</span>`;
-    return `<header class="profile-strip profile-strip-visible premium-card" aria-label="Profile and cloud status">
+    return `<header class="profile-strip profile-strip-visible premium-card ${signed ? 'is-signed' : 'is-local'}" aria-label="Profile and cloud status">
       <div class="profile-left">
         <button class="profile-avatar ${signed ? 'signed' : ''}" data-action="login" type="button" aria-label="Open account">${avatar}</button>
         <div class="profile-copy">
@@ -679,7 +679,7 @@
       <div class="profile-cloud">
         <span class="cloud-dot ${signed ? 'online' : ''}"></span>
         <span>${escapeHtml(cloudStatusText())}</span>
-        ${signed ? `<button class="micro-button" data-action="refresh-cloud" type="button">Sync now</button>` : `<button class="micro-button" data-action="login" type="button">Sign in</button>`}
+        ${signed ? `<button class="micro-button" data-action="refresh-cloud" type="button">Sync now</button><button class="micro-button" data-action="login" type="button">Profile</button>` : `<button class="micro-button" data-action="login" type="button">Sign in</button>`}
       </div>
     </header>`;
   }
@@ -783,25 +783,24 @@
     const signed = Boolean(state?.profile?.signedIn);
     const pet = state.pet || { mood: 'Ready', energy: 72, hearts: 5, mode: 'idle', score: 0 };
     const sprite = pet.mode === 'play'
-      ? 'assets/widgetify/animals/dog/akita_run_8fps.gif'
+      ? 'assets/animals/dog/akita_with_ball_8fps.gif'
       : pet.mode === 'feed'
-        ? 'assets/widgetify/animals/dog/akita_swipe_8fps.gif'
-        : pet.energy < 30
-          ? 'assets/widgetify/animals/dog/akita_lie_8fps.gif'
-          : 'assets/widgetify/animals/dog/akita_idle_8fps.gif';
+        ? 'assets/animals/dog/akita_swipe_8fps.gif'
+        : 'assets/animals/dog/akita_idle_8fps.gif';
+    const moodCopy = pet.mode === 'play' ? 'Catch the ball for points' : pet.mode === 'feed' ? 'Snack time' : openTasks ? 'Ready for a quick win' : 'All calm right now';
     return `<section class="widget-card pet-card widget-container" aria-label="Akita companion">
       <div class="pet-card-head">
-        <div><div class="card-title">Akita</div><div class="card-subtitle">${signed ? 'Cloud companion active' : 'Local companion'}</div></div>
+        <div><div class="card-title">Akita</div><div class="card-subtitle">${escapeHtml(moodCopy)}</div></div>
         <span class="mode-pill">${escapeHtml(pet.mood || 'Ready')}</span>
       </div>
       <button class="pet-stage pet-stage-game pet-${escapeHtml(pet.mode || 'idle')}" data-action="pet-play" type="button" aria-label="Play with Akita">
         <span class="pet-sparkle one"></span><span class="pet-sparkle two"></span>
-        <img src="${sprite}" alt="Akita companion">
+        <img src="${sprite}" alt="Akita companion" draggable="false">
         <span class="pet-ball" aria-hidden="true"></span>
       </button>
       <div class="pet-stats"><span>♥ ${escapeHtml(String(pet.hearts || 5))}</span><span>Energy ${escapeHtml(String(pet.energy || 0))}%</span><span>Score ${escapeHtml(String(pet.score || 0))}</span></div>
-      <div class="pet-copy"><strong>${openTasks} tasks open</strong><span>${signed ? 'Cloud progress saved' : 'Sign in to save progress'}</span></div>
-      <div class="pet-actions"><button class="secondary-button" data-action="pet-feed" type="button">Feed</button><button class="primary-button" data-action="pet-play" type="button">Play</button></div>
+      <div class="pet-copy"><strong>${openTasks} open tasks</strong><span>${signed ? 'Cloud progress saved' : 'Sign in to save progress'}</span></div>
+      <div class="pet-actions"><button class="secondary-button" data-action="pet-feed" type="button">Feed</button><button class="primary-button" data-action="pet-play" type="button">Play game</button></div>
     </section>`;
   }
 
@@ -823,17 +822,21 @@
   }
 
   function renderTasks() {
-    const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').slice(0, 4);
+    const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').slice(0, 5);
+    const high = openTasks.filter((task) => task.priority === 'high').length;
     return `<section class="widget-card compact task-card premium-card" aria-label="Tasks">
-      <div class="card-title-row"><div><div class="card-title">${renderIcon('tasks', 'Tasks', 'xs')}Tasks</div><div class="card-subtitle">Today’s list</div></div><button class="mini-button" data-action="clear-done" type="button" aria-label="Clear completed tasks">${renderIcon('close', 'Clear', 'xs')}</button></div>
+      <div class="card-title-row task-head"><div><div class="card-title">${renderIcon('tasks', 'Tasks', 'xs')}Tasks</div><div class="card-subtitle">${openTasks.length} open · ${high} high priority</div></div><button class="secondary-button compact-action" data-action="add-task" type="button">Add</button></div>
       <div class="task-list readable-task-list">
-        ${openTasks.length ? openTasks.map((task) => `<div class="task-row readable-task ${task.status === 'done' ? 'done' : ''}">
-          <button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}">${task.status === 'done' ? '✓' : ''}</button>
-          <div class="task-copy"><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-${escapeHtml(task.priority)}">${escapeHtml(task.priority)}</span><span>${escapeHtml(task.source || 'LiveDash')}</span></div></div>
-          <button class="mini-button row-action" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button">${renderIcon('close', 'Delete', 'xs')}</button>
-        </div>`).join('') : '<div class="empty-state">No open tasks right now.</div>'}
+        ${openTasks.length ? openTasks.map((task) => {
+          const due = task.due ? new Date(task.due).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Today';
+          return `<article class="task-row readable-task priority-card priority-${escapeHtml(task.priority || 'medium')}">
+            <button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}">${task.status === 'done' ? '✓' : ''}</button>
+            <div class="task-copy"><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-pill priority-${escapeHtml(task.priority || 'medium')}">${escapeHtml(task.priority || 'medium')}</span><span>${escapeHtml(task.source || 'LiveDash')}</span><span>${escapeHtml(due)}</span></div></div>
+            <button class="mini-button row-action" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Delete task">${renderIcon('close', 'Delete', 'xs')}</button>
+          </article>`;
+        }).join('') : '<div class="empty-state task-empty"><strong>No open tasks.</strong><span>Add a task or capture the current page.</span></div>'}
       </div>
-      <div class="task-compose"><button class="play-button" data-action="add-task-input" type="button">+</button><input id="taskInput" class="form-input" placeholder="New task title..." aria-label="Quick task"></div>
+      <div class="task-compose elevated-compose"><button class="play-button" data-action="add-task-input" type="button" aria-label="Add task">+</button><input id="taskInput" class="form-input" placeholder="Write a task and press Enter..." aria-label="Quick task"></div>
     </section>`;
   }
 
@@ -948,18 +951,22 @@
   }
 
   function renderSignInModal() {
-    return `<section class="modal-card auth-modal-card widgetify-auth-card" role="dialog" aria-modal="true" aria-label="Sign in">
-      <div class="modal-head"><button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">LiveDash Account</div></div>
-      <div class="auth-visual">
-        <div class="auth-orbit"><span>${renderIcon('home', 'LiveDash', 'sm')}</span><i></i><i></i><i></i></div>
-        <div><h2>Sync your dashboard</h2><p>Connect once to restore bookmarks, tasks, notes, Akita progress, and preferences across Chrome profiles.</p></div>
-      </div>
-      <div class="cloud-feature-grid">${renderCloudBenefits()}</div>
-      <div class="auth-card clean-auth-form">
-        <button class="primary-button google-primary" data-action="google-sign-in" type="button">${renderIcon('google', 'Google', 'xs')} Continue with Google</button>
-        <div class="divider compact-divider">or use email</div>
-        <label><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
-        <button class="secondary-button full-width" data-action="sign-in" type="button">Continue with email</button>
+    return `<section class="modal-card auth-modal-card widgetify-auth-card v23-auth" role="dialog" aria-modal="true" aria-label="Sign in">
+      <div class="auth-shell">
+        <div class="auth-side">
+          <div class="auth-brand-mark">L</div>
+          <h2>Bring your LiveDash with you.</h2>
+          <p>Sync bookmarks, tasks, notes, Akita progress, themes, and shortcuts across Chrome profiles.</p>
+          <div class="cloud-feature-grid auth-feature-list">${renderCloudBenefits()}</div>
+        </div>
+        <div class="auth-main">
+          <div class="modal-head"><button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Sign in</div></div>
+          <button class="google-auth-button" data-action="google-sign-in" type="button"><span class="google-logo-real">G</span><span>Continue with Google</span><small>Recommended</small></button>
+          <div class="divider compact-divider">or</div>
+          <label class="clean-label"><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
+          <button class="secondary-button full-width" data-action="sign-in" type="button">Continue with email</button>
+          <p class="auth-footnote">Cloud sign-in is optional. LiveDash still works locally in this browser.</p>
+        </div>
       </div>
     </section>`;
   }
@@ -968,8 +975,9 @@
     const name = state?.profile?.name || state?.profile?.email?.split('@')[0] || 'LiveDash user';
     const email = state?.profile?.email || '';
     const avatar = state?.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`;
-    return `<section class="modal-card profile-modal-card widgetify-auth-card" role="dialog" aria-modal="true" aria-label="Profile">
-      <div class="modal-head"><button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Profile</div></div>
+    const syncText = state.profile?.lastCloudSyncAt ? new Date(state.profile.lastCloudSyncAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Not synced yet';
+    return `<section class="modal-card profile-modal-card widgetify-auth-card v23-profile" role="dialog" aria-modal="true" aria-label="Profile">
+      <div class="modal-head"><button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Cloud profile</div></div>
       <div class="profile-modal-hero signed-profile-hero">
         <div class="profile-modal-avatar signed">${avatar}</div>
         <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(email)}</p><span class="cloud-pill"><span class="cloud-dot online"></span>${escapeHtml(cloudStatusText())}</span></div>
@@ -978,6 +986,7 @@
         <div><strong>${escapeHtml(String((state.bookmarkSlots || []).filter((slot) => slot.url).length))}</strong><span>Saved sites</span></div>
         <div><strong>${escapeHtml(String((state.tasks || []).filter((task) => task.status !== 'done').length))}</strong><span>Open tasks</span></div>
         <div><strong>${escapeHtml(String(state.pet?.score || 0))}</strong><span>Akita score</span></div>
+        <div><strong>${escapeHtml(syncText)}</strong><span>Last sync</span></div>
       </div>
       <div class="cloud-feature-grid">${renderCloudBenefits()}</div>
       <div class="profile-actions"><button class="primary-button" data-action="refresh-cloud" type="button">Sync now</button><button class="secondary-button" data-action="open-apps-category" data-category="daily" type="button">Open apps</button><button class="secondary-button danger-button" data-action="sign-out" type="button">Sign out</button></div>
