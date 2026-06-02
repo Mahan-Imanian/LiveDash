@@ -78,7 +78,7 @@ interface LiveDashState {
 
 const liveDashV21Model = {
   schemaVersion: 220,
-  storageKey: 'livedash_state_v23',
+  storageKey: 'livedash_state_v24',
   chromeIdentityRedirectPath: 'google',
   widgetifyStyleCompatibility: true
 } as const;

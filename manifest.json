@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LiveDash",
   "short_name": "LiveDash",
-  "version": "23.0.0",
+  "version": "24.0.0",
   "description": "An interactive, polished, personalized new tab dashboard for Chrome.",
   "icons": {
     "16": "assets/icons/icon16.png",
