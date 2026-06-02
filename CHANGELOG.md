@@ -1,6 +1,6 @@
 # Changelog
 
-## v16.0.0
+## v17.0.0
 - Reworked the Widgetify-style UI composition for higher spacing quality and less generic chrome.
 - Added dock restore handle after hiding the dock.
 - Added backend authentication configuration hooks for future website/Google sign-in integration.

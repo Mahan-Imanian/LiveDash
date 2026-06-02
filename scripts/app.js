@@ -2,6 +2,7 @@
   const root = document.getElementById('app');
   let state = null;
   let timerId = null;
+  let syncTimer = null;
   let commandOpen = false;
   let drawerOpen = false;
   let loginOpen = false;
@@ -29,6 +30,57 @@
     return base ? `${base}${suffix}` : '';
   }
 
+  function authToken() {
+    return state?.profile?.authToken || '';
+  }
+
+  function backendHeaders(extra = {}) {
+    const token = authToken();
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...extra
+    };
+  }
+
+  function scheduleBackendSync(reason = 'state-update') {
+    const config = backendConfig();
+    if (!config.enabled || !config.apiBaseUrl || !state?.profile?.authToken) return;
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => syncToBackend(reason), 900);
+  }
+
+  async function syncToBackend(reason = 'manual') {
+    const config = backendConfig();
+    if (!config.enabled || !config.apiBaseUrl || !state?.profile?.authToken) return;
+    try {
+      await fetch(backendUrl(config.syncPath || '/api/livedash/sync.php'), {
+        method: 'POST',
+        headers: backendHeaders(),
+        body: JSON.stringify({ reason, schema: state.schema, state })
+      });
+      state.profile.lastCloudSyncAt = new Date().toISOString();
+      await window.LiveDashStore.setState(state);
+    } catch (error) {
+      state.profile.lastCloudSyncError = error.message || 'Sync failed';
+      await window.LiveDashStore.setState(state);
+    }
+  }
+
+  function consumeAuthReturn() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('livedash_token');
+    const email = params.get('email');
+    if (!token) return false;
+    state.profile.authToken = token;
+    state.profile.email = email || state.profile.email || '';
+    state.profile.signedIn = true;
+    state.profile.backendConnected = true;
+    pushActivity('Cloud connected', state.profile.email || 'LiveDash account connected.');
+    history.replaceState({}, document.title, location.pathname);
+    return true;
+  }
+
   async function startGoogleAuth() {
     const config = backendConfig();
     if (!config.enabled || !config.apiBaseUrl) {
@@ -42,7 +94,7 @@
     location.href = url;
   }
 
-  async function submitEmailAuth(email) {
+  async function submitEmailAuth(email, password = '') {
     const cleanEmail = String(email || '').trim();
     const config = backendConfig();
     if (!cleanEmail) {
@@ -54,15 +106,18 @@
         const response = await fetch(backendUrl(config.signInPath || '/auth/sign-in'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: cleanEmail, client: 'chrome-extension' })
+          body: JSON.stringify({ email: cleanEmail, password: String(password || ''), client: 'chrome-extension' })
         });
         if (!response.ok) throw new Error('Sign-in request failed');
-        state.profile.email = cleanEmail;
+        const payload = await response.json().catch(() => ({}));
+        state.profile.email = payload.user?.email || cleanEmail;
         state.profile.signedIn = true;
+        state.profile.authToken = payload.token || state.profile.authToken || '';
+        state.profile.backendConnected = Boolean(payload.token);
         loginOpen = false;
-        pushActivity('Profile connected', cleanEmail);
+        pushActivity(payload.token ? 'Cloud connected' : 'Profile connected', state.profile.email);
         await save();
-        showToast('Sign-in request sent');
+        showToast(payload.token ? 'LiveDash cloud connected' : 'Sign-in request sent');
         render();
         return;
       } catch (error) {
@@ -123,6 +178,7 @@
   async function save(next = state) {
     state = await window.LiveDashStore.setState(next);
     setBodyTheme();
+    scheduleBackendSync();
   }
 
   function pushActivity(title, body) {
@@ -309,7 +365,7 @@
       gmail: svgBox('<path d="M3 7.2 12 14l9-6.8V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.2z" fill="currentColor" opacity=".22"/><path d="M3 7l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18V8.2l8 6.2 8-6.2V18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'),
       calendar: svgBox('<rect x="4" y="5.5" width="16" height="14.5" rx="3" fill="currentColor" opacity=".16"/><rect x="4" y="6" width="16" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 4v4M16 4v4M4 9.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="7.2" y="12" width="3" height="3" rx="1" fill="currentColor"/><rect x="11.1" y="12" width="3" height="3" rx="1" fill="currentColor" opacity=".55"/><rect x="15" y="12" width="3" height="3" rx="1" fill="currentColor" opacity=".3"/>'),
       drive: svgBox('<path d="M8.1 4h3.8l4.1 7-1.9 3.2H10.3L8.1 10 10 6.8 8.1 4z" fill="#16a765"/><path d="M10.1 6.8H14L18.2 14h-3.8L10.1 6.8z" fill="#fbbc04"/><path d="M5.8 14h8.3l-2.2 3.8H3.7L5.8 14z" fill="#4285f4"/>'),
-      notion: svgBox('<rect x="5" y="5" width="14" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.1 16V8h1.8l4 5.1V8h2v8h-1.7L10 10.8V16H8.1z" fill="currentColor"/>'),
+      notion: svgBox('<rect x="5" y="5" width="14" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.1 16V8h1.8l4 5.1V8h2v8h-1.7L10 10.8V17H8.1z" fill="currentColor"/>'),
       todoist: svgBox('<path d="M7 8.2 11 12l6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13.4 11 17l6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>'),
       slack: svgBox('<path d="M9 4.5a2 2 0 0 1 2 2v2.5H8.5a2 2 0 1 1 0-4H9zm0 6H5.5a2 2 0 1 0 0 4H8v-2a2 2 0 0 1 1-1.7zm2 0a2 2 0 0 1 2-2V5.5a2 2 0 1 1 4 0V9h-2a2 2 0 0 1-2 1.5zm0 2a2 2 0 0 1-2 2v2.5a2 2 0 1 0 4 0V15h-2z" fill="currentColor"/>'),
       zoom: svgBox('<rect x="5" y="7" width="9.5" height="10" rx="3" fill="currentColor" opacity=".18"/><rect x="5" y="7" width="9.5" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14.5 10.2 19 8.6v6.8l-4.5-1.6v-3.6z" fill="currentColor"/>'),
@@ -369,7 +425,7 @@
       usps: svgBox('<path d="M5 8h14v8H5z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 10h14" stroke="currentColor" stroke-width="1.8"/><path d="m13 12 3-2v4l-3-2z" fill="currentColor"/>'),
       govuk: svgBox('<path d="M6 18V9l6-3 6 3v9H6z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 18v-5h6v5" fill="none" stroke="currentColor" stroke-width="1.8"/>'),
       eup: svgBox('<circle cx="12" cy="12" r="6.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.8 12.7 9l1.3.2-1 .9.2 1.3-1.2-.6-1.2.6.2-1.3-1-.9 1.3-.2.7-1.2z" fill="currentColor"/>'),
-      nhs: svgBox('<path d="M7 16V8h2.1l2.1 3.5V8h2v8h-2l-2.2-3.6V16H7zm7.4 0V8h2v3h2.3V8h2v8h-2v-3h-2.3v3h-2z" fill="currentColor"/>'),
+      nhs: svgBox('<path d="M7 16V8h2.1l2.1 3.5V8h2v8h-2l-2.2-3.6V17H7zm7.4 0V8h2v3h2.3V8h2v8h-2v-3h-2.3v3h-2z" fill="currentColor"/>'),
       dhl: svgBox('<path d="M4 10h11M6 13h10M8 16h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 9.5h2.5v6H18z" fill="currentColor"/>'),
       royalmail: svgBox('<path d="M12 5.5 17 12l-5 6.5L7 12 12 5.5z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 12h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
       ups: svgBox('<path d="M12 4.8 18 7v4.5c0 3.3-2.3 6.3-6 7.7-3.7-1.4-6-4.4-6-7.7V7l6-2.2z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
@@ -677,6 +733,7 @@
           <div class="auth-title">Sign in or create account</div>
           <div class="auth-sub">Save favorites and dashboard preferences locally first.</div>
           <label><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
+          <label><strong>Password</strong><input id="authPassword" class="form-input" type="password" placeholder="Optional for password sign-in" aria-label="Password"></label>
           <button class="primary-button" data-action="sign-in" type="button">Continue</button>
         </div>
         <div class="divider">or</div>
@@ -910,7 +967,7 @@
       login: () => { loginOpen = true; render(); },
       'sign-in': async () => { await submitEmailAuth($('#authEmail')?.value.trim() || ''); },
       'google-sign-in': startGoogleAuth,
-      'password-sign-in': async () => { state.profile.signedIn = true; loginOpen = false; await save(); showToast('Password sign-in saved locally'); render(); },
+      'password-sign-in': async () => { await submitEmailAuth($('#authEmail')?.value.trim() || '', $('#authPassword')?.value || ''); },
       'close-modal': () => { loginOpen = false; bookmarkEditingId = null; render(); },
       settings: () => { drawerOpen = true; commandOpen = false; render(); },
       'close-drawer': () => { drawerOpen = false; render(); },
@@ -991,6 +1048,7 @@
 
   async function boot() {
     state = await window.LiveDashStore.getState();
+    consumeAuthReturn();
     state.settings.route = state.settings.route || 'home';
     state.settings.showDock = state.settings.showDock !== false;
     render();
