@@ -83,7 +83,7 @@ export function AboutUsTab() {
 					</a>
 
 					<a
-						href="https://github.com/livedash-app"
+						href="https://github.com/Mahan-Imanian/LiveDash"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`flex flex-col items-center justify-center p-4 transition-all duration-200 border rounded-xl backdrop-blur-sm hover:-translate-y-1 ${getGithubCardStyle()}`}
