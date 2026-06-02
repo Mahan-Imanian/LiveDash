@@ -1,15 +1,17 @@
-# LiveDash v28
+# DashLive v30
 
-LiveDash is a Chrome new-tab dashboard extension with local-first storage, optional cloud sync, shortcuts, tasks, focus timer, Akita, and quick app categories.
+DashLive is a Chrome MV3 new-tab dashboard built from the MIT-licensed Widgetify extension visual system and localized for English-speaking US/EU/global users.
 
 ## Install
 
-1. Unzip this package.
-2. Open `chrome://extensions`.
-3. Enable Developer Mode.
-4. Click Load unpacked.
-5. Select the unzipped folder.
+1. Open `chrome://extensions`.
+2. Enable Developer Mode.
+3. Click Load unpacked.
+4. Select this folder.
 
-## Cloud sync
+## Notes
 
-The extension points to `https://livedash.codersays.com` in `scripts/backend-config.js`. Upload the matching website backend and configure Google OAuth on the server.
+- Product naming has been changed from Widgetify to DashLive.
+- Runtime UI is forced to English/LTR.
+- Persian/Iran-specific visible labels, feeds, redirects, and Tehran timezone defaults were replaced with English/global defaults.
+- Original Widgetify MIT license is preserved.
