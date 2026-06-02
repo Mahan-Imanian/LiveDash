@@ -18,6 +18,67 @@
     duckduckgo: 'https://duckduckgo.com/?q='
   };
 
+  function backendConfig() {
+    return window.LiveDashBackendConfig || { enabled: false, apiBaseUrl: '' };
+  }
+
+  function backendUrl(path) {
+    const config = backendConfig();
+    const base = String(config.apiBaseUrl || '').replace(/\/$/, '');
+    const suffix = String(path || '').startsWith('/') ? path : `/${path}`;
+    return base ? `${base}${suffix}` : '';
+  }
+
+  async function startGoogleAuth() {
+    const config = backendConfig();
+    if (!config.enabled || !config.apiBaseUrl) {
+      showToast('Backend auth is ready in code. Add your API URL in scripts/backend-config.js.');
+      pushActivity('Google sign-in requested', 'Backend URL is not configured yet.');
+      await save();
+      return;
+    }
+    const returnUrl = encodeURIComponent(location.href);
+    const url = `${backendUrl(config.googleOAuthStartPath || '/auth/google/start')}?returnUrl=${returnUrl}`;
+    location.href = url;
+  }
+
+  async function submitEmailAuth(email) {
+    const cleanEmail = String(email || '').trim();
+    const config = backendConfig();
+    if (!cleanEmail) {
+      showToast('Enter an email address');
+      return;
+    }
+    if (config.enabled && config.apiBaseUrl) {
+      try {
+        const response = await fetch(backendUrl(config.signInPath || '/auth/sign-in'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail, client: 'chrome-extension' })
+        });
+        if (!response.ok) throw new Error('Sign-in request failed');
+        state.profile.email = cleanEmail;
+        state.profile.signedIn = true;
+        loginOpen = false;
+        pushActivity('Profile connected', cleanEmail);
+        await save();
+        showToast('Sign-in request sent');
+        render();
+        return;
+      } catch (error) {
+        showToast(error.message || 'Sign-in failed');
+        return;
+      }
+    }
+    state.profile.email = cleanEmail;
+    state.profile.signedIn = true;
+    loginOpen = false;
+    pushActivity('Profile saved locally', cleanEmail);
+    await save();
+    showToast('Profile saved locally');
+    render();
+  }
+
   function formatTime(date = now()) {
     return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', {
       hour: '2-digit',
@@ -585,7 +646,12 @@
   }
 
   function renderDock() {
-    if (!state.settings.showDock) return '';
+    if (!state.settings.showDock) {
+      return `<button class="dock-restore" data-action="toggle-dock" type="button" aria-label="Show LiveDash dock">
+        <span class="restore-line"></span>
+        <span>Show dock</span>
+      </button>`;
+    }
     const route = state.settings.route;
     return `<nav class="bottom-dock" aria-label="LiveDash navigation">
       <div class="dock-side">
@@ -842,8 +908,8 @@
       'edit-bookmark': () => { bookmarkEditingId = button.dataset.id; render(); },
       'save-bookmark': saveBookmark,
       login: () => { loginOpen = true; render(); },
-      'sign-in': async () => { state.profile.email = $('#authEmail')?.value.trim() || ''; state.profile.signedIn = true; loginOpen = false; pushActivity('Profile updated', state.profile.email || 'Signed in locally.'); await save(); showToast('Profile saved locally'); render(); },
-      'google-sign-in': async () => { state.profile.signedIn = true; state.profile.email = 'google-account@example.com'; loginOpen = false; await save(); showToast('Google sign-in saved locally'); render(); },
+      'sign-in': async () => { await submitEmailAuth($('#authEmail')?.value.trim() || ''); },
+      'google-sign-in': startGoogleAuth,
       'password-sign-in': async () => { state.profile.signedIn = true; loginOpen = false; await save(); showToast('Password sign-in saved locally'); render(); },
       'close-modal': () => { loginOpen = false; bookmarkEditingId = null; render(); },
       settings: () => { drawerOpen = true; commandOpen = false; render(); },

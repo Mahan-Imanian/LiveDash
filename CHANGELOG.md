@@ -1,5 +1,11 @@
 # Changelog
 
+## v16.0.0
+- Reworked the Widgetify-style UI composition for higher spacing quality and less generic chrome.
+- Added dock restore handle after hiding the dock.
+- Added backend authentication configuration hooks for future website/Google sign-in integration.
+- Improved modal, drawer, dock, app tiles, bookmark spacing, and bottom safe areas.
+
 ## v15.0.0
 
 - Rebuilt the visual composition to match the Widgetify-style reference more closely while keeping English defaults.
