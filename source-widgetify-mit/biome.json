@@ -1,0 +1,101 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 4,
+		"lineWidth": 90,
+		"lineEnding": "lf",
+		"attributePosition": "auto",
+		"formatWithErrors": false
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"a11y": {
+				"useAltText": "off",
+				"useButtonType": "off",
+				"useKeyWithClickEvents": "off",
+				"noSvgWithoutTitle": "off",
+				"noLabelWithoutControl": "off",
+				"noStaticElementInteractions": "off",
+				"useAriaPropsSupportedByRole": "off"
+			},
+			"style": {
+				"useSelfClosingElements": "off",
+				"noParameterAssign": "off",
+				"useConst": "off",
+				"useTemplate": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "off",
+				"noArrayIndexKey": "off"
+			},
+			"correctness": {
+				"useExhaustiveDependencies": "off",
+				"noUnusedVariables": "warn",
+				"noUnusedImports": "warn",
+				"useUniqueElementIds": "off"
+			},
+			"complexity": {
+				"noUselessTernary": "off",
+				"noImportantStyles": "off"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"semicolons": "asNeeded",
+			"trailingCommas": "es5",
+			"quoteProperties": "asNeeded",
+			"bracketSpacing": true,
+			"bracketSameLine": false,
+			"arrowParentheses": "always",
+			"jsxQuoteStyle": "double"
+		}
+	},
+	"json": {
+		"formatter": {
+			"trailingCommas": "none",
+			"indentStyle": "tab",
+			"indentWidth": 4
+		}
+	},
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "off"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["*.tsx", "*.jsx"],
+			"javascript": {
+				"formatter": {
+					"jsxQuoteStyle": "double",
+					"bracketSameLine": false
+				}
+			}
+		},
+		{
+			"includes": ["package.json", "tsconfig.json"],
+			"json": {
+				"formatter": {
+					"indentStyle": "space",
+					"indentWidth": 2
+				}
+			}
+		}
+	]
+}

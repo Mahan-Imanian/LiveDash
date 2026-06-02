@@ -1,45 +1,50 @@
 {
   "manifest_version": 3,
-  "name": "LiveDash",
-  "short_name": "LiveDash",
-  "version": "28.0.0",
-  "description": "An interactive, polished, personalized new tab dashboard for Chrome.",
+  "name": "DashLive",
+  "description": "DashLive transforms your new tab into an interactive personalized dashboard.",
+  "version": "30.0.0",
   "icons": {
-    "16": "assets/icons/icon16.png",
-    "32": "assets/icons/icon32.png",
-    "48": "assets/icons/icon48.png",
-    "128": "assets/icons/icon128.png"
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "search",
+    "identity"
+  ],
+  "optional_permissions": [
+    "tabs",
+    "tabGroups",
+    "bookmarks",
+    "identity"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "dashlive@codersays.com"
+    }
   },
   "action": {
-    "default_title": "LiveDash Quick Actions",
-    "default_popup": "popup.html"
+    "default_title": "Open DashLive Dashboard",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
-  "options_page": "options.html",
-  "side_panel": {
-    "default_path": "sidepanel.html"
-  },
+  "host_permissions": [
+    "https://api.github.com/*",
+    "https://github.com/*",
+    "https://livedash.codersays.com/*",
+    "https://raw.githubusercontent.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
-  "permissions": [
-    "storage",
-    "bookmarks",
-    "activeTab",
-    "sidePanel",
-    "identity"
-  ],
-  "host_permissions": [
-    "https://livedash.codersays.com/*"
-  ],
-  "externally_connectable": {
-    "matches": [
-      "https://livedash.codersays.com/*"
-    ]
-  },
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
-  }
+  "short_name": "DashLive"
 }
