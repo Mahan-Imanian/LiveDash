@@ -1,6 +1,6 @@
 (function () {
-  const STORE_KEY = 'livedash_state_v25';
-  const LEGACY_KEYS = ['livedash_state_v25', 'livedash_state_v21', 'livedash_state_v20', 'livedash_state_v18', 'livedash_state_v121', 'livedash_state_v12', 'livedash_state_v11', 'livedash_state_v10', 'livedash_state_v9'];
+  const STORE_KEY = 'livedash_state_v26';
+  const LEGACY_KEYS = ['livedash_state_v26', 'livedash_state_v25', 'livedash_state_v21', 'livedash_state_v20', 'livedash_state_v18', 'livedash_state_v121', 'livedash_state_v12', 'livedash_state_v11', 'livedash_state_v10', 'livedash_state_v9'];
 
   const clone = (value) => JSON.parse(JSON.stringify(value));
 
