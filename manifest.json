@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "DashLive",
-  "description": "A polished personalized new tab dashboard for Chrome.",
-  "version": "31.0.0",
+  "name": "LiveDash",
+  "description": "LiveDash new tab dashboard, rebuilt from the Widgetify visual and interaction system.",
+  "version": "29.0.0",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -11,7 +11,7 @@
   },
   "permissions": [
     "storage",
-    "bookmarks",
+    "search",
     "identity"
   ],
   "optional_permissions": [
@@ -36,11 +36,9 @@
   },
   "host_permissions": [
     "https://livedash.codersays.com/*",
-    "https://accounts.google.com/*",
-    "https://www.googleapis.com/*",
-    "https://www.google.com/*",
-    "https://cdn.widgetify.ir/*",
-    "https://widgetify-ir.storage.c2.liara.space/*"
+    "https://github.com/*",
+    "https://raw.githubusercontent.com/*",
+    "https://api.github.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -48,8 +46,5 @@
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
-  "short_name": "DashLive",
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
-  }
+  "short_name": "LiveDash"
 }
