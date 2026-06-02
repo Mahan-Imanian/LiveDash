@@ -1,5 +1,5 @@
 (function () {
-  const SCHEMA_VERSION = 200;
+  const SCHEMA_VERSION = 210;
 
   const nowIso = () => new Date().toISOString();
 
@@ -151,6 +151,11 @@
       name: 'Alex',
       signedIn: false,
       email: '',
+      avatarUrl: '',
+      authToken: '',
+      backendConnected: false,
+      cloudLoaded: false,
+      plan: 'Local',
       locale: 'en-US',
       timeFormat: '12h'
     },
@@ -194,6 +199,15 @@
       remaining: 25 * 60,
       mode: 'work',
       lastStartedAt: ''
+    },
+    pet: {
+      name: 'Akita',
+      mood: 'Ready',
+      energy: 74,
+      hearts: 5,
+      mode: 'idle',
+      score: 0,
+      lastInteractionAt: nowIso()
     },
     weather: {
       city: 'London',

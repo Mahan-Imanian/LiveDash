@@ -21,7 +21,9 @@ const required = [
   'assets/icons/icon48.png',
   'assets/icons/icon128.png',
   'README.md',
-  'CHANGELOG.md'
+  'CHANGELOG.md',
+  'src/ts/livedash-model.ts',
+  'tsconfig.json'
 ];
 
 for (const file of required) {
