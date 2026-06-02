@@ -105,11 +105,11 @@ export const GoogleCalendarView: React.FC = () => {
 	}
 
 	const handlePrevDay = () => {
-		setSelectedDay(selectedDay.clone().add(-1, 'jD'))
+		setSelectedDay(selectedDay.clone().add(-1, 'day'))
 		Analytics.event('google_calendar_prev_day')
 	}
 	const handleNextDay = () => {
-		setSelectedDay(selectedDay.clone().add(1, 'jD'))
+		setSelectedDay(selectedDay.clone().add(1, 'day'))
 		Analytics.event('google_calendar_next_day')
 	}
 

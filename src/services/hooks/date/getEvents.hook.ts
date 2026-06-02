@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { getMainClient } from '@/services/api'
 
 export interface FetchedEvent {
@@ -24,6 +25,15 @@ async function getEvents(): Promise<FetchedAllEvents> {
 		gregorianEvents: data?.gregorianEvents ?? [],
 		hijriEvents: data?.hijriEvents ?? [],
 	}
+}
+
+export function useGetEvents() {
+	return useQuery<FetchedAllEvents>({
+		queryKey: ['date-events'],
+		queryFn: getEvents,
+		staleTime: 24 * 60 * 60 * 1000,
+		gcTime: 7 * 24 * 60 * 60 * 1000,
+	})
 }
 
 export { getEvents }
