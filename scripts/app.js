@@ -96,7 +96,8 @@
         cloudLoaded: true,
         email: payload.user?.email || state.profile?.email || '',
         name: payload.user?.displayName || state.profile?.name || payload.user?.email?.split('@')[0] || 'LiveDash user',
-        avatarUrl: payload.user?.avatarUrl || state.profile?.avatarUrl || '',
+        avatarUrl: payload.user?.avatarUrl || payload.user?.picture || state.profile?.avatarUrl || '',
+        plan: payload.user?.plan || state.profile?.plan || 'Cloud',
         lastCloudSyncAt: payload.stateUpdatedAt || new Date().toISOString(),
         lastCloudHydratedAt: new Date().toISOString(),
         lastCloudReason: reason
@@ -565,17 +566,44 @@
       const clean = String(url || '').trim();
       if (!clean) return '';
       const parsed = new URL(/^https?:\/\//i.test(clean) ? clean : `https://${clean}`);
-      return `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=64&fallback_opts=404`;
+      return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(parsed.origin)}&sz=128`;
+    } catch {
+      return '';
+    }
+  }
+
+  function getDuckIcon(url) {
+    try {
+      const parsed = new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`);
+      return `https://icons.duckduckgo.com/ip3/${parsed.hostname}.ico`;
     } catch {
       return '';
     }
   }
 
   function renderFaviconIcon(url, label, size = 'md') {
-    const src = getFaviconFromUrl(url);
+    const primary = getFaviconFromUrl(url);
+    const backup = getDuckIcon(url);
     const initials = getInitials(label);
-    if (!src) return `<span class="favicon-icon favicon-icon-${size} favicon-fallback">${escapeHtml(initials)}</span>`;
-    return `<span class="favicon-icon favicon-icon-${size}"><img src="${escapeHtml(src)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>${escapeHtml(initials)}</span></span>`;
+    if (!primary) return `<span class="favicon-icon favicon-icon-${size} favicon-fallback"><span>${escapeHtml(initials)}</span></span>`;
+    return `<span class="favicon-icon favicon-icon-${size}" data-fallback="${escapeHtml(backup)}" data-initials="${escapeHtml(initials)}"><img src="${escapeHtml(primary)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>${escapeHtml(initials)}</span></span>`;
+  }
+
+  function attachIconFallbacks() {
+    document.querySelectorAll('.favicon-icon img').forEach((img) => {
+      if (img.dataset.boundIconFallback) return;
+      img.dataset.boundIconFallback = 'true';
+      img.addEventListener('error', () => {
+        const holder = img.closest('.favicon-icon');
+        const backup = holder?.dataset?.fallback || '';
+        if (backup && img.src !== backup) {
+          img.src = backup;
+          return;
+        }
+        img.style.display = 'none';
+        holder?.classList.add('favicon-fallback');
+      });
+    });
   }
 
   function renderAppIcon(app, size = 'md') {
@@ -592,10 +620,26 @@
   }
 
   function cloudStatusText() {
-    if (!state?.profile?.signedIn) return 'Local only';
+    if (!state?.profile?.signedIn) return 'Local mode';
     if (state.profile.cloudLoaded) return 'Cloud profile loaded';
     if (state.profile.backendConnected) return 'Cloud connected';
     return 'Profile connected';
+  }
+
+  function renderCloudBenefits() {
+    const signed = Boolean(state?.profile?.signedIn);
+    const items = signed
+      ? [
+          ['Cloud sync active', 'Your bookmarks, tasks, notes, and preferences can be saved to LiveDash Cloud.'],
+          ['Profile controls unlocked', 'Sync now, cloud restore, and sign-out are available.'],
+          ['Connected dashboard', 'This browser is linked to your LiveDash account.']
+        ]
+      : [
+          ['Cloud sync', 'Save dashboard data across browsers.'],
+          ['Profile restore', 'Restore bookmarks, notes, tasks, and settings.'],
+          ['Account features', 'Unlock cloud profile controls.']
+        ];
+    return items.map(([title, body]) => `<div class="cloud-feature ${signed ? 'unlocked' : ''}"><span>${renderIcon(signed ? 'open' : 'user', title, 'xs')}</span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(body)}</small></div>`).join('');
   }
 
   function renderProfileHeader() {
@@ -605,11 +649,11 @@
     const avatar = state?.profile?.avatarUrl
       ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">`
       : `<span>${escapeHtml(profileInitials())}</span>`;
-    return `<header class="profile-strip premium-card" aria-label="Profile and cloud status">
+    return `<header class="profile-strip profile-strip-visible premium-card" aria-label="Profile and cloud status">
       <div class="profile-left">
         <button class="profile-avatar ${signed ? 'signed' : ''}" data-action="login" type="button" aria-label="Open account">${avatar}</button>
         <div class="profile-copy">
-          <div class="profile-greeting">${signed ? `Hi, ${escapeHtml(name)}` : 'Personalize LiveDash'}</div>
+          <div class="profile-greeting">${signed ? `Hi, ${escapeHtml(name)}` : 'Make LiveDash yours'}</div>
           <div class="profile-email">${escapeHtml(email)}</div>
         </div>
       </div>
@@ -707,6 +751,7 @@
           <span class="bookmark-menu-dot" aria-hidden="true">•••</span>
           <span class="bookmark-icon">${filled ? renderFaviconIcon(slot.url, slot.label, 'bookmark') : '<span class="bookmark-placeholder" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5.8A2.8 2.8 0 0 1 9.8 3h4.4A2.8 2.8 0 0 1 17 5.8v14.1l-5-3.2-5 3.2V5.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 7.8v5.2M9.4 10.4h5.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span>'}</span>
           <span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span>
+          <span class="bookmark-host">${escapeHtml(filled ? safeHost(slot.url) : 'Click to add')}</span>
           <span class="bookmark-shine"></span>
         </button>`;
       }).join('')}
@@ -716,14 +761,26 @@
   function renderPetCard() {
     const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').length;
     const signed = Boolean(state?.profile?.signedIn);
+    const pet = state.pet || { mood: 'Ready', energy: 72, hearts: 5, mode: 'idle', score: 0 };
+    const sprite = pet.mode === 'play'
+      ? 'assets/widgetify/animals/dog/akita_with_ball_8fps.gif'
+      : pet.mode === 'feed'
+        ? 'assets/widgetify/animals/dog/akita_swipe_8fps.gif'
+        : pet.energy < 30
+          ? 'assets/widgetify/animals/dog/akita_lie_8fps.gif'
+          : 'assets/widgetify/animals/dog/akita_idle_8fps.gif';
     return `<section class="widget-card pet-card widget-container" aria-label="LiveDash companion">
       <div class="pet-card-head">
-        <div><div class="card-title">LiveDash</div><div class="card-subtitle">${signed ? 'Cloud profile active' : 'Local workspace'}</div></div>
-        <button class="mini-button" data-action="login" type="button" aria-label="Account">${renderIcon('user', 'Account', 'xs')}</button>
+        <div><div class="card-title">Akita</div><div class="card-subtitle">${signed ? 'Cloud companion active' : 'Local companion'}</div></div>
+        <span class="mode-pill">${escapeHtml(pet.mood || 'Ready')}</span>
       </div>
-      <div class="pet-stage"><img src="assets/widgetify/animals/dog/akita_idle_8fps.gif" alt="LiveDash companion"></div>
+      <button class="pet-stage pet-stage-game" data-action="pet-play" type="button" aria-label="Play with Akita">
+        <img src="${sprite}" alt="Akita companion">
+        <span class="pet-ball" aria-hidden="true"></span>
+      </button>
+      <div class="pet-stats"><span>♥ ${escapeHtml(String(pet.hearts || 5))}</span><span>⚡ ${escapeHtml(String(pet.energy || 0))}%</span><span>★ ${escapeHtml(String(pet.score || 0))}</span></div>
       <div class="pet-copy"><strong>${openTasks} tasks open</strong><span>${cloudStatusText()}</span></div>
-      <button class="primary-button" data-action="add-task" type="button">Add task</button>
+      <div class="pet-actions"><button class="secondary-button" data-action="pet-feed" type="button">Feed</button><button class="primary-button" data-action="pet-play" type="button">Play</button></div>
     </section>`;
   }
 
@@ -748,10 +805,10 @@
     const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').slice(0, 4);
     return `<section class="widget-card compact task-card premium-card" aria-label="Tasks">
       <div class="card-title-row"><div><div class="card-title">${renderIcon('tasks', 'Tasks', 'xs')}Tasks</div><div class="card-subtitle">Today’s list</div></div><button class="mini-button" data-action="clear-done" type="button" aria-label="Clear completed tasks">${renderIcon('close', 'Clear', 'xs')}</button></div>
-      <div class="task-list">
-        ${openTasks.length ? openTasks.map((task) => `<div class="task-row ${task.status === 'done' ? 'done' : ''}">
+      <div class="task-list readable-task-list">
+        ${openTasks.length ? openTasks.map((task) => `<div class="task-row readable-task ${task.status === 'done' ? 'done' : ''}">
           <button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}">${task.status === 'done' ? '✓' : ''}</button>
-          <div class="task-copy"><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-${escapeHtml(task.priority)}">${escapeHtml(task.priority)}</span> · ${escapeHtml(task.source || 'LiveDash')}</div></div>
+          <div class="task-copy"><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-${escapeHtml(task.priority)}">${escapeHtml(task.priority)}</span><span>${escapeHtml(task.source || 'LiveDash')}</span></div></div>
           <button class="mini-button row-action" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button">${renderIcon('close', 'Delete', 'xs')}</button>
         </div>`).join('') : '<div class="empty-state">No open tasks right now.</div>'}
       </div>
@@ -863,20 +920,42 @@
   }
 
   function renderModal() {
+    const signed = Boolean(state?.profile?.signedIn);
     return `<div class="modal-backdrop ${loginOpen || bookmarkEditingId ? 'open' : ''}" data-action="close-modal"></div>
-      ${loginOpen ? `<section class="modal-card" role="dialog" aria-modal="true" aria-label="Sign in">
-        <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Sign in to LiveDash</div></div>
-        <div class="auth-card">
-          <div class="auth-title">Sign in or create account</div>
-          <div class="auth-sub">Save favorites and dashboard preferences locally first.</div>
-          <label><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
-          <label><strong>Password</strong><input id="authPassword" class="form-input" type="password" placeholder="Optional for password sign-in" aria-label="Password"></label>
-          <button class="primary-button" data-action="sign-in" type="button">Continue</button>
-        </div>
-        <div class="divider">or</div>
-        <div class="auth-actions"><button class="secondary-button" data-action="google-sign-in" type="button">${renderIcon('google', 'Google', 'xs')} Continue with Google</button><button class="secondary-button" data-action="password-sign-in" type="button">${renderIcon('user', 'Password', 'xs')} Use password</button></div>
-      </section>` : ''}
+      ${loginOpen ? (signed ? renderProfileModal() : renderSignInModal()) : ''}
       ${bookmarkEditingId ? renderBookmarkModal() : ''}`;
+  }
+
+  function renderSignInModal() {
+    return `<section class="modal-card auth-modal-card widgetify-auth-card" role="dialog" aria-modal="true" aria-label="Sign in">
+      <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Sign in to LiveDash</div></div>
+      <div class="auth-hero">
+        <div class="auth-orbit"><span>${renderIcon('home', 'LiveDash', 'sm')}</span><i></i><i></i><i></i></div>
+        <div><h2>Keep your new tab synced</h2><p>Connect your LiveDash profile to restore bookmarks, tasks, notes, companion progress, and preferences.</p></div>
+      </div>
+      <div class="cloud-feature-grid">${renderCloudBenefits()}</div>
+      <div class="auth-card clean-auth-form">
+        <label><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
+        <button class="primary-button" data-action="sign-in" type="button">Continue</button>
+      </div>
+      <div class="divider">or</div>
+      <div class="auth-actions"><button class="secondary-button google-auth-button" data-action="google-sign-in" type="button">${renderIcon('google', 'Google', 'xs')} Continue with Google</button><button class="secondary-button" data-action="password-sign-in" type="button">${renderIcon('user', 'Password', 'xs')} Use password</button></div>
+    </section>`;
+  }
+
+  function renderProfileModal() {
+    const name = state?.profile?.name || state?.profile?.email?.split('@')[0] || 'LiveDash user';
+    const email = state?.profile?.email || '';
+    const avatar = state?.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`;
+    return `<section class="modal-card profile-modal-card widgetify-auth-card" role="dialog" aria-modal="true" aria-label="Profile">
+      <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">LiveDash Profile</div></div>
+      <div class="profile-modal-hero">
+        <div class="profile-modal-avatar">${avatar}</div>
+        <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(email)}</p><span class="cloud-pill"><span class="cloud-dot online"></span>${escapeHtml(cloudStatusText())}</span></div>
+      </div>
+      <div class="cloud-feature-grid">${renderCloudBenefits()}</div>
+      <div class="profile-actions"><button class="primary-button" data-action="refresh-cloud" type="button">Sync now</button><button class="secondary-button" data-action="open-apps-category" data-category="daily" type="button">Open apps</button><button class="secondary-button danger-button" data-action="sign-out" type="button">Sign out</button></div>
+    </section>`;
   }
 
   function renderBookmarkModal() {
@@ -1002,6 +1081,44 @@
     window.location.href = engine + encodeURIComponent(query);
   }
 
+  async function signOut() {
+    state.profile = {
+      ...(state.profile || {}),
+      signedIn: false,
+      backendConnected: false,
+      cloudLoaded: false,
+      authToken: '',
+      plan: 'Local'
+    };
+    loginOpen = false;
+    pushActivity('Signed out', 'Cloud profile disconnected from this browser.');
+    await save();
+    showToast('Signed out');
+    render();
+  }
+
+  async function updatePet(mode) {
+    state.pet = {
+      name: 'Akita',
+      mood: mode === 'feed' ? 'Fed' : 'Playing',
+      energy: Math.min(100, Math.max(0, (state.pet?.energy || 60) + (mode === 'feed' ? 18 : -6))),
+      hearts: Math.min(5, Math.max(1, (state.pet?.hearts || 4) + (mode === 'feed' ? 1 : 0))),
+      mode,
+      score: (state.pet?.score || 0) + (mode === 'play' ? 10 : 4),
+      lastInteractionAt: new Date().toISOString()
+    };
+    pushActivity(mode === 'feed' ? 'Akita fed' : 'Akita played', `Companion score ${state.pet.score}.`);
+    await save();
+    render();
+    setTimeout(async () => {
+      if (!state || state.pet?.mode !== mode) return;
+      state.pet.mode = 'idle';
+      state.pet.mood = 'Ready';
+      await save();
+      render();
+    }, 3200);
+  }
+
   async function addTask(title) {
     const clean = String(title || '').trim() || 'New task';
     state.tasks = [{ id: uid('task'), title: clean, status: 'open', priority: 'medium', due: new Date().toISOString(), source: 'LiveDash' }, ...(state.tasks || [])];
@@ -1112,7 +1229,10 @@
       'open-command': () => { commandOpen = true; render(); },
       'close-command': () => { commandOpen = false; render(); },
       'toggle-dock': async () => { state.settings.showDock = !state.settings.showDock; await save(); render(); },
-      'refresh-cloud': async () => { const ok = await hydrateCloudProfile('manual-refresh'); await save(); showToast(ok ? 'Cloud profile loaded' : 'Cloud profile unavailable'); render(); },
+      'refresh-cloud': async () => { const ok = await hydrateCloudProfile('manual-refresh'); await save(); showToast(ok ? 'Cloud profile loaded' : 'Cloud profile unavailable'); render(); scheduleBackendSync('manual-refresh'); },
+      'sign-out': signOut,
+      'pet-feed': async () => updatePet('feed'),
+      'pet-play': async () => updatePet('play'),
       theme: async () => { state.settings.theme = button.dataset.theme; await save(); showToast('Theme updated'); render(); },
       engine: async () => { state.settings.searchEngine = button.dataset.engine; await save(); showToast('Search engine updated'); render(); },
       'add-task': async () => { await addTask(prompt('Task title') || 'New task'); },
