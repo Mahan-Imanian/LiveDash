@@ -1,6 +1,6 @@
 # Changelog
 
-## v19.0.0
+## v20.0.0
 
 - Reworked the new tab UI to closely follow Widgetify's MIT-licensed interaction and visual system.
 - Replaced fake app icons with real favicon-based bookmark/app icons.
