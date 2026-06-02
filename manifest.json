@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LiveDash",
   "short_name": "LiveDash",
-  "version": "16.0.0",
+  "version": "17.0.0",
   "description": "An interactive, polished, personalized new tab dashboard for Chrome.",
   "icons": {
     "16": "assets/icons/icon16.png",
@@ -32,5 +32,8 @@
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
-  }
+  },
+  "host_permissions": [
+    "https://livedash.codersays.com/*"
+  ]
 }
