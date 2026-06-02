@@ -1,16 +1,15 @@
-# LiveDash v27
+# LiveDash v28
 
-LiveDash is a Manifest V3 Chrome extension for a Widgetify-style personalized new tab dashboard.
-
-## v27 changes
-
-- Rebuilt the runtime UI around the Widgetify layout model: compact glass widgets, centered search, 5x2 bookmark grid, side widgets, and bottom glass dock.
-- App and bookmark icons now use official favicons through the same Google favicon pattern used by Widgetify, with local fallbacks.
-- Rebuilt tasks into readable interactive rows with filters, completion, delete, and quick add.
-- Rebuilt sign-in/profile states so signed-in users see a cloud profile panel instead of the sign-in page.
-- Stabilized Akita with real Widgetify dog assets and non-twitching care controls.
-- Improved bookmark footer contrast and responsive spacing.
+LiveDash is a Chrome new-tab dashboard extension with local-first storage, optional cloud sync, shortcuts, tasks, focus timer, Akita, and quick app categories.
 
 ## Install
 
-Open `chrome://extensions`, enable Developer Mode, and load the unzipped folder.
+1. Unzip this package.
+2. Open `chrome://extensions`.
+3. Enable Developer Mode.
+4. Click Load unpacked.
+5. Select the unzipped folder.
+
+## Cloud sync
+
+The extension points to `https://livedash.codersays.com` in `scripts/backend-config.js`. Upload the matching website backend and configure Google OAuth on the server.
