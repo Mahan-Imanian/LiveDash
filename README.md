@@ -1,4 +1,4 @@
-# LiveDash v19
+# LiveDash v20
 
 LiveDash is a Manifest V3 Chrome extension new tab dashboard. This build adapts Widgetify's MIT-licensed UI mechanics and visual language while keeping LiveDash's English-first cloud sync flow.
 
