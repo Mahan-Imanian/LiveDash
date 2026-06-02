@@ -51,18 +51,26 @@
 
   function favicon(url) {
     const domain = host(url);
-    if (!domain) return 'assets/widgetify/images/no-internet.png';
+    if (!domain) return 'assets/brand/default.svg';
+    const local = {
+      'royalmail.com': 'assets/brand/royal-mail.svg',
+      'whatsapp.com': 'assets/brand/whatsapp.svg',
+      'web.whatsapp.com': 'assets/brand/whatsapp.svg',
+      'gov.uk': 'assets/brand/govuk.svg',
+      'european-union.europa.eu': 'assets/brand/eu.svg'
+    };
+    if (local[domain]) return local[domain];
     return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
   }
 
   function fallbackIcon(label = 'App') {
-    return `<span class="fallback-favicon">${escapeHtml(label.trim().slice(0, 1).toUpperCase() || 'A')}</span>`;
+    return `<span class="fallback-favicon">${escapeHtml(label.trim().slice(0, 2).toUpperCase() || 'A')}</span>`;
   }
 
   function appIcon(app, cls = '') {
     const label = app?.name || app?.label || 'App';
     const url = app?.url || '';
-    return `<span class="app-favicon ${cls}"><img src="${escapeHtml(favicon(url))}" alt="" loading="lazy" referrerpolicy="no-referrer" data-fallback="${escapeHtml(label)}"></span>`;
+    return `<span class="app-favicon ${cls}" data-label="${escapeHtml(label)}"><img src="${escapeHtml(favicon(url))}" alt="" loading="lazy" referrerpolicy="no-referrer" data-fallback="${escapeHtml(label)}"></span>`;
   }
 
   function backendConfig() { return window.LiveDashBackendConfig || { enabled: false, apiBaseUrl: '' }; }
@@ -148,8 +156,39 @@
   function renderSearch() { return `<section class="search-widget"><div class="search-bar">${miniIcon('search')}<input id="mainSearch" type="search" placeholder="Search Google or type a command" autocomplete="off"><button data-action="command" type="button">⌘K</button></div><div class="quick-row">${[{name:'Gmail',url:'https://mail.google.com'}, {name:'Calendar',url:'https://calendar.google.com'}, {name:'ChatGPT',url:'https://chat.openai.com'}, {name:'Drive',url:'https://drive.google.com'}].map((a) => `<button data-action="open-url" data-url="${escapeHtml(a.url)}" type="button">${appIcon(a,'tiny')}<span>${escapeHtml(a.name)}</span></button>`).join('')}</div></section>`; }
   function renderBookmarks() { return `<section class="bookmark-board">${(state.bookmarkSlots || []).map((slot) => { const full = Boolean(slot.url); return `<button class="bookmark-card ${full ? '' : 'empty'}" data-action="${full ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button"><span class="bookmark-image">${full ? appIcon(slot, 'bookmark') : miniIcon('plus')}</span><strong>${escapeHtml(full ? slot.label : 'Add site')}</strong><small>${escapeHtml(full ? host(slot.url) : 'Create shortcut')}</small></button>`; }).join('')}</section>`; }
   function petSprite() { const mode = state.pet?.mode || 'idle'; if (mode === 'play') return 'assets/widgetify/animals/dog/akita_with_ball_8fps.gif'; if (mode === 'feed') return 'assets/widgetify/animals/dog/akita_swipe_8fps.gif'; if (mode === 'rest') return 'assets/widgetify/animals/dog/akita_lie_8fps.gif'; return 'assets/widgetify/animals/dog/akita_idle_8fps.gif'; }
-  function renderPet() { const pet = state.pet || {}; const energy = Math.max(0, Math.min(100, Number(pet.energy || 70))); return `<section class="wigi-card akita-widget"><div class="widget-head"><div>${miniIcon('ball')}<span><strong>Akita</strong><small>${escapeHtml(pet.mood || 'Ready')} · ${escapeHtml(String(pet.score || 0))} score</small></span></div><span class="status-pill">${signedIn() ? 'Cloud' : 'Local'}</span></div><button class="akita-stage" data-action="pet-play" type="button"><img src="${petSprite()}" alt="Akita"><span>${pet.mode === 'play' ? 'Good throw.' : pet.mode === 'feed' ? 'Happy.' : pet.mode === 'rest' ? 'Resting.' : 'Tap to play.'}</span></button><div class="energy-track"><span style="width:${energy}%"></span></div><div class="pet-controls"><button data-action="pet-feed">${miniIcon('feed')}Feed</button><button data-action="pet-play">${miniIcon('ball')}Play</button><button data-action="pet-rest">${miniIcon('rest')}Rest</button></div></section>`; }
-  function renderTasks() { const tasks = (state.tasks || []).filter((t) => activeTaskFilter === 'all' ? true : activeTaskFilter === 'done' ? t.status === 'done' : t.status !== 'done').slice(0, 6); return `<section class="wigi-card task-widget"><div class="task-top"><div>${miniIcon('task')}<span><strong>Tasks</strong><small>${(state.tasks || []).filter((t) => t.status !== 'done').length} open today</small></span></div><button data-action="add-task">New task</button></div><div class="task-tabs"><button class="${activeTaskFilter==='open'?'active':''}" data-action="task-filter" data-filter="open">Open</button><button class="${activeTaskFilter==='all'?'active':''}" data-action="task-filter" data-filter="all">All</button><button class="${activeTaskFilter==='done'?'active':''}" data-action="task-filter" data-filter="done">Done</button></div><div class="todo-list">${tasks.length ? tasks.map((task) => `<article class="todo-item ${task.status === 'done' ? 'done' : ''}"><button class="todo-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button">${task.status === 'done' ? miniIcon('check') : ''}</button><div><strong>${escapeHtml(task.title)}</strong><small><b>${escapeHtml(task.priority || 'medium')}</b>${task.due ? ` · ${escapeHtml(new Date(task.due).toLocaleDateString())}` : ''} · ${escapeHtml(task.source || 'LiveDash')}</small></div><button data-action="delete-task" data-id="${escapeHtml(task.id)}" class="todo-delete">${miniIcon('x')}</button></article>`).join('') : '<div class="empty-list">No tasks yet.</div>'}</div><div class="task-compose"><input id="taskInput" placeholder="Write a task and press Enter"><button data-action="add-task-input">${miniIcon('plus')}</button></div></section>`; }
+  function renderPet() {
+    const pet = state.pet || {};
+    const energy = Math.max(0, Math.min(100, Number(pet.energy || 70)));
+    const mode = pet.mode || 'idle';
+    const caption = mode === 'play' ? 'Great catch.' : mode === 'feed' ? 'Snack collected.' : mode === 'rest' ? 'Resting quietly.' : 'Ready to play.';
+    return `<section class="wigi-card akita-widget calm-${escapeHtml(mode)}">
+      <div class="widget-head"><div>${miniIcon('ball')}<span><strong>Akita</strong><small>${escapeHtml(pet.mood || 'Ready')} · ${escapeHtml(String(pet.score || 0))} score</small></span></div><span class="status-pill">${signedIn() ? 'Cloud' : 'Local'}</span></div>
+      <button class="akita-stage" data-action="pet-play" type="button" aria-label="Play with Akita">
+        <img src="${petSprite()}" alt="Akita dog" draggable="false">
+        <span class="akita-caption">${caption}</span>
+        <i class="akita-ball" aria-hidden="true"></i>
+      </button>
+      <div class="energy-track"><span style="width:${energy}%"></span></div>
+      <div class="pet-controls"><button data-action="pet-feed" type="button">${miniIcon('feed')}<span>Feed</span></button><button data-action="pet-play" type="button">${miniIcon('ball')}<span>Play</span></button><button data-action="pet-rest" type="button">${miniIcon('rest')}<span>Rest</span></button></div>
+    </section>`;
+  }
+
+  function renderTasks() {
+    const all = state.tasks || [];
+    const openCount = all.filter((t) => t.status !== 'done').length;
+    const tasks = all.filter((t) => activeTaskFilter === 'all' ? true : activeTaskFilter === 'done' ? t.status === 'done' : t.status !== 'done').slice(0, 5);
+    return `<section class="wigi-card task-widget task-widget-v27">
+      <div class="task-top"><div>${miniIcon('task')}<span><strong>Tasks</strong><small>${openCount} open today</small></span></div><button data-action="add-task" type="button">New task</button></div>
+      <div class="task-tabs"><button class="${activeTaskFilter==='open'?'active':''}" data-action="task-filter" data-filter="open" type="button">Open</button><button class="${activeTaskFilter==='all'?'active':''}" data-action="task-filter" data-filter="all" type="button">All</button><button class="${activeTaskFilter==='done'?'active':''}" data-action="task-filter" data-filter="done" type="button">Done</button></div>
+      <div class="todo-list">${tasks.length ? tasks.map((task) => `<article class="todo-item ${task.status === 'done' ? 'done' : ''}">
+        <button class="todo-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}">${task.status === 'done' ? miniIcon('check') : ''}</button>
+        <div class="todo-copy"><strong>${escapeHtml(task.title)}</strong><small><b class="priority-${escapeHtml(task.priority || 'medium')}">${escapeHtml(task.priority || 'medium')}</b>${task.due ? ` · ${escapeHtml(new Date(task.due).toLocaleDateString())}` : ''} · ${escapeHtml(task.source || 'LiveDash')}</small></div>
+        <button data-action="delete-task" data-id="${escapeHtml(task.id)}" class="todo-delete" type="button" aria-label="Delete task">${miniIcon('x')}</button>
+      </article>`).join('') : '<div class="empty-list">No tasks yet. Add one below.</div>'}</div>
+      <div class="task-compose"><input id="taskInput" placeholder="Write a task and press Enter" aria-label="New task"><button data-action="add-task-input" type="button" aria-label="Add task">${miniIcon('plus')}</button></div>
+    </section>`;
+  }
+
   function renderFocus() { const r = state.focus.remaining || (state.settings.focusMinutes || 25) * 60; return `<section class="wigi-card focus-widget"><div class="widget-head"><div>${miniIcon('clock')}<span><strong>Focus</strong><small>${state.focus.running ? 'Running' : 'Ready'}</small></span></div></div><div class="pomo-ring"><strong>${Math.floor(r / 60).toString().padStart(2, '0')}:${(r % 60).toString().padStart(2, '0')}</strong><span>${escapeHtml(state.focus.mode || 'work')}</span></div><div class="focus-controls"><button data-action="pomo-reset">Reset</button><button class="primary-action" data-action="pomo-toggle">${state.focus.running ? 'Pause' : 'Start'}</button><button data-action="pomo-mode">Mode</button></div></section>`; }
   function renderCalendar() { return `<section class="wigi-card calendar-widget"><div class="widget-head"><div>${miniIcon('clock')}<span><strong>Calendar</strong><small>${escapeHtml(shortDate())}</small></span></div></div><div class="calendar-list"><div><b>09:30</b><span>Planning block</span></div><div><b>13:00</b><span>Review notes</span></div><div><b>16:30</b><span>Wrap-up</span></div></div></section>`; }
   function renderHome() { return `<main class="home-grid"><aside class="left-column">${renderClock()}${renderRates()}</aside><section class="middle-column">${renderSearch()}${renderBookmarks()}<div class="widget-row">${renderFocus()}${renderTasks()}</div></section><aside class="right-column">${renderPet()}${renderCalendar()}</aside></main>`; }
@@ -158,7 +197,15 @@
   function renderApps() { const c = categoryById(state.settings.appCategory); return `<main class="apps-page"><section class="app-panel"><div class="panel-title"><strong>${escapeHtml(c.label)}</strong><span>${escapeHtml(c.accent || 'Apps')}</span></div><div class="app-grid">${(c.apps || []).map(renderAppTile).join('')}</div></section></main>`; }
   function renderExplore() { return `<main class="explore-page"><section class="app-panel"><div class="panel-title"><strong>Notes</strong><button data-action="add-note">New note</button></div><div class="note-list">${(state.notes || []).slice(0, 8).map((n) => `<article><strong>${escapeHtml(n.title)}</strong><span>${escapeHtml(n.tag || 'note')} · ${escapeHtml(new Date(n.createdAt).toLocaleDateString())}</span></article>`).join('')}</div></section><section class="app-panel"><div class="panel-title"><strong>World clocks</strong></div><div class="rate-list">${(state.worldClocks || []).map((c) => `<div><span>${escapeHtml(c.city)}</span><strong>${escapeHtml(cityTime(c.offset))}</strong><em></em></div>`).join('')}</div></section></main>`; }
   function renderDock() { if (state.settings.showDock === false) return `<button class="dock-handle" data-action="toggle-dock" type="button" aria-label="Show dock"><span></span></button>`; return `<nav class="widgetify-dock"><button data-action="toggle-dock" aria-label="Hide dock">${miniIcon('chevron')}</button><i></i><button data-action="account">${miniIcon('user')}</button><button data-action="refresh-cloud">${miniIcon('sync')}</button><i></i><button class="${state.settings.route==='apps'?'active':''}" data-route="apps">${miniIcon('apps')}</button><button class="${state.settings.route==='home'?'active':''}" data-route="home">${miniIcon('home')}</button><button class="${state.settings.route==='explore'?'active':''}" data-route="explore">${miniIcon('explore')}</button><i></i><button data-action="settings">${miniIcon('settings')}</button><button data-action="command">${miniIcon('search')}</button></nav>`; }
-  function renderAccountModal() { const signed = signedIn(); const avatar = state.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`; return `<div class="modal-backdrop open" data-action="close-modal"></div><section class="account-modal ${signed ? 'profile-mode' : ''}"><button class="modal-x" data-action="close-modal">${miniIcon('x')}</button>${signed ? `<div class="account-hero"><div class="account-avatar">${avatar}</div><h2>${escapeHtml(state.profile.name || 'LiveDash user')}</h2><p>${escapeHtml(state.profile.email || 'Cloud account')}</p><span class="cloud-state">Cloud profile loaded</span></div><div class="account-stats"><div><strong>${(state.bookmarkSlots||[]).filter(s=>s.url).length}</strong><span>Shortcuts</span></div><div><strong>${(state.tasks||[]).filter(t=>t.status!=='done').length}</strong><span>Open tasks</span></div><div><strong>${state.pet?.score||0}</strong><span>Akita score</span></div></div><div class="auth-actions"><button class="primary-action" data-action="refresh-cloud">Sync cloud</button><button data-action="sign-out">Sign out</button></div>` : `<div class="signin-hero"><img src="assets/icons/icon128.png" alt=""><h2>Sign in to LiveDash</h2><p>Sync shortcuts, tasks, notes, and Akita progress across your browser sessions.</p></div><button class="google-signin" data-action="google-sign-in">${miniIcon('google')}<span><strong>Continue with Google</strong><small>Connect LiveDash Cloud</small></span></button><div class="signin-divider"><span></span><em>or</em><span></span></div><label class="email-field"><span>Email address</span><input id="authEmail" type="email" placeholder="you@example.com"></label><button class="secondary-action" data-action="email-sign-in">Continue locally</button>`}</section>`; }
+  function renderAccountModal() {
+    const signed = signedIn();
+    const avatar = state.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`;
+    return `<div class="modal-backdrop open" data-action="close-modal"></div><section class="account-modal account-modal-v27 ${signed ? 'profile-mode' : ''}">
+      <button class="modal-x" data-action="close-modal" type="button" aria-label="Close">${miniIcon('x')}</button>
+      ${signed ? `<div class="account-hero"><div class="account-avatar">${avatar}</div><h2>${escapeHtml(state.profile.name || 'LiveDash user')}</h2><p>${escapeHtml(state.profile.email || 'Cloud account')}</p><span class="cloud-state">Cloud profile active</span></div><div class="account-stats"><div><strong>${(state.bookmarkSlots||[]).filter(s=>s.url).length}</strong><span>Shortcuts</span></div><div><strong>${(state.tasks||[]).filter(t=>t.status!=='done').length}</strong><span>Open tasks</span></div><div><strong>${state.pet?.score||0}</strong><span>Akita score</span></div></div><div class="auth-actions profile-actions"><button class="primary-action" data-action="refresh-cloud" type="button">Sync now</button><button data-action="sign-out" type="button">Sign out</button></div>` : `<div class="signin-hero signin-hero-v27"><div class="signin-logo"><img src="assets/icons/icon128.png" alt="LiveDash"></div><h2>Sign in to LiveDash</h2><p>Connect your cloud profile to sync shortcuts, tasks, notes, and Akita progress.</p></div><button class="google-signin google-signin-v27" data-action="google-sign-in" type="button"><span class="google-mark">G</span><span><strong>Continue with Google</strong><small>Secure cloud sync for LiveDash</small></span></button><div class="signin-divider"><span></span><em>or</em><span></span></div><label class="email-field"><span>Email address</span><input id="authEmail" type="email" placeholder="you@example.com"></label><button class="secondary-action" data-action="email-sign-in" type="button">Continue locally</button>`}
+    </section>`;
+  }
+
   function renderBookmarkModal() { const slot = (state.bookmarkSlots || []).find((b) => b.id === bookmarkEditingId) || {}; return `<div class="modal-backdrop open" data-action="close-modal"></div><section class="account-modal compact-modal"><button class="modal-x" data-action="close-modal">${miniIcon('x')}</button><h2>Bookmark slot</h2><label class="email-field"><span>Name</span><input id="bookmarkName" value="${escapeHtml(slot.label === 'Add site' ? '' : slot.label || '')}" placeholder="Gmail"></label><label class="email-field"><span>URL</span><input id="bookmarkUrl" value="${escapeHtml(slot.url || '')}" placeholder="https://example.com"></label><button class="primary-action" data-action="save-bookmark">Save shortcut</button></section>`; }
   function renderSettings() { return settingsOpen ? `<div class="modal-backdrop open" data-action="close-settings"></div><aside class="settings-drawer"><button class="modal-x" data-action="close-settings">${miniIcon('x')}</button><h2>Settings</h2><div class="theme-grid">${['sky','mist','pearl','sunset','forest'].map((t) => `<button class="${state.settings.theme===t?'active':''}" data-action="theme" data-theme="${t}">${escapeHtml(t)}</button>`).join('')}</div><button data-action="export">Export backup</button><label class="import-label">Import backup<input id="importFile" type="file" accept="application/json"></label><button data-action="reset">Reset dashboard</button></aside>` : ''; }
   function renderCommand() { return commandOpen ? `<div class="modal-backdrop open" data-action="close-command"></div><section class="command-card"><input id="commandInput" placeholder="Type a command or search"><button data-route="home">${miniIcon('home')}Home</button><button data-route="apps">${miniIcon('apps')}Apps</button><button data-action="add-task">${miniIcon('task')}Add task</button><button data-action="google-sign-in">${miniIcon('google')}Google sign in</button></section>` : ''; }
@@ -216,6 +263,14 @@
     if (actions[action]) await actions[action]();
   }
   function startTimer() { if (timerId) clearInterval(timerId); timerId = setInterval(async () => { if (!state?.focus?.running) return; state.focus.remaining = Math.max(0, (state.focus.remaining || 0) - 1); if (state.focus.remaining === 0) { state.focus.running = false; notice('Focus session complete', 'Take a break.', 'success'); await save(); render(); } const time = $('.pomo-ring strong'); if (time) { const r = state.focus.remaining || 0; time.textContent = `${Math.floor(r/60).toString().padStart(2,'0')}:${(r%60).toString().padStart(2,'0')}`; } if ((state.focus.remaining || 0) % 15 === 0) await window.LiveDashStore.setState(state); }, 1000); }
+  root.addEventListener('error', (event) => {
+    const img = event.target;
+    if (img && img.tagName === 'IMG' && img.closest('.app-favicon')) {
+      const wrapper = img.closest('.app-favicon');
+      wrapper.innerHTML = fallbackIcon(img.dataset.fallback || wrapper.dataset.label || 'App');
+    }
+  }, true);
+
   root.addEventListener('click', async (event) => { const button = event.target.closest('button, [data-action], [data-route]'); if (!button) return; await handleAction(button.dataset.action, button); });
   document.addEventListener('keydown', (event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); commandOpen = true; render(); } if (event.key === 'Escape') { accountOpen = false; bookmarkEditingId = null; commandOpen = false; settingsOpen = false; render(); } });
   async function boot() { state = await window.LiveDashStore.getState(); state.settings.route = state.settings.route || 'home'; if (state.profile?.authToken && !state.profile.cloudLoaded) await hydrateCloud('boot'); render(); startTimer(); }

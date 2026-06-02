@@ -1,8 +1,8 @@
-# LiveDash v26
+# LiveDash v27
 
 LiveDash is a Manifest V3 Chrome extension for a Widgetify-style personalized new tab dashboard.
 
-## v26 changes
+## v27 changes
 
 - Rebuilt the runtime UI around the Widgetify layout model: compact glass widgets, centered search, 5x2 bookmark grid, side widgets, and bottom glass dock.
 - App and bookmark icons now use official favicons through the same Google favicon pattern used by Widgetify, with local fallbacks.
