@@ -1,4 +1,4 @@
-# LiveDash v17.0.0
+# LiveDash v17.1.0
 
 LiveDash is a Manifest V3 Chrome extension that transforms the new tab page into a polished, interactive, personalized dashboard for search, bookmarks, tasks, focus sessions, calendar context, notes, and quick links.
 
@@ -30,3 +30,7 @@ npm run package
 ```
 
 The validator checks Manifest V3 structure, required extension pages, CSP, runtime files, local assets, and packaged ZIP integrity.
+
+## Google sign-in
+
+LiveDash uses `chrome.identity.launchWebAuthFlow` with the website backend at `https://livedash.codersays.com`. Reload the extension after installing this version so the `identity` permission is active.
