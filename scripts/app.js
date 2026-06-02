@@ -2,11 +2,11 @@
   const root = document.getElementById('app');
   let state = null;
   let timerId = null;
-  let syncTimer = null;
   let commandOpen = false;
-  let drawerOpen = false;
-  let loginOpen = false;
+  let settingsOpen = false;
+  let accountOpen = false;
   let bookmarkEditingId = null;
+  let activeTaskFilter = 'open';
 
   const $ = (selector, node = document) => node.querySelector(selector);
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
@@ -19,88 +19,265 @@
     duckduckgo: 'https://duckduckgo.com/?q='
   };
 
-  function backendConfig() {
-    return window.LiveDashBackendConfig || { enabled: false, apiBaseUrl: '' };
-  }
+  const brand = {
+    gmail: { label: 'Gmail', colors: ['#fff3f0', '#EA4335'], type: 'mail' },
+    calendar: { label: 'Calendar', colors: ['#edf5ff', '#4285F4'], type: 'calendar' },
+    drive: { label: 'Drive', colors: ['#eefbf4', '#0F9D58'], type: 'drive' },
+    docs: { label: 'Docs', colors: ['#eef5ff', '#4285F4'], type: 'doc' },
+    sheets: { label: 'Sheets', colors: ['#ecfbf2', '#0F9D58'], type: 'sheet' },
+    slides: { label: 'Slides', colors: ['#fff7e8', '#F4B400'], type: 'slide' },
+    maps: { label: 'Maps', colors: ['#ecfdf8', '#34A853'], type: 'pin' },
+    meet: { label: 'Meet', colors: ['#edfdf7', '#00AC47'], type: 'video' },
+    keep: { label: 'Keep', colors: ['#fff9dc', '#F4B400'], type: 'bulb' },
+    news: { label: 'News', colors: ['#eef4ff', '#4285F4'], type: 'news' },
+    photos: { label: 'Photos', colors: ['#fff0f8', '#DB4437'], type: 'flower' },
+    chatgpt: { label: 'ChatGPT', colors: ['#ecfbf7', '#10A37F'], type: 'spark' },
+    claude: { label: 'Claude', colors: ['#fff4e8', '#D97706'], type: 'claude' },
+    perplexity: { label: 'Perplexity', colors: ['#e9fbff', '#20A8B8'], type: 'p' },
+    gemini: { label: 'Gemini', colors: ['#f3efff', '#7C3AED'], type: 'diamond' },
+    copilot: { label: 'Copilot', colors: ['#eef3ff', '#2563EB'], type: 'cloud' },
+    notion: { label: 'Notion', colors: ['#f5f5f5', '#111111'], type: 'n' },
+    todoist: { label: 'Todoist', colors: ['#fff3ef', '#E44332'], type: 'check' },
+    slack: { label: 'Slack', colors: ['#f6f0ff', '#611F69'], type: 'hash' },
+    zoom: { label: 'Zoom', colors: ['#edf4ff', '#2D8CFF'], type: 'video' },
+    dropbox: { label: 'Dropbox', colors: ['#eef5ff', '#0061FF'], type: 'box' },
+    outlook: { label: 'Outlook', colors: ['#eef5ff', '#0078D4'], type: 'mail' },
+    github: { label: 'GitHub', colors: ['#f3f4f6', '#111827'], type: 'github' },
+    figma: { label: 'Figma', colors: ['#fff0f5', '#A259FF'], type: 'figma' },
+    canva: { label: 'Canva', colors: ['#ecfbff', '#00C4CC'], type: 'c' },
+    spotify: { label: 'Spotify', colors: ['#ecfbf1', '#1DB954'], type: 'waves' },
+    youtube: { label: 'YouTube', colors: ['#fff0f0', '#FF0000'], type: 'play' },
+    wikipedia: { label: 'Wikipedia', colors: ['#f4f5f7', '#111827'], type: 'w' },
+    trello: { label: 'Trello', colors: ['#edf5ff', '#0079BF'], type: 'columns' },
+    miro: { label: 'Miro', colors: ['#fff9dd', '#FFD02F'], type: 'm' },
+    loom: { label: 'Loom', colors: ['#f5efff', '#625DF5'], type: 'star' },
+    tinypng: { label: 'TinyPNG', colors: ['#fbfff0', '#8BC34A'], type: 'panda' },
+    cloudconvert: { label: 'CloudConvert', colors: ['#eef7ff', '#2563EB'], type: 'cloud' },
+    removebg: { label: 'Remove.bg', colors: ['#fff1f5', '#EC4899'], type: 'cut' },
+    unsplash: { label: 'Unsplash', colors: ['#f4f5f7', '#111827'], type: 'u' },
+    translate: { label: 'Translate', colors: ['#eef5ff', '#4285F4'], type: 'translate' },
+    speedtest: { label: 'Speedtest', colors: ['#fff4eb', '#F97316'], type: 'gauge' },
+    archive: { label: 'Archive', colors: ['#f7f1e7', '#8B5E3C'], type: 'archive' },
+    irs: { label: 'IRS', colors: ['#eef5ff', '#1D4ED8'], type: 'bank' },
+    usps: { label: 'USPS', colors: ['#fff8e8', '#004B93'], type: 'mail' },
+    govuk: { label: 'GOV.UK', colors: ['#f4f7fa', '#1D70B8'], type: 'crown' },
+    eup: { label: 'EU Portal', colors: ['#eef0ff', '#003399'], type: 'stars' },
+    nhs: { label: 'NHS', colors: ['#eef5ff', '#005EB8'], type: 'nhs' },
+    dhl: { label: 'DHL', colors: ['#fff8e1', '#D40511'], type: 'truck' },
+    royalmail: { label: 'Royal Mail', colors: ['#fff2f2', '#DA202A'], type: 'crownmail' },
+    ups: { label: 'UPS', colors: ['#f8f2ea', '#351C15'], type: 'shield' },
+    booking: { label: 'Booking', colors: ['#edf5ff', '#003B95'], type: 'b' },
+    airbnb: { label: 'Airbnb', colors: ['#fff0f4', '#FF385C'], type: 'airbnb' },
+    uber: { label: 'Uber', colors: ['#f3f4f6', '#111827'], type: 'u' },
+    wise: { label: 'Wise', colors: ['#ecfff5', '#00B67A'], type: 'wise' },
+    revolut: { label: 'Revolut', colors: ['#eef5ff', '#2563EB'], type: 'r' },
+    finance: { label: 'Finance', colors: ['#ecfbf4', '#22C55E'], type: 'chart' },
+    currency: { label: 'Currency', colors: ['#fff7ed', '#F59E0B'], type: 'dollar' },
+    facebook: { label: 'Facebook', colors: ['#eef3ff', '#1877F2'], type: 'f' },
+    instagram: { label: 'Instagram', colors: ['#fff0fa', '#E1306C'], type: 'camera' },
+    x: { label: 'X', colors: ['#f3f4f6', '#111827'], type: 'x' },
+    reddit: { label: 'Reddit', colors: ['#fff3ef', '#FF4500'], type: 'reddit' },
+    discord: { label: 'Discord', colors: ['#eef0ff', '#5865F2'], type: 'discord' },
+    whatsapp: { label: 'WhatsApp', colors: ['#ecfbf1', '#25D366'], type: 'phone' },
+    telegram: { label: 'Telegram', colors: ['#eef8ff', '#229ED9'], type: 'paperplane' },
+    pinterest: { label: 'Pinterest', colors: ['#fff1f2', '#E60023'], type: 'p' },
+    live: { label: 'LiveDash', colors: ['#eef3ff', '#536DFE'], type: 'spark' },
+    add: { label: 'Add', colors: ['#f4f7fb', '#64748B'], type: 'plus' },
+    search: { label: 'Search', colors: ['#eef8ff', '#2991FF'], type: 'search' },
+    settings: { label: 'Settings', colors: ['#f4f7fb', '#64748B'], type: 'gear' },
+    tasks: { label: 'Tasks', colors: ['#eef5ff', '#536DFE'], type: 'check' },
+    notes: { label: 'Notes', colors: ['#fff9e8', '#F59E0B'], type: 'note' },
+    focus: { label: 'Focus', colors: ['#eef0ff', '#536DFE'], type: 'target' },
+    home: { label: 'Home', colors: ['#eef0ff', '#536DFE'], type: 'home' },
+    apps: { label: 'Apps', colors: ['#eef0ff', '#536DFE'], type: 'grid' },
+    explore: { label: 'Explore', colors: ['#eefcf6', '#0EA5E9'], type: 'compass' },
+    user: { label: 'Account', colors: ['#f4f7fb', '#64748B'], type: 'user' },
+    close: { label: 'Close', colors: ['#f4f7fb', '#64748B'], type: 'xmark' },
+    refresh: { label: 'Refresh', colors: ['#f4f7fb', '#64748B'], type: 'refresh' },
+    daily: { label: 'Daily', colors: ['#eef0ff', '#536DFE'], type: 'star' },
+    public: { label: 'Public', colors: ['#f3f5fa', '#4B5565'], type: 'bank' },
+    tools: { label: 'Tools', colors: ['#eef7ff', '#2C82FF'], type: 'tool' },
+    google: { label: 'Google', colors: ['#eef8ff', '#4285F4'], type: 'g' },
+    ai: { label: 'AI', colors: ['#f5efff', '#7B61FF'], type: 'spark' },
+    travel: { label: 'Travel', colors: ['#fff6e8', '#FF9F1A'], type: 'plane' },
+    social: { label: 'Social', colors: ['#eef3ff', '#4F7CFF'], type: 'chat' }
+  };
 
+  const aliases = {
+    'google calendar': 'calendar', calendar: 'calendar', gmail: 'gmail', mail: 'gmail', 'google drive': 'drive', drive: 'drive', docs: 'docs', 'google docs': 'docs', sheets: 'sheets', slides: 'slides', maps: 'maps', meet: 'meet', keep: 'keep', news: 'news', photos: 'photos',
+    'microsoft to do': 'todoist', todoist: 'todoist', chatgpt: 'chatgpt', claude: 'claude', perplexity: 'perplexity', gemini: 'gemini', copilot: 'copilot', notion: 'notion', github: 'github', figma: 'figma', canva: 'canva', youtube: 'youtube', spotify: 'spotify', wikipedia: 'wikipedia', trello: 'trello', miro: 'miro', loom: 'loom', tinypng: 'tinypng', 'cloudconvert': 'cloudconvert', 'removebg': 'removebg', 'remove.bg': 'removebg', unsplash: 'unsplash', 'google translate': 'translate', speedtest: 'speedtest', 'archive.org': 'archive',
+    'royal mail': 'royalmail', royalmail: 'royalmail', 'gov.uk': 'govuk', nhs: 'nhs', dhl: 'dhl', ups: 'ups', irs: 'irs', usps: 'usps', 'eu portal': 'eup', booking: 'booking', 'booking.com': 'booking', airbnb: 'airbnb', uber: 'uber', wise: 'wise', revolut: 'revolut', 'yahoo finance': 'finance', 'xe currency': 'currency', facebook: 'facebook', instagram: 'instagram', x: 'x', reddit: 'reddit', discord: 'discord', whatsapp: 'whatsapp', telegram: 'telegram', pinterest: 'pinterest'
+  };
+
+  function backendConfig() { return window.LiveDashBackendConfig || { enabled: false, apiBaseUrl: '' }; }
   function backendUrl(path) {
-    const config = backendConfig();
-    const base = String(config.apiBaseUrl || '').replace(/\/$/, '');
+    const base = String(backendConfig().apiBaseUrl || '').replace(/\/$/, '');
     const suffix = String(path || '').startsWith('/') ? path : `/${path}`;
     return base ? `${base}${suffix}` : '';
   }
-
-  function authToken() {
-    return state?.profile?.authToken || '';
+  function backendHeaders() {
+    return { 'Content-Type': 'application/json', ...(state?.profile?.authToken ? { Authorization: `Bearer ${state.profile.authToken}` } : {}) };
   }
 
-  function backendHeaders(extra = {}) {
-    const token = authToken();
-    return {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...extra
+  function normalizeKey(value) {
+    return String(value || '').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9.]+/g, ' ').trim().replace(/\s+/g, ' ');
+  }
+  function host(url) {
+    try { return new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`).hostname.replace(/^www\./, ''); } catch { return ''; }
+  }
+  function keyFor(label = '', url = '') {
+    const h = host(url);
+    const byHost = {
+      'mail.google.com': 'gmail', 'calendar.google.com': 'calendar', 'drive.google.com': 'drive', 'docs.google.com': 'docs', 'sheets.google.com': 'sheets', 'slides.google.com': 'slides', 'maps.google.com': 'maps', 'meet.google.com': 'meet', 'keep.google.com': 'keep', 'news.google.com': 'news', 'photos.google.com': 'photos', 'translate.google.com': 'translate',
+      'chat.openai.com': 'chatgpt', 'claude.ai': 'claude', 'perplexity.ai': 'perplexity', 'gemini.google.com': 'gemini', 'copilot.microsoft.com': 'copilot', 'github.com': 'github', 'figma.com': 'figma', 'notion.so': 'notion', 'youtube.com': 'youtube', 'open.spotify.com': 'spotify', 'wikipedia.org': 'wikipedia', 'trello.com': 'trello', 'miro.com': 'miro', 'loom.com': 'loom', 'tinypng.com': 'tinypng', 'cloudconvert.com': 'cloudconvert', 'remove.bg': 'removebg', 'unsplash.com': 'unsplash', 'speedtest.net': 'speedtest', 'archive.org': 'archive',
+      'royalmail.com': 'royalmail', 'gov.uk': 'govuk', 'nhs.uk': 'nhs', 'dhl.com': 'dhl', 'ups.com': 'ups', 'irs.gov': 'irs', 'usps.com': 'usps', 'european-union.europa.eu': 'eup', 'booking.com': 'booking', 'airbnb.com': 'airbnb', 'uber.com': 'uber', 'wise.com': 'wise', 'revolut.com': 'revolut', 'finance.yahoo.com': 'finance', 'xe.com': 'currency', 'facebook.com': 'facebook', 'instagram.com': 'instagram', 'x.com': 'x', 'reddit.com': 'reddit', 'discord.com': 'discord', 'web.whatsapp.com': 'whatsapp', 'web.telegram.org': 'telegram', 'pinterest.com': 'pinterest'
     };
+    if (byHost[h]) return byHost[h];
+    return aliases[normalizeKey(label)] || normalizeKey(label).replace(/\s+/g, '') || 'live';
   }
 
-  function scheduleBackendSync(reason = 'state-update') {
-    const config = backendConfig();
-    if (!config.enabled || !config.apiBaseUrl || !state?.profile?.authToken) return;
-    if (syncTimer) clearTimeout(syncTimer);
-    syncTimer = setTimeout(() => syncToBackend(reason), 900);
+  function svg(type) {
+    const s = {
+      mail: '<path d="M4 7.5 12 13l8-5.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7.5Z" fill="currentColor" opacity=".18"/><path d="M4.5 7 12 12.4 19.5 7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 18V7h14v11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+      calendar: '<rect x="4" y="5" width="16" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 3.8v4M16 3.8v4M4 9.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="7" y="12" width="3" height="3" rx="1" fill="currentColor"/><rect x="11" y="12" width="3" height="3" rx="1" fill="currentColor" opacity=".55"/>',
+      drive: '<path d="M8.1 4h3.8l4.1 7-1.9 3.2H10.3L8.1 10 10 6.8 8.1 4z" fill="#16a765"/><path d="M10.1 6.8H14L18.2 14h-3.8L10.1 6.8z" fill="#fbbc04"/><path d="M5.8 14h8.3l-2.2 3.8H3.7L5.8 14z" fill="#4285f4"/>',
+      doc: '<path d="M8 4h6l4 4v12H8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 4v4h4M10 12h6M10 15h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      sheet: '<path d="M8 4h6l4 4v12H8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 4v4h4M10 12h6M10 15h6M12.5 10v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+      slide: '<path d="M8 4h6l4 4v12H8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 4v4h4" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="11" width="6" height="4" rx="1" fill="currentColor" opacity=".75"/>',
+      pin: '<path d="M12 21s6-5.5 6-11a6 6 0 1 0-12 0c0 5.5 6 11 6 11Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.2" fill="currentColor"/>',
+      video: '<rect x="5" y="7" width="9.5" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14.5 10.2 19 8.6v6.8l-4.5-1.6v-3.6z" fill="currentColor"/>',
+      bulb: '<path d="M12 4a5 5 0 0 1 5 5c0 2-1 3.2-2.2 4.3V16H9.2v-2.7C8 12.2 7 11 7 9a5 5 0 0 1 5-5Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 19h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      news: '<rect x="5" y="6" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="7.5" y="8.5" width="4" height="4" rx="1" fill="currentColor" opacity=".25"/><path d="M13 9h4M13 12h4M7.5 15h9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      flower: '<circle cx="12" cy="7.5" r="2" fill="currentColor"/><circle cx="16.5" cy="12" r="2" fill="currentColor" opacity=".75"/><circle cx="12" cy="16.5" r="2" fill="currentColor" opacity=".6"/><circle cx="7.5" cy="12" r="2" fill="currentColor" opacity=".45"/>',
+      spark: '<path d="M12 4.5 14 10l5.5 2-5.5 2L12 19.5 10 14 4.5 12 10 10 12 4.5Z" fill="currentColor"/>',
+      claude: '<circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".7"/>',
+      p: '<path d="M8 6h5.5A4.5 4.5 0 1 1 13.5 15H10v3H8V6Zm2 2v5h3.5a2.5 2.5 0 1 0 0-5H10Z" fill="currentColor"/>',
+      diamond: '<path d="M12 4.5 19 12l-7 7.5L5 12l7-7.5Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5 16 12l-4 4.5L8 12l4-4.5Z" fill="currentColor"/>',
+      cloud: '<path d="M8.5 17h7a3.5 3.5 0 0 0 .5-7 4.5 4.5 0 0 0-8.7 1.2A3 3 0 0 0 8.5 17Z" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+      n: '<path d="M7 17V7h2.2l5.3 6.7V7H17v10h-2.1L9.6 10.2V17H7Z" fill="currentColor"/>',
+      check: '<rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m8.5 12 2.4 2.4 5-5.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+      hash: '<path d="M9 5 7.5 19M16.5 5 15 19M6 9h13M5 15h13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      box: '<path d="M7.2 5 12 8.3 7.2 11.5 2.5 8.3 7.2 5Zm9.6 0 4.7 3.3-4.7 3.2L12 8.3 16.8 5ZM7.2 13 12 16.2 16.8 13v3.3L12 19.5l-4.8-3.2V13Z" fill="currentColor"/>',
+      github: '<path d="M12 4a8 8 0 0 0-2.5 15.6v-2.7c-2.1.5-2.6-.9-2.6-.9-.3-.9-.8-1.1-.8-1.1-.7-.5.1-.5.1-.5.8.1 1.2.9 1.2.9.7 1.2 1.9.9 2.3.7.1-.5.3-.9.5-1.1-1.7-.2-3.4-.8-3.4-3.7 0-.8.3-1.5.8-2.1-.1-.2-.3-1 .1-2.1 0 0 .7-.2 2.3.8a8 8 0 0 1 4.2 0c1.6-1 2.3-.8 2.3-.8.4 1.1.2 1.9.1 2.1.5.6.8 1.3.8 2.1 0 2.9-1.7 3.5-3.4 3.7.3.2.5.7.5 1.5v3.2A8 8 0 0 0 12 4Z" fill="currentColor"/>',
+      figma: '<path d="M10.5 4a2.5 2.5 0 1 1 0 5H8a2.5 2.5 0 0 1 0-5h2.5Zm0 5a2.5 2.5 0 1 1 0 5H8a2.5 2.5 0 0 1 0-5h2.5Zm2.5-5h2.5a2.5 2.5 0 0 1 0 5H13V4Zm0 5h2.5a2.5 2.5 0 1 1-2.5 2.5V9Zm-2.5 5v2.5A2.5 2.5 0 1 1 8 14h2.5Z" fill="currentColor"/>',
+      c: '<path d="M16.5 8.8a5.5 5.5 0 1 0 0 6.4l-1.7-1.3a3.3 3.3 0 1 1 0-4l1.7-1.1Z" fill="currentColor"/>',
+      waves: '<path d="M7 10c3.5-1 7.2-.7 10.2.6M7.7 13c2.7-.7 5.6-.5 7.9.5M8.5 16c2-.4 4-.3 5.7.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      play: '<path d="M8 6.5v11l9-5.5-9-5.5Z" fill="currentColor"/>',
+      w: '<path d="M5.5 8h2l2 6 2-6h1.7l2 6 2-6h1.8l-3 8h-1.7l-2-5.8L10.2 16H8.5l-3-8Z" fill="currentColor"/>',
+      columns: '<rect x="5" y="5" width="14" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="7.5" y="8" width="3.5" height="8" rx="1" fill="currentColor"/><rect x="13" y="8" width="3.5" height="5" rx="1" fill="currentColor" opacity=".65"/>',
+      m: '<path d="M6.5 17V7h2.2l3.3 5.2L15.3 7h2.2v10h-2.3v-6l-2.8 4.3h-.8L8.8 11v6H6.5Z" fill="currentColor"/>',
+      star: '<path d="m12 5.2 1.8 4 4.3.5-3.2 2.9.9 4.2-3.8-2.2-3.8 2.2.9-4.2-3.2-2.9 4.3-.5 1.8-4Z" fill="currentColor"/>',
+      panda: '<circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9.8" cy="11.5" r="1" fill="currentColor"/><circle cx="14.2" cy="11.5" r="1" fill="currentColor"/><path d="M10.5 15c.8.5 2.2.5 3 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+      cut: '<path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="6" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+      translate: '<path d="M6 8h8M10 8c0 4-1.8 6.7-4 8.5M8.2 12.5c1.4 1.5 3 2.6 5 3.2M13.5 17l3.5-8h1.2l3.3 8M15 14h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+      gauge: '<path d="M5.5 15a6.5 6.5 0 1 1 13 0" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m12 12 4-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15" r="1.3" fill="currentColor"/>',
+      archive: '<path d="M5 8h14v10H5V8Zm-1-3h16v3H4V5Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 12h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      bank: '<path d="M4 9h16L12 4 4 9Zm2 2h2v6H6v-6Zm5 0h2v6h-2v-6Zm5 0h2v6h-2v-6ZM4 19h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+      crown: '<path d="m5 10 3.5 3 3.5-6 3.5 6L19 10v7H5v-7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+      stars: '<circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m12 7 1 2.2 2.4.3-1.7 1.6.4 2.4-2.1-1.2-2.1 1.2.4-2.4-1.7-1.6 2.4-.3L12 7Z" fill="currentColor"/>',
+      nhs: '<path d="M6 16V8h2.1l2.2 3.6V8h2v8h-2.1L8 12.3V16H6Zm7.5 0V8h2v3h2.5V8h2v8h-2v-3h-2.5v3h-2Z" fill="currentColor"/>',
+      truck: '<path d="M4 10h10v6H4v-6Zm10 2h3l2 2v2h-5v-4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="17" r="1.2" fill="currentColor"/><circle cx="17" cy="17" r="1.2" fill="currentColor"/>',
+      crownmail: '<path d="M6 9.5 9 12l3-5 3 5 3-2.5V15H6V9.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6.5 17.5h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      shield: '<path d="M12 4.5 18 7v4.5c0 3.4-2.4 6.3-6 7.9-3.6-1.6-6-4.5-6-7.9V7l6-2.5Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 12h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      b: '<path d="M8 5h5.2a3.4 3.4 0 0 1 .4 6.8H8V5Zm2.2 2v3h2.7a1.5 1.5 0 1 0 0-3h-2.7Zm-2.2 6h5.8a3 3 0 1 1 0 6H8v-6Zm2.2 2v2h3.2a1 1 0 1 0 0-2h-3.2Z" fill="currentColor"/>',
+      airbnb: '<path d="M12 6.5c1.3 0 2.1.9 2.8 2.1l2.6 5c.7 1.5-.4 3-2 3-1 0-1.9-.6-2.7-1.9-.8 1.3-1.7 1.9-2.7 1.9-1.6 0-2.7-1.5-2-3l2.6-5c.7-1.2 1.5-2.1 2.8-2.1Z" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+      u: '<path d="M7 7h2v6a3 3 0 1 0 6 0V7h2v6a5 5 0 1 1-10 0V7Z" fill="currentColor"/>',
+      wise: '<path d="M7 8.5 15 6l-4.5 10 6.5-2.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+      r: '<path d="M8 7h6a3 3 0 1 1 0 6h-2l4 4h-3l-5-5V7Zm2 2v2h3.5a1 1 0 1 0 0-2H10Z" fill="currentColor"/>',
+      chart: '<path d="M6 16.5 10 12l2.5 2.5L18 8.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 8.5V13h-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+      dollar: '<path d="M14.5 6.5H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H9.5M12 5v14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      f: '<path d="M13.5 20v-6.5h2.2l.4-2.8h-2.6V9c0-.8.3-1.3 1.5-1.3h1.2V5.2c-.3 0-1-.1-1.9-.1-2 0-3.3 1.2-3.3 3.5v2.1H8.8v2.8H11V20h2.5Z" fill="currentColor"/>',
+      camera: '<rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16" cy="8" r="1" fill="currentColor"/>',
+      x: '<path d="M6.5 6h3l2.7 3.8L15.5 6H18l-4.5 5.6L18.2 18h-3l-3-4.2L8.7 18H6.2l4.7-6.1L6.5 6Z" fill="currentColor"/>',
+      reddit: '<circle cx="9.2" cy="12" r="1" fill="currentColor"/><circle cx="14.8" cy="12" r="1" fill="currentColor"/><path d="M8.2 14c1 .8 2.2 1.2 3.8 1.2s2.8-.4 3.8-1.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.7"/>',
+      discord: '<path d="M8.2 8.5a13 13 0 0 1 7.6 0c.7 1.1 1.2 2.3 1.5 3.8-.9.7-1.8 1.2-2.8 1.5l-.6-1a9 9 0 0 1-3.8 0l-.6 1a8.4 8.4 0 0 1-2.8-1.5c.3-1.5.8-2.7 1.5-3.8Zm2.1 3.7a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm3.4 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor"/>',
+      phone: '<path d="M8.8 5.5 10 8.8l-1.4 1.4c.8 1.8 2.3 3.3 4.1 4.1l1.5-1.4 3.3 1.2-.4 2.6c-.1.8-.8 1.3-1.6 1.2-5.3-.7-9.6-5-10.3-10.3-.1-.8.4-1.5 1.2-1.6l2.4-.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+      paperplane: '<path d="m5 11.2 12.8-5c.8-.3 1.6.4 1.4 1.2l-2.1 10.2c-.2.8-1.1 1.2-1.7.8l-3.3-2.4-1.9 1.8c-.5.4-1.2.1-1.2-.6v-2.7l6.2-5.8-7.8 5-2.5-.8c-.9-.3-.9-1.5.1-1.9Z" fill="currentColor"/>',
+      search: '<circle cx="11" cy="11" r="5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15 15 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      gear: '<circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4v2M12 18v2M20 12h-2M6 12H4M17.7 6.3l-1.4 1.4M7.7 16.3l-1.4 1.4M17.7 17.7l-1.4-1.4M7.7 7.7 6.3 6.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      target: '<circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>',
+      note: '<path d="M7 4h8l4 4v12H7V4Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15 4v4h4M10 12h5M10 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      home: '<path d="M5.2 10.8 12 5l6.8 5.8V19H5.2v-8.2Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+      grid: '<path d="M5.5 5.5h5v5h-5v-5Zm8 0h5v5h-5v-5Zm-8 8h5v5h-5v-5Zm8 0h5v5h-5v-5Z" fill="currentColor"/>',
+      compass: '<circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m14.8 9.2-2 5.6-3.6 1.2 2-5.6 3.6-1.2Z" fill="currentColor"/>',
+      user: '<circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 18c1.1-2.7 3.1-4 5.5-4s4.4 1.3 5.5 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      xmark: '<path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      refresh: '<path d="M17 11a5 5 0 1 0 1 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 7v4h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      plus: '<path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+      plane: '<path d="M3 13.2 11 11V7.2l-2-1V4.8l3 1 3-1v1.4l-2 1V11l8 2.2v1.6l-8-1.2v3l2 1.4v1.4L12 18l-5 1.2v-1.4l2-1.4v-3l-6 1.2v-1.4Z" fill="currentColor"/>',
+      tool: '<path d="M15.5 4a4 4 0 0 0 4.5 4.5l-7.1 7.1-3-3L17 5.5A4 4 0 0 0 15.5 4ZM5 16l3 3 2.2-2.2-3-3L5 16Z" fill="currentColor"/>',
+      chat: '<path d="M6 6h12a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-4.5L9 19v-3H6a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3Z" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+      g: '<path d="M12 4a8 8 0 1 0 0 16c4 0 7-2.7 7-6.6 0-.4 0-.8-.1-1.2H12v2.8h4c-.4 1.8-1.9 3.2-4 3.2a4.8 4.8 0 0 1 0-9.6c1.3 0 2.2.5 3 1.2l2.1-2.1A7.8 7.8 0 0 0 12 4Z" fill="currentColor"/>'
+    };
+    return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${s[type] || s.spark}</svg>`;
   }
 
-  async function syncToBackend(reason = 'manual') {
-    const config = backendConfig();
-    if (!config.enabled || !config.apiBaseUrl || !state?.profile?.authToken) return;
+  function icon(key, size = 'md', label = '') {
+    const item = brand[key] || brand[keyFor(label, '')] || brand.live;
+    return `<span class="brand-icon brand-icon-${size}" style="--icon-bg:${item.colors[0]};--icon-fg:${item.colors[1]}" aria-hidden="true">${svg(item.type)}<span class="brand-letter">${escapeHtml((label || item.label || 'L').slice(0, 2).toUpperCase())}</span></span>`;
+  }
+
+  function appIcon(app, size = 'app') {
+    return icon(keyFor(app?.name || app?.label || '', app?.url || ''), size, app?.name || app?.label || 'App');
+  }
+
+  function formatTime(date = now()) {
+    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { hour: '2-digit', minute: '2-digit', hour12: state?.profile?.timeFormat !== '24h' }).format(date);
+  }
+  function shortDate(date = now()) { return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(date); }
+  function timeParts() { const clean = formatTime().replace(/\s?(AM|PM)$/i, ''); const [h = '00', m = '00'] = clean.split(':'); return { h, m }; }
+  function cityTime(offset) { return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', { hour: '2-digit', minute: '2-digit', hour12: state?.profile?.timeFormat !== '24h' }).format(new Date(Date.now() + Number(offset || 0) * 3600000)); }
+  function profileInitials() { const value = state?.profile?.name || state?.profile?.email || 'LD'; return value.split(/\s+|@/).filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || 'LD'; }
+  function signedIn() { return Boolean(state?.profile?.signedIn || state?.profile?.authToken); }
+
+  function toast(message) {
+    let wrap = $('.toast-wrap');
+    if (!wrap) { wrap = document.createElement('div'); wrap.className = 'toast-wrap'; document.body.appendChild(wrap); }
+    const el = document.createElement('div'); el.className = 'toast'; el.textContent = message; wrap.appendChild(el); setTimeout(() => el.remove(), 2800);
+  }
+  function activity(title, body) { state.activity = [{ id: uid('activity'), title, body, createdAt: new Date().toISOString() }, ...(state.activity || [])].slice(0, 40); }
+  function notice(title, body, type = 'info') { state.notifications = [{ id: uid('notice'), title, body, type, read: false, createdAt: new Date().toISOString() }, ...(state.notifications || [])].slice(0, 25); }
+
+  async function save() {
+    state = await window.LiveDashStore.setState(state);
+    if (state?.profile?.authToken) scheduleSync('state-update');
+  }
+  let syncTimer = null;
+  function scheduleSync(reason) { if (syncTimer) clearTimeout(syncTimer); syncTimer = setTimeout(() => syncCloud(reason), 1000); }
+  async function syncCloud(reason = 'manual') {
+    if (!state?.profile?.authToken || !backendConfig().enabled) return;
     try {
-      await fetch(backendUrl(config.syncPath || '/api/livedash/sync.php'), {
-        method: 'POST',
-        headers: backendHeaders(),
-        body: JSON.stringify({ reason, schema: state.schema, state })
-      });
+      await fetch(backendUrl(backendConfig().syncPath || '/api/livedash/sync.php'), { method: 'POST', headers: backendHeaders(), body: JSON.stringify({ reason, schema: state.schemaVersion, state }) });
       state.profile.lastCloudSyncAt = new Date().toISOString();
       await window.LiveDashStore.setState(state);
     } catch (error) {
-      state.profile.lastCloudSyncError = error.message || 'Sync failed';
+      state.profile.lastCloudSyncError = error.message || 'Cloud sync failed';
       await window.LiveDashStore.setState(state);
     }
   }
-
-  function safeMergeCloudState(localState, cloudState) {
+  function mergeCloud(localState, cloudState) {
     if (!cloudState || typeof cloudState !== 'object') return localState;
-    const protectedProfile = { ...(localState.profile || {}) };
-    const merged = { ...localState, ...cloudState, profile: { ...(cloudState.profile || {}), ...protectedProfile } };
-    merged.profile = { ...merged.profile, ...protectedProfile };
-    return merged;
+    const profile = { ...(localState.profile || {}) };
+    return { ...localState, ...cloudState, profile: { ...(cloudState.profile || {}), ...profile } };
   }
-
-  async function hydrateCloudProfile(reason = 'refresh') {
-    const config = backendConfig();
-    if (!config.enabled || !config.apiBaseUrl || !state?.profile?.authToken) return false;
+  async function hydrateCloud(reason = 'refresh') {
+    if (!state?.profile?.authToken || !backendConfig().enabled) return false;
     try {
-      const response = await fetch(backendUrl(config.mePath || '/api/me.php'), {
-        method: 'GET',
-        headers: backendHeaders()
-      });
-      if (!response.ok) throw new Error('Cloud profile unavailable');
-      const payload = await response.json();
-      if (!payload.ok) throw new Error(payload.error || 'Cloud profile failed');
-      if (payload.state && payload.state !== null) {
-        state = safeMergeCloudState(state, payload.state);
-      }
+      const res = await fetch(backendUrl(backendConfig().mePath || '/api/me.php'), { headers: backendHeaders() });
+      const payload = await res.json();
+      if (!res.ok || !payload.ok) throw new Error(payload.error || 'Cloud profile unavailable');
+      if (payload.state) state = mergeCloud(state, payload.state);
       state.profile = {
         ...(state.profile || {}),
         signedIn: true,
         backendConnected: true,
         cloudLoaded: true,
-        email: payload.user?.email || state.profile?.email || '',
-        name: payload.user?.displayName || state.profile?.name || payload.user?.email?.split('@')[0] || 'LiveDash user',
-        avatarUrl: payload.user?.avatarUrl || payload.user?.picture || state.profile?.avatarUrl || '',
-        plan: payload.user?.plan || state.profile?.plan || 'Cloud',
-        lastCloudSyncAt: payload.stateUpdatedAt || new Date().toISOString(),
-        lastCloudHydratedAt: new Date().toISOString(),
-        lastCloudReason: reason
+        email: payload.user?.email || state.profile.email || '',
+        name: payload.user?.displayName || state.profile.name || payload.user?.email?.split('@')[0] || 'LiveDash user',
+        avatarUrl: payload.user?.avatarUrl || payload.user?.picture || state.profile.avatarUrl || '',
+        plan: payload.user?.plan || 'Cloud',
+        lastCloudReason: reason,
+        lastCloudSyncAt: payload.stateUpdatedAt || new Date().toISOString()
       };
       await window.LiveDashStore.setState(state);
       return true;
@@ -110,1305 +287,200 @@
       return false;
     }
   }
-
-  function consumeAuthReturn() {
-    const params = new URLSearchParams(location.search);
-    const token = params.get('livedash_token');
-    const email = params.get('email');
-    if (!token) return false;
-    state.profile.authToken = token;
-    state.profile.email = email || state.profile.email || '';
-    state.profile.signedIn = true;
-    state.profile.backendConnected = true;
-    pushActivity('Cloud connected', state.profile.email || 'LiveDash account connected.');
-    history.replaceState({}, document.title, location.pathname);
-    return true;
-  }
-
-  function extensionRedirectUrl() {
-    if (typeof chrome !== 'undefined' && chrome.identity && typeof chrome.identity.getRedirectURL === 'function') {
-      return chrome.identity.getRedirectURL('google');
-    }
-    return '';
-  }
-
-  function launchExtensionAuth(url) {
-    return new Promise((resolve, reject) => {
-      chrome.identity.launchWebAuthFlow({ url, interactive: true }, (callbackUrl) => {
-        const error = chrome.runtime.lastError;
-        if (error) {
-          reject(new Error(error.message || 'Google sign-in was cancelled.'));
-          return;
-        }
-        resolve(callbackUrl || '');
-      });
-    });
-  }
-
-  async function startGoogleAuth() {
-    const config = backendConfig();
-    if (!config.enabled || !config.apiBaseUrl) {
-      showToast('Backend auth is ready in code. Add your API URL in scripts/backend-config.js.');
-      pushActivity('Google sign-in requested', 'Backend URL is not configured yet.');
-      await save();
-      return;
-    }
-
-    if (typeof chrome === 'undefined' || !chrome.identity || typeof chrome.identity.launchWebAuthFlow !== 'function') {
-      showToast('Chrome identity permission is required. Reload the extension after updating manifest.json.');
-      return;
-    }
-
-    const redirectUri = extensionRedirectUrl();
-    const startUrl = `${backendUrl(config.googleOAuthStartPath || '/auth/google/start.php')}?mode=extension&extension_redirect_uri=${encodeURIComponent(redirectUri)}`;
-
-    try {
-      const callbackUrl = await launchExtensionAuth(startUrl);
-      if (!callbackUrl) throw new Error('Google sign-in did not return a callback URL.');
-      const parsed = new URL(callbackUrl);
-      const token = parsed.searchParams.get('livedash_token');
-      const email = parsed.searchParams.get('email');
-      const error = parsed.searchParams.get('livedash_error');
-      if (error) throw new Error(error.replace(/_/g, ' '));
-      if (!token) throw new Error('Missing LiveDash token from Google sign-in.');
-      state.profile.authToken = token;
-      state.profile.email = email || state.profile.email || '';
-      state.profile.signedIn = true;
-      state.profile.backendConnected = true;
-      state.profile.lastCloudSyncAt = new Date().toISOString();
-      loginOpen = false;
-      pushActivity('Cloud connected', state.profile.email || 'LiveDash account connected.');
-      await hydrateCloudProfile('google-sign-in');
-      await save();
-      showToast('LiveDash cloud connected');
-      render();
-      scheduleBackendSync('google-sign-in');
-    } catch (error) {
-      showToast(error.message || 'Google sign-in failed');
-      pushActivity('Google sign-in failed', error.message || 'Authentication did not complete.');
-      await save();
-    }
-  }
-
-  async function submitEmailAuth(email, password = '') {
-    const cleanEmail = String(email || '').trim();
-    const config = backendConfig();
-    if (!cleanEmail) {
-      showToast('Enter an email address');
-      return;
-    }
-    if (config.enabled && config.apiBaseUrl) {
+  async function googleSignIn() {
+    const cfg = backendConfig();
+    if (!cfg.enabled || !cfg.apiBaseUrl) { toast('Cloud endpoint is not configured'); return; }
+    if (typeof chrome === 'undefined' || !chrome.identity?.launchWebAuthFlow) { toast('Reload the extension to enable Google sign-in'); return; }
+    const redirectUri = chrome.identity.getRedirectURL('google');
+    const url = `${backendUrl(cfg.googleOAuthStartPath || '/auth/google/start.php')}?mode=extension&extension_redirect_uri=${encodeURIComponent(redirectUri)}`;
+    chrome.identity.launchWebAuthFlow({ url, interactive: true }, async (callbackUrl) => {
+      if (chrome.runtime.lastError) { toast(chrome.runtime.lastError.message || 'Google sign-in cancelled'); return; }
       try {
-        const response = await fetch(backendUrl(config.signInPath || '/auth/sign-in'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: cleanEmail, password: String(password || ''), client: 'chrome-extension' })
-        });
-        if (!response.ok) throw new Error('Sign-in request failed');
-        const payload = await response.json().catch(() => ({}));
-        state.profile.email = payload.user?.email || cleanEmail;
+        const parsed = new URL(callbackUrl || '');
+        const token = parsed.searchParams.get('livedash_token');
+        const email = parsed.searchParams.get('email');
+        const error = parsed.searchParams.get('livedash_error');
+        if (error) throw new Error(error.replace(/_/g, ' '));
+        if (!token) throw new Error('Missing LiveDash token');
+        state.profile.authToken = token;
+        state.profile.email = email || state.profile.email || '';
         state.profile.signedIn = true;
-        state.profile.authToken = payload.token || state.profile.authToken || '';
-        state.profile.backendConnected = Boolean(payload.token);
-        loginOpen = false;
-        pushActivity(payload.token ? 'Cloud connected' : 'Profile connected', state.profile.email);
+        state.profile.backendConnected = true;
+        accountOpen = false;
+        activity('Cloud connected', state.profile.email || 'Google account connected');
+        await hydrateCloud('google-sign-in');
         await save();
-        showToast(payload.token ? 'LiveDash cloud connected' : 'Sign-in request sent');
+        toast('Cloud profile loaded');
         render();
-        return;
-      } catch (error) {
-        showToast(error.message || 'Sign-in failed');
-        return;
-      }
-    }
-    state.profile.email = cleanEmail;
-    state.profile.signedIn = true;
-    loginOpen = false;
-    pushActivity('Profile saved locally', cleanEmail);
-    await save();
-    showToast('Profile saved locally');
-    render();
-  }
-
-  function formatTime(date = now()) {
-    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: state?.profile?.timeFormat !== '24h'
-    }).format(date);
-  }
-
-  function formatShortDate(date = now()) {
-    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric'
-    }).format(date);
-  }
-
-  function formatCityTime(offset) {
-    const numericOffset = Number(offset);
-    const targetDate = Number.isFinite(numericOffset)
-      ? new Date(Date.now() + numericOffset * 60 * 60 * 1000)
-      : now();
-    return new Intl.DateTimeFormat(state?.profile?.locale || 'en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: state?.profile?.timeFormat !== '24h',
-      timeZone: Number.isFinite(numericOffset) ? 'UTC' : undefined
-    }).format(targetDate);
-  }
-
-  function getTimeParts() {
-    const clean = formatTime().replace(/\s?(AM|PM)$/i, '');
-    const [hour = '00', minute = '00'] = clean.split(':');
-    return { hour, minute };
-  }
-
-  function setBodyTheme() {
-    document.body.classList.remove('theme-mist', 'theme-pearl', 'theme-sunset', 'theme-forest');
-    const theme = state?.settings?.theme || 'sky';
-    if (theme !== 'sky') document.body.classList.add(`theme-${theme}`);
-  }
-
-  async function save(next = state) {
-    state = await window.LiveDashStore.setState(next);
-    setBodyTheme();
-    scheduleBackendSync();
-  }
-
-  function pushActivity(title, body) {
-    state.activity = [{ id: uid('activity'), title, body, createdAt: new Date().toISOString() }, ...(state.activity || [])].slice(0, 30);
-  }
-
-  function pushNotification(title, body, type = 'info') {
-    state.notifications = [{ id: uid('notice'), title, body, type, read: false, createdAt: new Date().toISOString() }, ...(state.notifications || [])].slice(0, 20);
-  }
-
-  function showToast(message) {
-    let wrap = $('.toast-wrap');
-    if (!wrap) {
-      wrap = document.createElement('div');
-      wrap.className = 'toast-wrap';
-      document.body.appendChild(wrap);
-    }
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    wrap.appendChild(toast);
-    setTimeout(() => toast.remove(), 2600);
-  }
-
-  function categoryById(id) {
-    return state.categories.find((category) => category.id === id) || state.categories[0];
-  }
-
-  function appColor(name) {
-    const colors = ['#5f74ff', '#23bfd3', '#2fc477', '#f2a724', '#f45d72', '#8b65ff', '#1f2937'];
-    const total = String(name).split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return colors[total % colors.length];
-  }
-
-  const ICON_ALIASES = {
-    daily: 'daily',
-    public: 'public',
-    tools: 'tools',
-    google: 'google',
-    ai: 'ai',
-    travel: 'travel',
-    social: 'social',
-    gmail: 'gmail',
-    'google-calendar': 'calendar',
-    calendar: 'calendar',
-    'google-drive': 'drive',
-    drive: 'drive',
-    notion: 'notion',
-    todoist: 'todoist',
-    slack: 'slack',
-    zoom: 'zoom',
-    dropbox: 'dropbox',
-    outlook: 'outlook',
-    'microsoft-to-do': 'todo',
-    github: 'github',
-    figma: 'figma',
-    canva: 'canva',
-    spotify: 'spotify',
-    youtube: 'youtube',
-    wikipedia: 'wikipedia',
-    trello: 'trello',
-    miro: 'miro',
-    loom: 'loom',
-    tinypng: 'tinypng',
-    cloudconvert: 'cloudconvert',
-    'removebg': 'removebg',
-    'remove-bg': 'removebg',
-    unsplash: 'unsplash',
-    'google-translate': 'translate',
-    speedtest: 'speedtest',
-    'archiveorg': 'archive',
-    'archive-org': 'archive',
-    search: 'search',
-    maps: 'maps',
-    docs: 'docs',
-    sheets: 'sheets',
-    slides: 'slides',
-    meet: 'meet',
-    keep: 'keep',
-    news: 'news',
-    photos: 'photos',
-    chatgpt: 'chatgpt',
-    claude: 'claude',
-    perplexity: 'perplexity',
-    gemini: 'gemini',
-    copilot: 'copilot',
-    'hugging-face': 'huggingface',
-    huggingface: 'huggingface',
-    runway: 'runway',
-    midjourney: 'midjourney',
-    'google-flights': 'flights',
-    'bookingcom': 'booking',
-    booking: 'booking',
-    airbnb: 'airbnb',
-    uber: 'uber',
-    wise: 'wise',
-    revolut: 'revolut',
-    'yahoo-finance': 'finance',
-    'xe-currency': 'currency',
-    facebook: 'facebook',
-    instagram: 'instagram',
-    x: 'x',
-    reddit: 'reddit',
-    discord: 'discord',
-    whatsapp: 'whatsapp',
-    telegram: 'telegram',
-    pinterest: 'pinterest',
-    irs: 'irs',
-    'usps-tracking': 'usps',
-    'govuk': 'govuk',
-    'eu-portal': 'eup',
-    nhs: 'nhs',
-    'dhl-tracking': 'dhl',
-    'royal-mail': 'royalmail',
-    ups: 'ups',
-    mail: 'gmail',
-    weather: 'weather',
-    rates: 'rates',
-    focus: 'focus',
-    tasks: 'tasks',
-    notes: 'notes',
-    notifications: 'notifications',
-    user: 'user',
-    settings: 'settings',
-    grid: 'grid',
-    explore: 'explore',
-    home: 'home',
-    close: 'close',
-    refresh: 'refresh',
-    add: 'add',
-    open: 'open'
-  };
-
-  function normalizeIconKey(value) {
-    return String(value || '')
-      .toLowerCase()
-      .replace(/&/g, 'and')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
-
-  function inferIconKey(label, url = '') {
-    const domain = String(url || '').toLowerCase();
-    if (domain.includes('mail.google')) return 'gmail';
-    if (domain.includes('calendar.google')) return 'calendar';
-    if (domain.includes('drive.google')) return 'drive';
-    if (domain.includes('docs.google')) return 'docs';
-    if (domain.includes('sheets.google')) return 'sheets';
-    if (domain.includes('slides.google')) return 'slides';
-    if (domain.includes('meet.google')) return 'meet';
-    if (domain.includes('maps.google')) return 'maps';
-    if (domain.includes('news.google')) return 'news';
-    if (domain.includes('photos.google')) return 'photos';
-    if (domain.includes('translate.google')) return 'translate';
-    if (domain.includes('chat.openai')) return 'chatgpt';
-    if (domain.includes('claude.ai')) return 'claude';
-    if (domain.includes('perplexity')) return 'perplexity';
-    if (domain.includes('copilot')) return 'copilot';
-    if (domain.includes('web.telegram')) return 'telegram';
-    const normalized = normalizeIconKey(label);
-    return ICON_ALIASES[normalized] || normalized;
-  }
-
-  function getInitials(label) {
-    const parts = String(label || '').split(/\s+/).filter(Boolean);
-    if (!parts.length) return '+';
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-
-  function svgBox(content, viewBox = '0 0 24 24') {
-    return `<svg viewBox="${viewBox}" aria-hidden="true" focusable="false">${content}</svg>`;
-  }
-
-  function iconSvg(key, label = '') {
-    const icons = {
-      daily: svgBox('<path d="M12 3l2.4 4.8 5.3.8-3.8 3.7.9 5.4L12 15.8l-4.8 2.6.9-5.4L4.3 8.6l5.3-.8L12 3z" fill="currentColor"/>'),
-      public: svgBox('<path d="M3 9l9-5 9 5v2H3V9zm2 4h2v6H5v-6zm6 0h2v6h-2v-6zm6 0h2v6h-2v-6zM3 20h18v1H3z" fill="currentColor"/>'),
-      tools: svgBox('<path d="M15.7 3a4 4 0 0 0 1.1 4.1l-6.2 6.2a4 4 0 0 0-4.1-1.1L4 14.8a1 1 0 0 0 0 1.4l3.8 3.8a1 1 0 0 0 1.4 0l2.6-2.6a4 4 0 0 0 1.1-4.1l6.2-6.2A4 4 0 0 0 21 6.3 5 5 0 0 1 15.7 3z" fill="currentColor"/>'),
-      google: svgBox('<path d="M12 4a8 8 0 1 0 0 16c4 0 7-2.7 7-6.6 0-.4 0-.8-.1-1.2H12v2.8h4c-.4 1.8-1.9 3.2-4 3.2a4.8 4.8 0 0 1 0-9.6c1.3 0 2.2.5 3 1.2l2.1-2.1A7.8 7.8 0 0 0 12 4z" fill="currentColor"/>'),
-      ai: svgBox('<path d="M12 3a3 3 0 0 1 3 3v1.1a5.9 5.9 0 0 1 2.4 1.4l.8-.5a3 3 0 1 1 3 5.2l-.8.5c.1.4.1.9.1 1.3s0 .9-.1 1.3l.8.5a3 3 0 1 1-3 5.2l-.8-.5A5.9 5.9 0 0 1 15 22.9V24h-6v-1.1a5.9 5.9 0 0 1-2.4-1.4l-.8.5a3 3 0 1 1-3-5.2l.8-.5A6.3 6.3 0 0 1 3 15c0-.4 0-.9.1-1.3l-.8-.5a3 3 0 1 1 3-5.2l.8.5A5.9 5.9 0 0 1 9 7.1V6a3 3 0 0 1 3-3zm0 6.3A5.7 5.7 0 1 0 12 21a5.7 5.7 0 0 0 0-11.4z" fill="currentColor"/>'),
-      travel: svgBox('<path d="M3 13.5V11l8-2.5V4.7c0-.9.8-1.7 1.7-1.7h.6c1 0 1.7.8 1.7 1.7v3.8L23 11v2.5l-8-1.2v4.1l2 1.4V20l-5-1.5L7 20v-2.2l2-1.4v-4.1L3 13.5z" fill="currentColor"/>'),
-      social: svgBox('<path d="M13.5 21v-7h2.4l.5-3H13.5V9.2c0-.9.3-1.5 1.6-1.5h1.4V5.1c-.2 0-1.1-.1-2.1-.1-2.1 0-3.5 1.3-3.5 3.7V11H8v3h2.9v7h2.6z" fill="currentColor"/>'),
-      gmail: svgBox('<path d="M3 7.2 12 14l9-6.8V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.2z" fill="currentColor" opacity=".22"/><path d="M3 7l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18V8.2l8 6.2 8-6.2V18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'),
-      calendar: svgBox('<rect x="4" y="5.5" width="16" height="14.5" rx="3" fill="currentColor" opacity=".16"/><rect x="4" y="6" width="16" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 4v4M16 4v4M4 9.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="7.2" y="12" width="3" height="3" rx="1" fill="currentColor"/><rect x="11.1" y="12" width="3" height="3" rx="1" fill="currentColor" opacity=".55"/><rect x="15" y="12" width="3" height="3" rx="1" fill="currentColor" opacity=".3"/>'),
-      drive: svgBox('<path d="M8.1 4h3.8l4.1 7-1.9 3.2H10.3L8.1 10 10 6.8 8.1 4z" fill="#16a765"/><path d="M10.1 6.8H14L18.2 14h-3.8L10.1 6.8z" fill="#fbbc04"/><path d="M5.8 14h8.3l-2.2 3.8H3.7L5.8 14z" fill="#4285f4"/>'),
-      notion: svgBox('<rect x="5" y="5" width="14" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.1 16V8h1.8l4 5.1V8h2v8h-1.7L10 10.8V17H8.1z" fill="currentColor"/>'),
-      todoist: svgBox('<path d="M7 8.2 11 12l6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13.4 11 17l6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>'),
-      slack: svgBox('<path d="M9 4.5a2 2 0 0 1 2 2v2.5H8.5a2 2 0 1 1 0-4H9zm0 6H5.5a2 2 0 1 0 0 4H8v-2a2 2 0 0 1 1-1.7zm2 0a2 2 0 0 1 2-2V5.5a2 2 0 1 1 4 0V9h-2a2 2 0 0 1-2 1.5zm0 2a2 2 0 0 1-2 2v2.5a2 2 0 1 0 4 0V15h-2z" fill="currentColor"/>'),
-      zoom: svgBox('<rect x="5" y="7" width="9.5" height="10" rx="3" fill="currentColor" opacity=".18"/><rect x="5" y="7" width="9.5" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14.5 10.2 19 8.6v6.8l-4.5-1.6v-3.6z" fill="currentColor"/>'),
-      dropbox: svgBox('<path d="M7.2 5.1 12 8.3 7.2 11.4 2.5 8.3 7.2 5.1zm9.6 0 4.7 3.2-4.7 3.1L12 8.3l4.8-3.2zM7.2 13l4.8 3.1 4.8-3.1v3.3L12 19.5l-4.8-3.2V13z" fill="currentColor"/>'),
-      outlook: svgBox('<path d="M13 6h6a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-6V6z" fill="currentColor" opacity=".18"/><path d="M4 8a2 2 0 0 1 2-2h7v12H6a2 2 0 0 1-2-2V8zm4.2 6.5c1.6 0 2.8-1.3 2.8-3s-1.2-3-2.8-3c-1.7 0-2.9 1.3-2.9 3s1.2 3 2.9 3z" fill="currentColor"/>'),
-      todo: svgBox('<rect x="5" y="6" width="14" height="12" rx="3" fill="currentColor" opacity=".16"/><path d="M8 12l2.2 2.2L16 8.5" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>'),
-      github: svgBox('<path d="M12 3.5a8.5 8.5 0 0 0-2.7 16.6v-2.8c-2.3.5-2.8-1-2.8-1-.4-1-.9-1.2-.9-1.2-.8-.5.1-.5.1-.5.9.1 1.4 1 1.4 1 .8 1.3 2 1 2.5.7.1-.6.3-1 .6-1.3-1.8-.2-3.7-.9-3.7-4 0-.9.3-1.7.9-2.3-.1-.2-.4-1.1.1-2.3 0 0 .8-.3 2.5.9a8.7 8.7 0 0 1 4.6 0c1.7-1.2 2.5-.9 2.5-.9.5 1.2.2 2.1.1 2.3.6.6.9 1.4.9 2.3 0 3.1-1.9 3.8-3.8 4 .3.3.6.8.6 1.7v2.7A8.5 8.5 0 0 0 12 3.5z" fill="currentColor"/>'),
-      figma: svgBox('<path d="M10.2 4a3.2 3.2 0 1 1 0 6.4H8.7A3.2 3.2 0 1 1 8.7 4h1.5zm0 6.4a3.2 3.2 0 1 1 0 6.4H8.7a3.2 3.2 0 1 1 0-6.4h1.5zM15.3 4a3.2 3.2 0 1 1 0 6.4h-1.5V4h1.5zm0 6.4a3.2 3.2 0 1 1-1.5 6V10.4h1.5z" fill="currentColor"/>'),
-      canva: svgBox('<path d="M16.5 8.8c-.8-.8-1.9-1.2-3.3-1.2-3 0-5.3 2.1-5.3 5s2.2 4.9 5.2 4.9c1.3 0 2.5-.4 3.4-1.1l-1.2-1.6c-.6.4-1.2.6-2 .6-1.7 0-3-1.2-3-2.8s1.3-2.8 3-2.8c.8 0 1.4.2 2 .7l1.2-1.7z" fill="currentColor"/>'),
-      spotify: svgBox('<path d="M7 10.1c3.5-1 7.3-.8 10.3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.8 13.1c2.7-.7 5.5-.5 7.8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".8"/><path d="M8.5 16c2-.5 4-.3 5.7.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".6"/>'),
-      youtube: svgBox('<rect x="4" y="6.5" width="16" height="11" rx="4" fill="currentColor" opacity=".18"/><path d="M10 9.4 15.5 12 10 14.6V9.4z" fill="currentColor"/><rect x="4.2" y="6.7" width="15.6" height="10.6" rx="3.8" fill="none" stroke="currentColor" stroke-width="1.4"/>'),
-      wikipedia: svgBox('<path d="M6.5 8h2.1l1.9 5.9L12.4 8h1.7l1.8 5.9L17.7 8h1.8L16.7 16h-1.6L13.3 10 11.5 16H10L6.5 8z" fill="currentColor"/>'),
-      trello: svgBox('<rect x="4.5" y="5" width="15" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="7.5" y="8" width="3.5" height="8" rx="1.2" fill="currentColor"/><rect x="13" y="8" width="3.5" height="5.5" rx="1.2" fill="currentColor" opacity=".6"/>'),
-      miro: svgBox('<path d="M7 17 10 7h2l-3 10H7zm4 0 3-10h2l-3 10h-2zm4 0 2-7h2l-2 7h-2z" fill="currentColor"/>'),
-      loom: svgBox('<path d="M12 5.5 13.7 9h4l-3.2 2.3 1.2 3.8L12 13l-3.7 2.1 1.2-3.8L6.3 9h4L12 5.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/>'),
-      tinypng: svgBox('<path d="M7 17c.4-2.7 2.4-4.5 5-4.5S16.6 14.3 17 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="10" r="1.2" fill="currentColor"/><circle cx="15" cy="10" r="1.2" fill="currentColor"/><path d="M10.6 8.5c.4-1.2 1.1-2 1.4-2.5.3.5 1 1.3 1.4 2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
-      cloudconvert: svgBox('<path d="M8.5 17h7a3.5 3.5 0 0 0 .5-7 4.5 4.5 0 0 0-8.7 1.2A3 3 0 0 0 8.5 17z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v5m0 0-2-2m2 2 2-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'),
-      removebg: svgBox('<path d="M6 8h6a3 3 0 0 1 0 6H8a2 2 0 0 0 0 4h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m14 8 4 4m0-4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      unsplash: svgBox('<path d="M11 5h2v5h5v2h-5v5h-2v-5H6v-2h5V5z" fill="currentColor"/>'),
-      translate: svgBox('<path d="M7 8h8M11 8c0 4.5-2 7.3-4.2 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M13.3 10h4.7m-2.3 0c0 3-1.3 5.2-2.8 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m14 14 3 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      speedtest: svgBox('<path d="M5.5 15a6.5 6.5 0 1 1 13 0" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m12 12 4-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15" r="1.4" fill="currentColor"/>'),
-      archive: svgBox('<path d="M5 7h14v11H5z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 7h16v3H4z" fill="currentColor" opacity=".18"/><path d="M9 12h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      search: svgBox('<circle cx="11" cy="11" r="5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15 15 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      maps: svgBox('<path d="M12 20c3.5-4 5.5-7 5.5-9.5a5.5 5.5 0 1 0-11 0C6.5 13 8.5 16 12 20z" fill="currentColor" opacity=".22"/><circle cx="12" cy="10.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 20c3.5-4 5.5-7 5.5-9.5a5.5 5.5 0 1 0-11 0C6.5 13 8.5 16 12 20z" fill="none" stroke="currentColor" stroke-width="1.8"/>'),
-      docs: svgBox('<path d="M8 4h6l4 4v12H8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 4v4h4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 12h6M10 15h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      sheets: svgBox('<path d="M8 4h6l4 4v12H8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 4v4h4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 12h6M10 15h6M12.5 10v7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'),
-      slides: svgBox('<path d="M8 4h6l4 4v12H8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 4v4h4" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="11" width="6" height="4" rx="1" fill="currentColor" opacity=".7"/>'),
-      meet: svgBox('<rect x="5" y="8" width="8.5" height="8" rx="2.2" fill="currentColor" opacity=".18"/><path d="M5 9.2A2.2 2.2 0 0 1 7.2 7h4.6A2.2 2.2 0 0 1 14 9.2v5.6a2.2 2.2 0 0 1-2.2 2.2H7.2A2.2 2.2 0 0 1 5 14.8V9.2zm9 2 5-2.4v6.4L14 12.8v-1.6z" fill="currentColor"/>'),
-      keep: svgBox('<path d="M12 4a5 5 0 0 1 5 5c0 1.9-.9 3-2 4v3H9v-3c-1.1-1-2-2.1-2-4a5 5 0 0 1 5-5z" fill="currentColor" opacity=".18"/><path d="M10 19h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 4a5 5 0 0 1 5 5c0 1.9-.9 3-2 4v3H9v-3c-1.1-1-2-2.1-2-4a5 5 0 0 1 5-5z" fill="none" stroke="currentColor" stroke-width="1.8"/>'),
-      news: svgBox('<rect x="5" y="6" width="14" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="7.5" y="8.5" width="4" height="4" rx="1" fill="currentColor" opacity=".25"/><path d="M13 9h4M13 12h4M7.5 15h9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      photos: svgBox('<circle cx="12" cy="7.5" r="2" fill="currentColor" opacity=".9"/><circle cx="16.5" cy="12" r="2" fill="currentColor" opacity=".75"/><circle cx="12" cy="16.5" r="2" fill="currentColor" opacity=".6"/><circle cx="7.5" cy="12" r="2" fill="currentColor" opacity=".45"/><path d="M12 10v4m-2-2h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'),
-      chatgpt: svgBox('<path d="M12 4.2a3.8 3.8 0 0 1 3.6 2.5 3.6 3.6 0 0 1 4.1 5.1 3.7 3.7 0 0 1-1.1 6.7 3.8 3.8 0 0 1-6.6 2.1 3.8 3.8 0 0 1-6.6-2.1 3.7 3.7 0 0 1-1.1-6.7 3.6 3.6 0 0 1 4.1-5.1A3.8 3.8 0 0 1 12 4.2zm0 3.3-1.8 1 0 2-1.7 1 1.7 1v2l1.8 1 1.8-1v-2l1.7-1-1.7-1 0-2-1.8-1z" fill="currentColor"/>'),
-      claude: svgBox('<path d="M12 5.5c3 0 5.5 2.5 5.5 5.5s-2.5 5.5-5.5 5.5S6.5 14 6.5 11 9 5.5 12 5.5zm0 2.5A3 3 0 1 0 12 14a3 3 0 0 0 0-6z" fill="currentColor"/><path d="M4 12h3M17 12h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      perplexity: svgBox('<path d="M8 6h5.5A4.5 4.5 0 1 1 13.5 15H10v3H8V6zm2 2v5h3.5a2.5 2.5 0 1 0 0-5H10z" fill="currentColor"/>'),
-      gemini: svgBox('<path d="M12 4.5 14 10l5.5 2-5.5 2L12 19.5 10 14 4.5 12 10 10 12 4.5z" fill="currentColor"/>'),
-      copilot: svgBox('<path d="M8.5 7.2A3.7 3.7 0 0 1 12 5a3.7 3.7 0 0 1 3.5 2.2A3.7 3.7 0 1 1 17 14h-1.5A3.5 3.5 0 0 1 12 17a3.5 3.5 0 0 1-3.5-3H7a3.7 3.7 0 1 1 1.5-6.8z" fill="currentColor"/>'),
-      huggingface: svgBox('<circle cx="9" cy="11" r="1.3" fill="currentColor"/><circle cx="15" cy="11" r="1.3" fill="currentColor"/><path d="M8 14c1 1 2.3 1.5 4 1.5S15 15 16 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8.2 8.6 6.6 7M15.8 8.6 17.4 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      runway: svgBox('<path d="M8 6h5.5A4.5 4.5 0 1 1 13.5 15H10v3H8V6zm2 2v5h3.2l-1.7-2.3L13.2 8H10z" fill="currentColor"/>'),
-      midjourney: svgBox('<path d="M6 17c1.2-4 3.4-6.5 6-7.6 2.7 1.1 4.9 3.6 6 7.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 6c1.3 1.6 2.3 2.5 4 3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      flights: svgBox('<path d="M3 13.2 11 11V7.2l-2-1V4.8l3 1 3-1v1.4l-2 1V11l8 2.2v1.6l-8-1.2v3l2 1.4v1.4L12 18l-5 1.2v-1.4l2-1.4v-3l-6 1.2v-1.4z" fill="currentColor"/>'),
-      booking: svgBox('<path d="M8 5h5.5a3.7 3.7 0 1 1 0 7.4H8V5zm2.2 2v3.2h2.8a1.6 1.6 0 1 0 0-3.2h-2.8zm-2.2 6h6a3.2 3.2 0 1 1 0 6.4H8V13zm2.2 2v2.3H14a1.15 1.15 0 1 0 0-2.3h-3.8z" fill="currentColor"/>'),
-      airbnb: svgBox('<path d="M12 6.5c1.4 0 2.3 1 2.9 2.3l2.6 5c.8 1.6-.4 3.2-2.1 3.2-1 0-1.9-.6-2.7-1.9-.8 1.3-1.7 1.9-2.7 1.9-1.7 0-2.9-1.6-2.1-3.2l2.6-5c.6-1.3 1.5-2.3 2.9-2.3zm0 2.1c-.5 0-1 .5-1.6 1.8l-1.5 3c-.2.5.1 1 .6 1 .5 0 1.1-.5 1.8-1.8.7 1.3 1.3 1.8 1.8 1.8.5 0 .8-.5.6-1l-1.5-3c-.6-1.3-1.1-1.8-1.6-1.8z" fill="currentColor"/>'),
-      uber: svgBox('<path d="M7 7h2v6a3 3 0 0 0 6 0V7h2v6a5 5 0 0 1-10 0V7z" fill="currentColor"/>'),
-      wise: svgBox('<path d="M7 8.5 14.5 6 10 16l7-2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'),
-      revolut: svgBox('<path d="M7 7h6.2a2.8 2.8 0 1 1 0 5.6H9.2l4.8 4.4H11L7 13.3V7zm2.2 2v1.8h3.4a.9.9 0 1 0 0-1.8H9.2z" fill="currentColor"/>'),
-      finance: svgBox('<path d="M7 15.5 10.2 12l2.2 2.2L17 9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 9.5V13h-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'),
-      currency: svgBox('<path d="M14.5 6.5H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H9.5M12 5v14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      facebook: svgBox('<path d="M13.5 20v-6.5h2.2l.4-2.8h-2.6V9c0-.8.3-1.3 1.5-1.3h1.2V5.2c-.2 0-1-.1-1.9-.1-2 0-3.3 1.2-3.3 3.5v2.1H8.8v2.8H11V20h2.5z" fill="currentColor"/>'),
-      instagram: svgBox('<rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16.2" cy="7.8" r="1" fill="currentColor"/>'),
-      x: svgBox('<path d="M6.5 6h3.2l2.7 3.9L15.7 6H18l-4.4 5.8L18 18h-3.2l-3-4.2L8.7 18H6.4l4.6-6.2L6.5 6z" fill="currentColor"/>'),
-      reddit: svgBox('<circle cx="9.2" cy="12" r="1.1" fill="currentColor"/><circle cx="14.8" cy="12" r="1.1" fill="currentColor"/><path d="M8.2 14c.9.8 1.9 1.2 3.8 1.2s2.9-.4 3.8-1.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m13 7.4 2-.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16.2" cy="7.2" r="1" fill="currentColor"/>'),
-      discord: svgBox('<path d="M8.2 8.5a13 13 0 0 1 7.6 0c.6 1 1.1 2.1 1.4 3.2-.8.6-1.7 1.1-2.7 1.4-.2-.3-.4-.7-.6-1-.9.2-1.8.3-2.6.3s-1.7-.1-2.6-.3c-.2.3-.4.7-.6 1-1-.3-1.9-.8-2.7-1.4.3-1.1.8-2.2 1.4-3.2zm2.1 3.8a1 1 0 1 0 0-2.1 1 1 0 0 0 0 2.1zm3.4 0a1 1 0 1 0 0-2.1 1 1 0 0 0 0 2.1z" fill="currentColor"/>'),
-      whatsapp: svgBox('<path d="M12 5a7 7 0 0 1 6 10.5L19 19l-3.6-.9A7 7 0 1 1 12 5zm-2 4.2c-.2 0-.4.1-.6.4-.2.2-.7.7-.7 1.6 0 .9.6 1.8.8 2 .2.2 1.5 2.4 3.8 3.2 1.8.7 2.2.5 2.6.5s1.3-.5 1.5-1.1c.2-.6.2-1 .1-1.1-.1-.1-.4-.2-.8-.4-.4-.2-.9-.5-1-.6-.1-.2-.3-.2-.5.1s-.6.8-.8.9c-.2.1-.3.1-.6 0-.3-.2-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.8-.2-.3 0-.4.1-.6l.4-.5c.1-.2.2-.3.3-.5s0-.4 0-.6-.5-1.2-.7-1.6c-.2-.4-.4-.4-.6-.4z" fill="currentColor"/>'),
-      telegram: svgBox('<path d="m5 11.2 12.8-5c.8-.3 1.6.4 1.4 1.2l-2.1 10.2c-.2.8-1.1 1.2-1.7.8l-3.3-2.4-1.9 1.8c-.5.4-1.2.1-1.2-.6v-2.7l6.2-5.8-7.8 5-2.5-.8c-.9-.3-.9-1.5.1-1.9z" fill="currentColor"/>'),
-      pinterest: svgBox('<path d="M12 5.2c-3.6 0-5.5 2.6-5.5 5 0 1.4.5 2.7 1.6 3.2.2.1.4 0 .4-.2l.3-1.2c0-.2 0-.3-.2-.5-.4-.4-.7-.9-.7-1.7 0-2.2 1.7-4.1 4.3-4.1 2.3 0 3.6 1.4 3.6 3.3 0 2.5-1.1 4.6-2.7 4.6-.9 0-1.5-.7-1.3-1.6.3-1 1-2 1-3 0-.7-.4-1.3-1.2-1.3-1 0-1.8 1-1.8 2.4 0 .9.3 1.5.3 1.5l-1.1 4.6c-.3 1.4 0 3 .1 3.1 0 .1.2.1.3 0 .1-.2 1.3-1.6 1.8-2.9.1-.4.5-1.8.5-1.8.2.4 1.1.8 2 .8 2.7 0 4.6-2.5 4.6-5.8 0-2.5-2.1-4.8-5.3-4.8z" fill="currentColor"/>'),
-      irs: svgBox('<path d="M7 7h10v10H7z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 9v6M9 12h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      usps: svgBox('<path d="M5 8h14v8H5z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 10h14" stroke="currentColor" stroke-width="1.8"/><path d="m13 12 3-2v4l-3-2z" fill="currentColor"/>'),
-      govuk: svgBox('<path d="M6 18V9l6-3 6 3v9H6z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 18v-5h6v5" fill="none" stroke="currentColor" stroke-width="1.8"/>'),
-      eup: svgBox('<circle cx="12" cy="12" r="6.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.8 12.7 9l1.3.2-1 .9.2 1.3-1.2-.6-1.2.6.2-1.3-1-.9 1.3-.2.7-1.2z" fill="currentColor"/>'),
-      nhs: svgBox('<path d="M7 16V8h2.1l2.1 3.5V8h2v8h-2l-2.2-3.6V17H7zm7.4 0V8h2v3h2.3V8h2v8h-2v-3h-2.3v3h-2z" fill="currentColor"/>'),
-      dhl: svgBox('<path d="M4 10h11M6 13h10M8 16h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 9.5h2.5v6H18z" fill="currentColor"/>'),
-      royalmail: svgBox('<path d="M12 5.5 17 12l-5 6.5L7 12 12 5.5z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 12h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      ups: svgBox('<path d="M12 4.8 18 7v4.5c0 3.3-2.3 6.3-6 7.7-3.7-1.4-6-4.4-6-7.7V7l6-2.2z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      weather: svgBox('<path d="M8 17h8a3 3 0 0 0 .3-6 4 4 0 0 0-7.8 1.1A2.8 2.8 0 0 0 8 17z" fill="currentColor" opacity=".22"/><path d="M8 17h8a3 3 0 0 0 .3-6 4 4 0 0 0-7.8 1.1A2.8 2.8 0 0 0 8 17z" fill="none" stroke="currentColor" stroke-width="1.8"/>'),
-      rates: svgBox('<path d="M7.5 15.5 10.5 12l2.2 2.2L16.8 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.8 9v3.4h-3.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>'),
-      focus: svgBox('<circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/>'),
-      tasks: svgBox('<rect x="6" y="6" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 10.5 10.6 12 15 8.5M9 15h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'),
-      notes: svgBox('<path d="M8 4h8l4 4v12H8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 4v4h4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 12h6M10 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      notifications: svgBox('<path d="M12 5a4 4 0 0 1 4 4v2.8l1.4 2.4H6.6L8 11.8V9a4 4 0 0 1 4-4z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 18a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      user: svgBox('<circle cx="12" cy="8.2" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 18c1.1-2.7 3.1-4 5.5-4s4.4 1.3 5.5 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      settings: svgBox('<circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4v2M12 18v2M20 12h-2M6 12H4M17.7 6.3l-1.4 1.4M7.7 16.3l-1.4 1.4M17.7 17.7l-1.4-1.4M7.7 7.7 6.3 6.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),
-      grid: svgBox('<path d="M5.5 5.5h5v5h-5zm8 0h5v5h-5zm-8 8h5v5h-5zm8 0h5v5h-5z" fill="currentColor"/>'),
-      explore: svgBox('<circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m14.8 9.2-2 5.6-3.6 1.2 2-5.6 3.6-1.2z" fill="currentColor"/>'),
-      home: svgBox('<path d="M5.2 10.8 12 5l6.8 5.8V19H5.2v-8.2z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8"/>'),
-      close: svgBox('<path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'),
-      refresh: svgBox('<path d="M17 11a5 5 0 1 0 1 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 7v4h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'),
-      add: svgBox('<path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'),
-      open: svgBox('<path d="M12 5h7v7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 13 19 5M7 8H5v11h11v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>')
-    };
-    if (icons[key]) return icons[key];
-    const text = getInitials(label);
-    return svgBox(`<text x="12" y="15" text-anchor="middle" font-size="9.5" font-family="Inter, Arial, sans-serif" font-weight="900" fill="currentColor">${escapeHtml(text)}</text>`);
-  }
-
-  function iconPalette(key, label = '') {
-    const palettes = {
-      daily: ['#eef0ff', '#5b6eff'], public: ['#f3f5fa', '#4b5565'], tools: ['#eef7ff', '#2c82ff'], google: ['#eef8ff', '#4285f4'], ai: ['#f5efff', '#7b61ff'], travel: ['#fff6e8', '#ff9f1a'], social: ['#eef3ff', '#4f7cff'],
-      gmail: ['#fff1f1', '#ea4335'], calendar: ['#eef5ff', '#4285f4'], drive: ['#eff9f1', '#16a765'], notion: ['#f4f5f7', '#111827'], todoist: ['#fff3ef', '#ef5b3f'], slack: ['#f8f1ff', '#7c4dff'], zoom: ['#edf3ff', '#2d8cff'], dropbox: ['#eef5ff', '#0061ff'], outlook: ['#edf5ff', '#2563eb'], todo: ['#eef5ff', '#4f7cff'], github: ['#f1f4f7', '#111827'], figma: ['#fff1f4', '#a259ff'], canva: ['#ecfbff', '#00c4cc'], spotify: ['#eefaf2', '#1db954'], youtube: ['#fff0f2', '#ff0033'], wikipedia: ['#f5f6f8', '#334155'], trello: ['#edf5ff', '#2563eb'], miro: ['#fff6e8', '#ffb020'], loom: ['#f7f0ff', '#7b61ff'], tinypng: ['#f6f6fb', '#7c5cff'], cloudconvert: ['#eef8ff', '#3b82f6'], removebg: ['#fff3f4', '#fb7185'], unsplash: ['#f4f7fb', '#0f172a'], translate: ['#eef8ff', '#3b82f6'], speedtest: ['#fff5ef', '#f97316'], archive: ['#f8f6ef', '#8b5e3c'], search: ['#eef8ff', '#2991ff'], maps: ['#edf8ff', '#0ea5e9'], docs: ['#eef5ff', '#2563eb'], sheets: ['#effaf2', '#16a34a'], slides: ['#fff7ed', '#f59e0b'], meet: ['#edfef8', '#10b981'], keep: ['#fff9e8', '#f59e0b'], news: ['#f4f7fb', '#475569'], photos: ['#fff2f6', '#ec4899'], chatgpt: ['#ecfbf7', '#10a37f'], claude: ['#fff7ec', '#d97706'], perplexity: ['#eef7ff', '#2563eb'], gemini: ['#f4f0ff', '#7c3aed'], copilot: ['#f0f5ff', '#6366f1'], huggingface: ['#fff8e7', '#f59e0b'], runway: ['#f3f4f6', '#111827'], midjourney: ['#eef8ff', '#2563eb'], flights: ['#eef4ff', '#4f7cff'], booking: ['#eef5ff', '#2563eb'], airbnb: ['#fff0f4', '#ff385c'], uber: ['#f4f6f8', '#111827'], wise: ['#eefcf6', '#14b87a'], revolut: ['#eef5ff', '#2563eb'], finance: ['#eefcf4', '#22c55e'], currency: ['#fff8ef', '#f59e0b'], facebook: ['#eef3ff', '#1877f2'], instagram: ['#fff0f9', '#d946ef'], x: ['#f4f6f8', '#111827'], reddit: ['#fff4ef', '#ff4500'], discord: ['#eef0ff', '#5865f2'], whatsapp: ['#eefcf3', '#22c55e'], telegram: ['#eef8ff', '#229ed9'], pinterest: ['#fff1f2', '#e60023'], irs: ['#eef4ff', '#2563eb'], usps: ['#fff7ed', '#ef4444'], govuk: ['#f2f6f8', '#334155'], eup: ['#eef0ff', '#4f46e5'], nhs: ['#eef8ff', '#1d4ed8'], dhl: ['#fff8e7', '#d97706'], royalmail: ['#fff4ef', '#dc2626'], ups: ['#f9f3ea', '#8b5e3c'], weather: ['#eef8ff', '#60a5fa'], rates: ['#edfef6', '#10b981'], focus: ['#eef0ff', '#5b6eff'], tasks: ['#eef5ff', '#4f7cff'], notes: ['#fff9e8', '#f59e0b'], notifications: ['#fff1f2', '#ef4444'], user: ['#f4f7fb', '#64748b'], settings: ['#f4f7fb', '#64748b'], grid: ['#eef0ff', '#5b6eff'], explore: ['#eefcf6', '#0ea5e9'], home: ['#eef0ff', '#5b6eff'], close: ['#f4f7fb', '#64748b'], refresh: ['#f4f7fb', '#64748b'], add: ['#eef0ff', '#5b6eff'], open: ['#eef8ff', '#0ea5e9']
-    };
-    if (palettes[key]) return palettes[key];
-    return ['#f4f7fb', appColor(label || key)];
-  }
-
-  function renderIcon(key, label = '', size = 'md', className = '') {
-    const normalized = ICON_ALIASES[normalizeIconKey(key)] || normalizeIconKey(key);
-    const [bg, fg] = iconPalette(normalized, label);
-    return `<span class="ld-icon ld-icon-${size} ${className}" style="--icon-bg:${escapeHtml(bg)};--icon-fg:${escapeHtml(fg)}">${iconSvg(normalized, label)}</span>`;
-  }
-
-  function renderFlatIcon(key, label = '', size = 'md', className = '') {
-    const normalized = ICON_ALIASES[normalizeIconKey(key)] || normalizeIconKey(key);
-    const [, fg] = iconPalette(normalized, label);
-    return `<span class="flat-icon flat-icon-${size} ${className}" style="--flat-icon-color:${escapeHtml(fg)}">${iconSvg(normalized, label)}</span>`;
-  }
-
-  function iconKeyForUrl(url, label = '') {
-    const host = safeHost(url).toLowerCase();
-    const labelKey = normalizeIconKey(label);
-    const map = {
-      'royalmail.com': 'royalmail',
-      'www.royalmail.com': 'royalmail',
-      'gov.uk': 'govuk',
-      'www.gov.uk': 'govuk',
-      'nhs.uk': 'nhs',
-      'www.nhs.uk': 'nhs',
-      'irs.gov': 'irs',
-      'www.irs.gov': 'irs',
-      'ups.com': 'ups',
-      'www.ups.com': 'ups',
-      'dhl.com': 'dhl',
-      'www.dhl.com': 'dhl',
-      'mail.google.com': 'gmail',
-      'calendar.google.com': 'calendar',
-      'drive.google.com': 'drive',
-      'youtube.com': 'youtube',
-      'www.youtube.com': 'youtube',
-      'notion.so': 'notion',
-      'www.notion.so': 'notion',
-      'chat.openai.com': 'chatgpt'
-    };
-    return map[host] || ICON_ALIASES[labelKey] || '';
-  }
-
-  function normalizeUrlForIcon(url) {
-    const clean = String(url || '').trim();
-    if (!clean) return null;
-    return new URL(/^https?:\/\//i.test(clean) ? clean : `https://${clean}`);
-  }
-
-  function getFaviconFromUrl(url) {
-    try {
-      const parsed = normalizeUrlForIcon(url);
-      if (!parsed) return '';
-      return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(parsed.origin)}&sz=64`;
-    } catch {
-      return '';
-    }
-  }
-
-  function getDuckIcon(url) {
-    try {
-      const parsed = normalizeUrlForIcon(url);
-      if (!parsed) return '';
-      return `https://icons.duckduckgo.com/ip3/${parsed.hostname}.ico`;
-    } catch {
-      return '';
-    }
-  }
-
-  function renderFaviconIcon(url, label, size = 'md') {
-    const directKey = iconKeyForUrl(url, label);
-    if (directKey) return `<span class="favicon-icon favicon-icon-${size} favicon-direct">${renderFlatIcon(directKey, label, size === 'xs' ? 'xs' : 'app')}</span>`;
-    const primary = getFaviconFromUrl(url);
-    const backup = getDuckIcon(url);
-    const initials = getInitials(label);
-    if (!primary) return `<span class="favicon-icon favicon-icon-${size} favicon-fallback"><span>${escapeHtml(initials)}</span></span>`;
-    return `<span class="favicon-icon favicon-icon-${size}" data-fallback="${escapeHtml(backup)}" data-initials="${escapeHtml(initials)}"><img src="${escapeHtml(primary)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>${escapeHtml(initials)}</span></span>`;
-  }
-
-  function attachIconFallbacks() {
-    document.querySelectorAll('.favicon-icon img').forEach((img) => {
-      if (img.dataset.boundIconFallback) return;
-      img.dataset.boundIconFallback = 'true';
-      const fallback = () => {
-        const holder = img.closest('.favicon-icon');
-        const backup = holder?.dataset?.fallback || '';
-        if (backup && img.src !== backup) {
-          img.src = backup;
-          return;
-        }
-        img.style.display = 'none';
-        holder?.classList.add('favicon-fallback');
-      };
-      img.addEventListener('error', fallback);
-      img.addEventListener('load', () => {
-        if ((img.naturalWidth && img.naturalWidth < 16) || (img.naturalHeight && img.naturalHeight < 16)) fallback();
-      });
+      } catch (e) { toast(e.message || 'Google sign-in failed'); }
     });
   }
 
-  function renderAppIcon(app, size = 'md') {
-    return renderFaviconIcon(app?.url || '', app?.name || app?.label || '', size);
-  }
-
-  function appUrl(app) {
-    return escapeHtml(app.url || '#');
-  }
-
-  function profileInitials() {
-    const name = state?.profile?.name || state?.profile?.email || 'LD';
-    return getInitials(name).slice(0, 2);
-  }
-
-
-  function renderAccountAvatar(size = 'dock') {
-    const signed = Boolean(state?.profile?.signedIn);
-    const avatar = state?.profile?.avatarUrl
-      ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">`
-      : `<span>${escapeHtml(profileInitials())}</span>`;
-    return `<span class="account-avatar account-avatar-${escapeHtml(size)} ${signed ? 'signed' : 'local'}">${avatar}<i></i></span>`;
-  }
-
-  function cloudStatusText() {
-    if (!state?.profile?.signedIn) return 'Local mode';
-    if (state.profile.cloudLoaded) return 'Cloud profile loaded';
-    if (state.profile.backendConnected) return 'Cloud connected';
-    return 'Profile connected';
-  }
-
-  function renderCloudBenefits() {
-    const signed = Boolean(state?.profile?.signedIn);
-    const items = signed
-      ? [
-          ['Cloud sync active', 'Your bookmarks, tasks, notes, and preferences can be saved to LiveDash Cloud.'],
-          ['Profile controls unlocked', 'Sync now, cloud restore, and sign-out are available.'],
-          ['Connected dashboard', 'This browser is linked to your LiveDash account.']
-        ]
-      : [
-          ['Cloud sync', 'Save dashboard data across browsers.'],
-          ['Profile restore', 'Restore bookmarks, notes, tasks, and settings.'],
-          ['Account features', 'Unlock cloud profile controls.']
-        ];
-    return items.map(([title, body]) => `<div class="cloud-feature ${signed ? 'unlocked' : ''}"><span>${renderIcon(signed ? 'open' : 'user', title, 'xs')}</span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(body)}</small></div>`).join('');
-  }
-
-  function renderProfileHeader() {
-    const signed = Boolean(state?.profile?.signedIn);
-    const name = state?.profile?.name || (state?.profile?.email ? state.profile.email.split('@')[0] : 'Welcome');
-    const email = state?.profile?.email || 'Sign in to sync your dashboard';
-    const avatar = state?.profile?.avatarUrl
-      ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">`
-      : `<span>${escapeHtml(profileInitials())}</span>`;
-    return `<header class="profile-strip profile-strip-visible premium-card ${signed ? 'is-signed' : 'is-local'}" aria-label="Profile and cloud status">
-      <div class="profile-left">
-        <button class="profile-avatar ${signed ? 'signed' : ''}" data-action="login" type="button" aria-label="Open account">${avatar}</button>
-        <div class="profile-copy">
-          <div class="profile-greeting">${signed ? `Hi, ${escapeHtml(name)}` : 'Make LiveDash yours'}</div>
-          <div class="profile-email">${escapeHtml(email)}</div>
-        </div>
-      </div>
-      <div class="profile-cloud">
-        <span class="cloud-dot ${signed ? 'online' : ''}"></span>
-        <span>${escapeHtml(cloudStatusText())}</span>
-        ${signed ? `<button class="micro-button" data-action="refresh-cloud" type="button">Sync now</button><button class="micro-button" data-action="login" type="button">Profile</button>` : `<button class="micro-button" data-action="login" type="button">Sign in</button>`}
-      </div>
+  function renderProfileBar() {
+    const signed = signedIn();
+    const avatar = state.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`;
+    return `<header class="profile-bar">
+      <button class="brand-chip" data-route="home" type="button">${icon('live','sm')}<strong>LiveDash</strong></button>
+      <div class="profile-status ${signed ? 'signed' : 'local'}"><span></span>${signed ? 'Cloud profile active' : 'Local dashboard'}</div>
+      <button class="profile-pill ${signed ? 'signed' : 'local'}" data-action="account" type="button" aria-label="${signed ? 'Open profile' : 'Sign in'}">${avatar}<span><strong>${escapeHtml(signed ? (state.profile.name || state.profile.email?.split('@')[0] || 'Profile') : 'Sign in')}</strong><small>${escapeHtml(signed ? (state.profile.email || 'Cloud synced') : 'Google sync')}</small></span></button>
     </header>`;
   }
-
-  function renderTopTabs() {
-    return `<nav class="top-tabs widgetify-topbar" aria-label="App categories">
-      ${state.categories.map((category) => `<button class="top-tab ${state.settings.appCategory === category.id ? 'active' : ''}" data-action="category" data-category="${escapeHtml(category.id)}" type="button">
-        ${renderIcon(category.id, category.label, 'sm', 'tab-icon')}<span>${escapeHtml(category.label)}</span>
-      </button>`).join('')}
-    </nav>`;
+  function renderTabs() {
+    return `<nav class="top-tabs" aria-label="Categories">${(state.categories || []).map((c) => `<button class="top-tab ${state.settings.appCategory === c.id ? 'active' : ''}" data-action="category" data-category="${escapeHtml(c.id)}" type="button">${icon(c.id, 'xs')}<span>${escapeHtml(c.label)}</span></button>`).join('')}</nav>`;
   }
-
-  function renderClockCard() {
-    const parts = getTimeParts();
-    const weekday = new Intl.DateTimeFormat(state.profile.locale || 'en-US', { weekday: 'long' }).format(now());
-    const month = new Intl.DateTimeFormat(state.profile.locale || 'en-US', { month: 'long', year: 'numeric' }).format(now());
-    const day = new Intl.DateTimeFormat(state.profile.locale || 'en-US', { day: '2-digit' }).format(now());
-    return `<section class="widget-card clock-card premium-card" aria-label="Clock and status">
-      <div class="clock-layout">
-        <div class="time-tile" aria-label="Current time"><span>${escapeHtml(parts.hour)}</span><span>${escapeHtml(parts.minute)}</span></div>
-        <div class="date-stack">
-          <div class="weekday">${escapeHtml(weekday)}</div>
-          <div class="day">${escapeHtml(day)}</div>
-          <div class="meta">${escapeHtml(month)}</div>
-          <div class="meta">${escapeHtml(formatShortDate())}</div>
-        </div>
-      </div>
-      <button class="status-row" data-action="open-url" data-url="https://weather.com" type="button">${renderIcon('weather', 'Weather', 'xs')}<span>${escapeHtml(state.weather.city)} · ${escapeHtml(state.weather.summary)}</span><strong>${escapeHtml(String(state.weather.tempC))}°C</strong></button>
-      <button class="status-row" data-action="open-url" data-url="https://web.telegram.org" type="button">${renderIcon('telegram', 'Telegram', 'xs')}<span>Telegram Web</span><strong>Open</strong></button>
-      <div class="status-row muted">${renderIcon('home', 'Dashboard', 'xs')}<span>Local dashboard</span><strong>Saved just now</strong></div>
-    </section>`;
+  function renderClock() {
+    const p = timeParts();
+    return `<section class="widget-card clock-card"><div class="time-tile"><span>${escapeHtml(p.h)}</span><span>${escapeHtml(p.m)}</span></div><div class="date-card"><strong>${escapeHtml(shortDate())}</strong><span>${escapeHtml(state.weather.city)} · ${escapeHtml(state.weather.summary)} · ${escapeHtml(state.weather.tempC)}°C</span></div><button class="mini-link" data-action="open-url" data-url="https://weather.com">${icon('weather','xs')}Weather</button></section>`;
   }
-
-  function renderCurrencyCard() {
-    const flags = { USD: 'US', EUR: 'EU', GBP: 'GB' };
-    return `<section class="widget-card rates-card premium-card" aria-label="Currency rates">
-      <div class="card-title-row"><div><div class="card-title">${renderIcon('rates', 'Rates', 'xs')}Rates</div><div class="card-subtitle">Base ${escapeHtml(state.settings.currencyBase || 'USD')}</div></div><button class="mini-button" data-action="refresh" type="button" aria-label="Refresh rates">${renderIcon('refresh', 'Refresh', 'xs')}</button></div>
-      <div class="currency-list">
-        ${state.currency.map((item) => `<div class="currency-row">
-          <span class="currency-flag">${escapeHtml(flags[item.code] || item.code.slice(0, 2))}</span>
-          <span class="currency-name">${escapeHtml(item.code)}</span>
-          <strong class="currency-value">${escapeHtml(item.value)}</strong>
-          <span class="currency-arrow ${escapeHtml(item.delta)}">${item.delta === 'flat' ? '→' : '↑'}</span>
-        </div>`).join('')}
-      </div>
-    </section>`;
+  function renderRates() {
+    return `<section class="widget-card rates-card"><div class="card-title-row"><div><strong>Rates</strong><span>Base ${escapeHtml(state.settings.currencyBase || 'USD')}</span></div><button data-action="refresh" class="soft-icon" type="button">${icon('refresh','xs')}</button></div><div class="rates-list">${state.currency.map((c) => `<div><span>${escapeHtml(c.code)}</span><strong>${escapeHtml(c.value)}</strong><em>${c.delta === 'flat' ? '→' : '↑'}</em></div>`).join('')}</div></section>`;
   }
-
-  function renderSearchHero() {
-    const engine = state.settings.searchEngine || 'google';
-    const chipApps = [
-      { name: 'ChatGPT', url: 'https://chat.openai.com' },
-      { name: 'Google Calendar', url: 'https://calendar.google.com' },
-      { name: 'Gmail', url: 'https://mail.google.com' },
-      { name: 'Google Drive', url: 'https://drive.google.com' }
-    ];
-    return `<section class="search-hero premium-card" aria-label="Search and quick commands">
-      <div class="search-pod">
-        <button class="search-tool" data-action="open-command" type="button" aria-label="Open command search">${renderIcon('search', 'Search', 'xs')}</button>
-        <button class="search-tool" data-action="open-command" type="button" aria-label="Open quick scanner">${renderIcon('grid', 'Scanner', 'xs')}</button>
-        <div class="search-input-wrap">
-          <input id="mainSearch" type="search" placeholder="Search Google or run a LiveDash command" autocomplete="off" aria-label="Search or command">
-        </div>
-        <select class="search-engine" id="searchEngine" aria-label="Search engine">
-          <option value="google" ${engine === 'google' ? 'selected' : ''}>Google</option>
-          <option value="bing" ${engine === 'bing' ? 'selected' : ''}>Bing</option>
-          <option value="duckduckgo" ${engine === 'duckduckgo' ? 'selected' : ''}>DuckDuckGo</option>
-        </select>
-        <button class="command-button" data-action="open-command" type="button" aria-label="Open command palette">${renderIcon('grid', 'Command', 'xs')}</button>
-      </div>
-      <div class="search-chips" aria-label="Quick actions">
-        ${chipApps.map((app) => `<button class="search-chip" data-action="open-url" data-url="${escapeHtml(app.url)}" type="button">${renderAppIcon(app, 'xs')}<span>${escapeHtml(app.name.replace('Google ', ''))}</span></button>`).join('')}
-        <button class="search-chip" data-action="add-note" type="button">${renderIcon('notes', 'Quick note', 'xs')}<span>Quick note</span></button>
-        <button class="search-chip" data-action="add-task" type="button">${renderIcon('tasks', 'Quick task', 'xs')}<span>Quick task</span></button>
-        ${state.profile?.signedIn ? `<button class="search-chip cloud-chip" data-action="login" type="button">${renderAccountAvatar('chip')}<span>${escapeHtml(cloudStatusText())}</span></button>` : `<button class="search-chip cloud-chip" data-action="login" type="button">${renderIcon('user', 'Profile', 'xs')}<span>Sign in to sync</span></button>`}
-      </div>
-    </section>`;
+  function renderSearch() {
+    return `<section class="search-card"><div class="search-input-wrap">${icon('search','xs')}<input id="mainSearch" type="search" placeholder="Search Google or open a LiveDash command" autocomplete="off"><button data-action="command" type="button">⌘K</button></div><div class="quick-chips">${[
+      {name:'Gmail',url:'https://mail.google.com'}, {name:'Calendar',url:'https://calendar.google.com'}, {name:'ChatGPT',url:'https://chat.openai.com'}, {name:'Drive',url:'https://drive.google.com'}
+    ].map((a) => `<button data-action="open-url" data-url="${escapeHtml(a.url)}" type="button">${appIcon(a,'xs')}<span>${escapeHtml(a.name)}</span></button>`).join('')}</div></section>`;
   }
-
-  function safeHost(url) {
-    try { return new URL(url).hostname.replace(/^www\./, ''); } catch (error) { return 'Custom link'; }
+  function renderBookmarks() {
+    return `<section class="bookmark-grid">${(state.bookmarkSlots || []).map((slot) => {
+      const full = Boolean(slot.url);
+      return `<button class="bookmark-slot ${full ? '' : 'empty'}" data-action="${full ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button"><span class="bookmark-icon">${full ? appIcon(slot, 'bookmark') : icon('add','bookmark')}</span><span class="bookmark-label">${escapeHtml(full ? slot.label : 'Add site')}</span><span class="bookmark-host">${escapeHtml(full ? host(slot.url) : 'Create shortcut')}</span><i></i></button>`;
+    }).join('')}</section>`;
   }
-
-  function renderBookmarkSlots() {
-    return `<section class="bookmark-grid widgetify-bookmarks" id="bookmarks" aria-label="Bookmarks">
-      ${state.bookmarkSlots.map((slot) => {
-        const filled = Boolean(slot.url);
-        return `<button class="bookmark-slot ${filled ? 'filled' : 'empty'}" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
-          <span class="bookmark-menu-dot" aria-hidden="true">•••</span>
-          <span class="bookmark-icon">${filled ? renderFaviconIcon(slot.url, slot.label, 'bookmark') : '<span class="bookmark-placeholder" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5.8A2.8 2.8 0 0 1 9.8 3h4.4A2.8 2.8 0 0 1 17 5.8v14.1l-5-3.2-5 3.2V5.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 7.8v5.2M9.4 10.4h5.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span>'}</span>
-          <span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span>
-          <span class="bookmark-host">${escapeHtml(filled ? safeHost(slot.url) : 'Click to add')}</span>
-          <span class="bookmark-shine"></span>
-        </button>`;
-      }).join('')}
-    </section>`;
+  function renderPet() {
+    const pet = state.pet || {};
+    const mode = pet.mode || 'idle';
+    const sprite = mode === 'play' ? 'assets/widgetify/animals/dog/akita_with_ball_8fps.gif' : mode === 'feed' ? 'assets/widgetify/animals/dog/akita_swipe_8fps.gif' : mode === 'rest' ? 'assets/widgetify/animals/dog/akita_lie_8fps.gif' : 'assets/widgetify/animals/dog/akita_idle_8fps.gif';
+    const energy = Math.max(0, Math.min(100, Number(pet.energy || 70)));
+    return `<section class="widget-card pet-card"><div class="card-title-row"><div><strong>Akita</strong><span>${escapeHtml(pet.mood || 'Ready')} · ${escapeHtml(String(pet.score || 0))} score</span></div><span class="pill">${signedIn() ? 'Cloud saved' : 'Local'}</span></div><button class="akita-stage ${escapeHtml(mode)}" data-action="pet-play" type="button"><img src="${sprite}" alt="Akita"><span class="akita-bubble">${mode === 'play' ? 'Nice throw.' : mode === 'feed' ? 'Thanks.' : mode === 'rest' ? 'Resting.' : 'Tap to play.'}</span></button><div class="energy-bar"><span style="width:${energy}%"></span></div><div class="pet-actions"><button data-action="pet-feed" type="button">Feed</button><button data-action="pet-play" type="button">Play</button><button data-action="pet-rest" type="button">Rest</button></div></section>`;
   }
-
-  function renderPetCard() {
-    const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').length;
-    const signed = Boolean(state?.profile?.signedIn);
-    const pet = state.pet || { mood: 'Ready', energy: 72, hearts: 5, mode: 'idle', score: 0 };
-    const sprite = pet.mode === 'play'
-      ? 'assets/widgetify/animals/dog/akita_run_8fps.gif'
-      : pet.mode === 'feed'
-        ? 'assets/widgetify/animals/dog/akita_swipe_8fps.gif'
-        : 'assets/widgetify/animals/dog/akita_idle_8fps.gif';
-    const energy = Math.max(0, Math.min(100, Number(pet.energy || 0)));
-    return `<section class="widget-card pet-card widget-container" aria-label="Akita companion">
-      <div class="pet-card-head">
-        <div><div class="card-title">Akita</div><div class="card-subtitle">${escapeHtml(pet.mood || 'Ready')} · ${escapeHtml(String(pet.score || 0))} score</div></div>
-        <span class="mode-pill">${escapeHtml(signed ? 'Cloud saved' : 'Local')}</span>
-      </div>
-      <div class="akita-stage pet-${escapeHtml(pet.mode || 'idle')}" aria-label="Akita status">
-        <img src="${sprite}" alt="Akita companion" draggable="false">
-        <div class="akita-speech"><strong>${openTasks ? 'Ready to help.' : 'All clear.'}</strong><span>${openTasks} open task${openTasks === 1 ? '' : 's'}</span></div>
-      </div>
-      <div class="akita-meter"><span style="width:${energy}%"></span></div>
-      <div class="pet-stats"><span>♥ ${escapeHtml(String(pet.hearts || 5))}</span><span>Energy ${escapeHtml(String(energy))}%</span><span>${escapeHtml(pet.mode === 'idle' ? 'Calm' : pet.mode)}</span></div>
-      <div class="pet-actions"><button class="secondary-button" data-action="pet-feed" type="button">Feed</button><button class="primary-button" data-action="pet-play" type="button">Play</button><button class="secondary-button" data-action="pet-rest" type="button">Rest</button></div>
-    </section>`;
+  function renderTasks() {
+    const tasks = (state.tasks || []).filter((t) => activeTaskFilter === 'all' ? true : activeTaskFilter === 'done' ? t.status === 'done' : t.status !== 'done').slice(0, 8);
+    return `<section class="widget-card task-card"><div class="task-head"><div><strong>Tasks</strong><span>${(state.tasks || []).filter((t) => t.status !== 'done').length} open today</span></div><button data-action="add-task" type="button">New</button></div><div class="task-filters"><button class="${activeTaskFilter==='open'?'active':''}" data-action="task-filter" data-filter="open">Open</button><button class="${activeTaskFilter==='all'?'active':''}" data-action="task-filter" data-filter="all">All</button><button class="${activeTaskFilter==='done'?'active':''}" data-action="task-filter" data-filter="done">Done</button></div><div class="task-list">${tasks.length ? tasks.map((task) => `<article class="task-item priority-${escapeHtml(task.priority || 'medium')}"><button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button">${task.status === 'done' ? '✓' : ''}</button><div><strong>${escapeHtml(task.title)}</strong><span><b>${escapeHtml(task.priority || 'medium')}</b>${task.due ? ` · ${escapeHtml(new Date(task.due).toLocaleDateString([], {month:'short', day:'numeric'}))}` : ' · Today'} · ${escapeHtml(task.source || 'LiveDash')}</span></div><button class="task-delete" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button">×</button></article>`).join('') : '<div class="empty-state">No tasks here.</div>'}</div><div class="task-compose"><button data-action="add-task-input" type="button">+</button><input id="taskInput" placeholder="Add a task and press Enter"></div></section>`;
   }
-
-  function renderPomodoro() {
+  function renderFocus() {
     const total = (state.settings.focusMinutes || 25) * 60;
     const remaining = state.focus.remaining || total;
-    const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
-    const seconds = (remaining % 60).toString().padStart(2, '0');
+    const m = Math.floor(remaining / 60).toString().padStart(2,'0');
+    const s = (remaining % 60).toString().padStart(2,'0');
     const deg = Math.max(0, Math.min(360, 360 - (remaining / total) * 360));
-    return `<section class="widget-card compact pomodoro-card premium-card" aria-label="Focus timer">
-      <div class="card-title-row"><div><div class="card-title">${renderIcon('focus', 'Focus', 'xs')}Focus</div><div class="card-subtitle">${state.focus.mode === 'break' ? 'Break' : 'Work'} session</div></div><span class="mode-pill">${state.focus.running ? 'Live' : 'Ready'}</span></div>
-      <div class="pomo-ring" style="--pomo-deg:${deg}deg"><div><div class="pomo-time">${minutes}:${seconds}</div><div class="pomo-label">${state.focus.running ? 'In progress' : 'Ready'}</div></div></div>
-      <div class="pomo-controls">
-        <button class="mini-button" data-action="pomo-reset" type="button" aria-label="Reset focus timer">${renderIcon('refresh', 'Reset', 'xs')}</button>
-        <button class="play-button" data-action="pomo-toggle" type="button" aria-label="Start or pause focus timer">${state.focus.running ? '❚❚' : '▶'}</button>
-        <button class="mini-button" data-action="pomo-mode" type="button" aria-label="Switch focus mode">⇄</button>
-      </div>
-    </section>`;
+    return `<section class="widget-card focus-card"><div class="card-title-row"><div><strong>Focus</strong><span>${state.focus.running ? 'In progress' : 'Ready'}</span></div><span class="pill">${escapeHtml(state.focus.mode || 'work')}</span></div><div class="pomo-ring" style="--deg:${deg}deg"><strong>${m}:${s}</strong><span>${state.focus.running ? 'Running' : 'Start session'}</span></div><div class="pet-actions"><button data-action="pomo-reset">Reset</button><button class="primary" data-action="pomo-toggle">${state.focus.running ? 'Pause' : 'Start'}</button><button data-action="pomo-mode">Mode</button></div></section>`;
   }
-
-  function renderTasks() {
-    const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').slice(0, 4);
-    const high = openTasks.filter((task) => task.priority === 'high').length;
-    return `<section class="widget-card compact task-card premium-card" aria-label="Tasks">
-      <div class="task-panel-head">
-        <div><div class="card-title">${renderIcon('tasks', 'Tasks', 'xs')}Tasks</div><div class="card-subtitle">${openTasks.length} open · ${high} high priority</div></div>
-        <button class="task-new-button" data-action="add-task" type="button">New task</button>
-      </div>
-      <div class="task-list readable-task-list">
-        ${openTasks.length ? openTasks.map((task) => {
-          const due = task.due ? new Date(task.due).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Today';
-          return `<article class="readable-task priority-${escapeHtml(task.priority || 'medium')}">
-            <button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}"></button>
-            <div class="task-copy"><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-pill priority-${escapeHtml(task.priority || 'medium')}">${escapeHtml(task.priority || 'medium')}</span><span>${escapeHtml(task.source || 'LiveDash')}</span><span>${escapeHtml(due)}</span></div></div>
-            <button class="task-delete" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Delete task">${renderFlatIcon('close', 'Delete', 'xs')}</button>
-          </article>`;
-        }).join('') : '<div class="empty-state task-empty"><strong>No open tasks.</strong><span>Add a task or capture the current page.</span></div>'}
-      </div>
-      <div class="task-compose elevated-compose"><button class="task-add-round" data-action="add-task-input" type="button" aria-label="Add task">+</button><input id="taskInput" class="form-input" placeholder="Write a task and press Enter..." aria-label="Quick task"></div>
-    </section>`;
-  }
-
   function renderCalendar() {
-    const today = now();
-    const start = new Date(today.getFullYear(), today.getMonth(), 1);
-    const startOffset = start.getDay();
-    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    const prevDays = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-    const cells = [];
-    for (let i = 0; i < 42; i += 1) {
-      const dayNumber = i - startOffset + 1;
-      const muted = dayNumber < 1 || dayNumber > daysInMonth;
-      const shown = dayNumber < 1 ? prevDays + dayNumber : dayNumber > daysInMonth ? dayNumber - daysInMonth : dayNumber;
-      const isToday = !muted && shown === today.getDate();
-      const event = !muted && [5, 11, 18, 24].includes(shown);
-      cells.push(`<div class="calendar-day ${muted ? 'muted' : ''} ${isToday ? 'today' : ''} ${event ? 'event' : ''}">${shown}</div>`);
-    }
-    return `<section class="widget-card compact calendar-card premium-card" aria-label="Calendar">
-      <div class="calendar-header"><button class="mini-button" type="button" aria-label="Previous month">‹</button><div class="calendar-month">${escapeHtml(new Intl.DateTimeFormat(state.profile.locale || 'en-US', { month: 'long', year: 'numeric' }).format(today))}</div><button class="mini-button" type="button" aria-label="Next month">›</button></div>
-      <div class="calendar-grid">
-        ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => `<div class="calendar-day-name">${d}</div>`).join('')}
-        ${cells.join('')}
-      </div>
-      <div class="calendar-actions"><button class="secondary-button" data-action="open-url" data-url="https://calendar.google.com" type="button">Google Calendar</button><button class="secondary-button" data-action="add-task" type="button">Add reminder</button></div>
-    </section>`;
+    return `<section class="widget-card calendar-card"><div class="card-title-row"><div><strong>Calendar</strong><span>${escapeHtml(shortDate())}</span></div>${icon('calendar','xs')}</div><div class="mini-calendar">${Array.from({length:35}, (_,i) => `<span class="${i===12?'today':''}">${(i%30)+1}</span>`).join('')}</div><button class="mini-link" data-action="open-url" data-url="https://calendar.google.com">Open Google Calendar</button></section>`;
   }
-
-  function renderAppTile(app) {
-    return `<a class="app-tile bookmark-item-card" href="${appUrl(app)}" target="_self" rel="noreferrer" aria-label="Open ${escapeHtml(app.name)}">
-      <span class="bookmark-menu-dot" aria-hidden="true">•••</span>
-      <span class="app-icon">${renderAppIcon(app, 'app')}</span>
-      <span class="app-label">${escapeHtml(app.name)}</span>
-      <span class="app-note">${escapeHtml(app.note || '')}</span>
-      <span class="bookmark-shine"></span>
-    </a>`;
+  function renderHome() { return `<main class="home-layout"><aside class="left-stack">${renderClock()}${renderRates()}</aside><section class="center-stack">${renderSearch()}${renderBookmarks()}<div class="bottom-grid">${renderFocus()}${renderTasks()}</div></section><aside class="right-stack">${renderPet()}${renderCalendar()}</aside></main>`; }
+  function renderAppTile(app) { return `<a class="app-tile" href="${escapeHtml(app.url || '#')}" target="_self"><span>${appIcon(app,'app')}</span><strong>${escapeHtml(app.name)}</strong><small>${escapeHtml(app.note || host(app.url) || 'Open')}</small></a>`; }
+  function categoryById(id) { return (state.categories || []).find((c) => c.id === id) || (state.categories || [])[0]; }
+  function renderApps() { const c = categoryById(state.settings.appCategory); return `<main class="apps-page"><section class="app-panel"><div class="panel-head"><div>${icon(c.id,'xs')}<strong>${escapeHtml(c.label)}</strong></div><span>${escapeHtml(c.accent || 'Apps')}</span></div><div class="app-grid">${(c.apps || []).map(renderAppTile).join('')}</div></section></main>`; }
+  function renderExplore() { return `<main class="explore-page"><section class="app-panel"><div class="panel-head"><div>${icon('notes','xs')}<strong>Notes</strong></div><button data-action="add-note">New note</button></div><div class="note-list">${(state.notes || []).slice(0,8).map((n) => `<article><strong>${escapeHtml(n.title)}</strong><span>${escapeHtml(n.tag || 'note')} · ${escapeHtml(new Date(n.createdAt).toLocaleDateString())}</span></article>`).join('')}</div></section><section class="app-panel"><div class="panel-head"><div>${icon('explore','xs')}<strong>World clocks</strong></div></div><div class="rates-list">${(state.worldClocks || []).map((c) => `<div><span>${escapeHtml(c.city)}</span><strong>${escapeHtml(cityTime(c.offset))}</strong></div>`).join('')}</div></section></main>`; }
+  function renderDock() { return `<nav class="dock"><button data-action="account" type="button">${icon('user','xs')}</button><button class="${state.settings.route==='home'?'active':''}" data-route="home">${icon('home','xs')}</button><button class="${state.settings.route==='apps'?'active':''}" data-route="apps">${icon('apps','xs')}</button><button class="${state.settings.route==='explore'?'active':''}" data-route="explore">${icon('explore','xs')}</button><button data-action="settings">${icon('settings','xs')}</button></nav>`; }
+  function renderAccountModal() {
+    const signed = signedIn();
+    const avatar = state.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`;
+    return `<div class="modal-backdrop open" data-action="close-modal"></div><section class="auth-modal ${signed ? 'profile-mode' : ''}"><button class="modal-close" data-action="close-modal">${icon('close','xs')}</button>${signed ? `<div class="profile-hero"><div class="profile-avatar">${avatar}</div><h2>${escapeHtml(state.profile.name || 'LiveDash user')}</h2><p>${escapeHtml(state.profile.email || 'Cloud account')}</p><span class="cloud-pill">Cloud profile loaded</span></div><div class="profile-stats"><div><strong>${(state.bookmarkSlots||[]).filter(s=>s.url).length}</strong><span>Bookmarks</span></div><div><strong>${(state.tasks||[]).filter(t=>t.status!=='done').length}</strong><span>Tasks</span></div><div><strong>${state.pet?.score||0}</strong><span>Akita score</span></div></div><div class="auth-actions"><button class="primary-button" data-action="refresh-cloud">Sync now</button><button class="secondary-button" data-action="sign-out">Sign out</button></div>` : `<div class="auth-hero"><div class="auth-logo">${icon('live','app')}</div><h2>Sign in to LiveDash</h2><p>Sync your new tab, shortcuts, tasks, notes, and Akita progress across devices.</p></div><button class="google-button" data-action="google-sign-in"><span class="google-logo">G</span><span><strong>Continue with Google</strong><small>Secure cloud profile</small></span></button><label class="auth-email"><span>Email address</span><input id="authEmail" type="email" placeholder="you@example.com"></label><button class="secondary-button" data-action="email-sign-in">Continue with email</button>`}</section>`;
   }
-
-  function renderAppPanel(category, options = {}) {
-    const apps = category.apps.slice(0, options.limit || category.apps.length);
-    return `<section class="app-panel premium-card ${options.featured ? 'featured-panel' : ''}">
-      <div class="app-panel-header"><div class="app-panel-title">${renderIcon(category.id, category.label, 'xs')}${escapeHtml(category.label)}</div>${options.featured ? '<span class="badge">Featured</span>' : ''}</div>
-      <div class="app-grid ${options.compact ? 'compact-app-grid' : ''}">${apps.map(renderAppTile).join('')}</div>
-    </section>`;
-  }
-
-  function renderHomePage() {
-    return `<main class="dashboard-layout widgetify-content" aria-label="Dashboard home">
-      <section class="left-stack">${renderClockCard()}${renderCurrencyCard()}</section>
-      <section class="center-stack">${renderSearchHero()}${renderBookmarkSlots()}<div class="lower-widget-grid">${renderPomodoro()}${renderTasks()}</div></section>
-      <section class="right-stack">${renderPetCard()}${renderCalendar()}</section>
-    </main>`;
-  }
-
-  function renderAppsPage() {
-    const selected = categoryById(state.settings.appCategory);
-    const secondaryA = state.settings.appCategory === 'tools' ? categoryById('daily') : categoryById('tools');
-    const secondaryB = state.settings.appCategory === 'public' ? categoryById('google') : categoryById('public');
-    return `<main class="apps-grid-page" aria-label="Apps library">
-      ${renderAppPanel(selected, { featured: true })}
-      <div class="two-col-panels">
-        ${renderAppPanel(secondaryA, { limit: 9 })}
-        ${renderAppPanel(secondaryB, { limit: 8 })}
-      </div>
-    </main>`;
-  }
-
-  function renderExplorePage() {
-    return `<main class="apps-grid-page explore-grid" aria-label="Notes, clocks, and notifications">
-      <div class="two-col-panels">
-        <section class="app-panel premium-card">
-          <div class="app-panel-header"><div class="app-panel-title">${renderIcon('explore', 'World clocks', 'xs')}World clocks</div><span class="badge">Global teams</span></div>
-          <div class="currency-list">${state.worldClocks.map((clock) => `<div class="currency-row"><span class="currency-flag">${renderIcon('explore', clock.city, 'xs')}</span><span class="currency-name">${escapeHtml(clock.city)}</span><strong class="currency-value">${escapeHtml(formatCityTime(clock.offset))}</strong><span></span></div>`).join('')}</div>
-        </section>
-        <section class="app-panel premium-card">
-          <div class="app-panel-header"><div class="app-panel-title">${renderIcon('notes', 'Notes', 'xs')}Notes</div><button class="secondary-button" data-action="add-note" type="button">Add note</button></div>
-          <div class="task-list">${state.notes.slice(0, 6).map((note) => `<div class="task-row"><div class="task-check">#</div><div class="task-copy"><div class="task-title">${escapeHtml(note.title)}</div><div class="task-meta">${escapeHtml(note.tag)} · ${escapeHtml(new Date(note.createdAt).toLocaleDateString())}</div></div><button class="mini-button row-action" data-action="delete-note" data-id="${escapeHtml(note.id)}" type="button">${renderIcon('close', 'Delete', 'xs')}</button></div>`).join('')}</div>
-        </section>
-      </div>
-      <section class="app-panel premium-card">
-        <div class="app-panel-header"><div class="app-panel-title">${renderIcon('notifications', 'Notifications', 'xs')}Notifications</div><button class="secondary-button" data-action="mark-read" type="button">Mark read</button></div>
-        <div class="timeline-list">${state.notifications.slice(0, 8).map((notice) => `<div class="timeline-row ${notice.read ? 'read' : 'unread'}"><span class="timeline-dot"></span><div><div class="task-title">${escapeHtml(notice.title)}</div><div class="task-meta">${escapeHtml(notice.body)} · ${escapeHtml(new Date(notice.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</div></div><button class="mini-button row-action" data-action="dismiss-notice" data-id="${escapeHtml(notice.id)}" type="button">${renderIcon('close', 'Delete', 'xs')}</button></div>`).join('')}</div>
-      </section>
-    </main>`;
-  }
-
-  function renderDock() {
-    if (!state.settings.showDock) {
-      return `<button class="dock-restore widgetify-dock-restore" data-action="toggle-dock" type="button" aria-label="Show LiveDash dock"><span></span></button>`;
-    }
-    const route = state.settings.route;
-    return `<nav class="bottom-dock widgetify-dock" aria-label="LiveDash navigation">
-      <button class="dock-button dock-hide" data-action="toggle-dock" type="button" aria-label="Hide dock">${renderIcon('close', 'Hide', 'xs')}</button>
-      <span class="dock-divider"></span>
-      <button class="dock-button account-dock-button ${state.profile?.signedIn ? 'signed' : ''}" data-action="login" type="button" aria-label="Account">${renderAccountAvatar('dock')}</button>
-      <button class="dock-button" data-action="refresh-cloud" type="button" aria-label="Sync">${renderIcon('refresh', 'Sync', 'xs')}</button>
-      <button class="dock-button" data-action="settings" type="button" aria-label="Settings">${renderIcon('settings', 'Settings', 'xs')}</button>
-      <span class="dock-divider"></span>
-      <button class="dock-button ${route === 'apps' ? 'active' : ''}" data-route="apps" type="button" aria-label="Apps">${renderIcon('grid', 'Apps', 'xs')}</button>
-      <button class="dock-button ${route === 'home' ? 'active' : ''}" data-route="home" type="button" aria-label="Home">${renderIcon('home', 'Home', 'xs')}</button>
-      <button class="dock-button ${route === 'explore' ? 'active' : ''}" data-route="explore" type="button" aria-label="Explore">${renderIcon('explore', 'Explore', 'xs')}</button>
-      <span class="dock-divider"></span>
-      <button class="dock-button" data-action="open-command" type="button" aria-label="Command">${renderIcon('search', 'Command', 'xs')}</button>
-    </nav>`;
-  }
-
-  function renderModal() {
-    const signed = Boolean(state?.profile?.signedIn);
-    return `<div class="modal-backdrop ${loginOpen || bookmarkEditingId ? 'open' : ''}" data-action="close-modal"></div>
-      ${loginOpen ? (signed ? renderProfileModal() : renderSignInModal()) : ''}
-      ${bookmarkEditingId ? renderBookmarkModal() : ''}`;
-  }
-
-  function renderSignInModal() {
-    const cloudReady = Boolean(backendConfig().enabled && backendConfig().apiBaseUrl);
-    return `<section class="modal-card auth-modal-card auth-polished-card" role="dialog" aria-modal="true" aria-label="Sign in">
-      <button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderFlatIcon('close', 'Close', 'xs')}</button>
-      <div class="auth-visual-panel">
-        <div class="auth-brand-orb"><span>L</span></div>
-        <h2>Sync your LiveDash workspace.</h2>
-        <p>Connect your cloud profile to restore bookmarks, tasks, notes, theme, and Akita progress.</p>
-        <div class="auth-status-row"><span class="cloud-dot ${cloudReady ? 'online' : ''}"></span>${cloudReady ? 'LiveDash Cloud endpoint ready' : 'Cloud endpoint not configured'}</div>
-      </div>
-      <div class="auth-action-panel">
-        <div class="auth-panel-title">Choose sign in</div>
-        <button class="google-auth-button google-auth-premium" data-action="google-sign-in" type="button"><span class="google-mark">G</span><span><strong>Continue with Google</strong><small>Secure cloud profile</small></span><i>↗</i></button>
-        <div class="divider compact-divider">or use email</div>
-        <label class="clean-label"><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
-        <button class="secondary-button full-width" data-action="sign-in" type="button">Continue with email</button>
-        <p class="auth-footnote">Local mode always works. Cloud adds restore and sync.</p>
-      </div>
-    </section>`;
-  }
-
-  function renderProfileModal() {
-    const name = state?.profile?.name || state?.profile?.email?.split('@')[0] || 'LiveDash user';
-    const email = state?.profile?.email || '';
-    const avatar = state?.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`;
-    const syncText = state.profile?.lastCloudSyncAt ? new Date(state.profile.lastCloudSyncAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Not synced yet';
-    return `<section class="modal-card profile-modal-card profile-polished-card" role="dialog" aria-modal="true" aria-label="Profile">
-      <button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderFlatIcon('close', 'Close', 'xs')}</button>
-      <div class="profile-modal-hero signed-profile-hero">
-        <div class="profile-modal-avatar signed">${avatar}</div>
-        <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(email)}</p><span class="cloud-pill"><span class="cloud-dot online"></span>${escapeHtml(cloudStatusText())}</span></div>
-      </div>
-      <div class="profile-stat-grid">
-        <div><strong>${escapeHtml(String((state.bookmarkSlots || []).filter((slot) => slot.url).length))}</strong><span>Saved sites</span></div>
-        <div><strong>${escapeHtml(String((state.tasks || []).filter((task) => task.status !== 'done').length))}</strong><span>Open tasks</span></div>
-        <div><strong>${escapeHtml(String(state.pet?.score || 0))}</strong><span>Akita score</span></div>
-        <div><strong>${escapeHtml(syncText)}</strong><span>Last sync</span></div>
-      </div>
-      <div class="profile-actions"><button class="primary-button" data-action="refresh-cloud" type="button">Sync now</button><button class="secondary-button" data-action="open-apps-category" data-category="daily" type="button">Open apps</button><button class="secondary-button danger-button" data-action="sign-out" type="button">Sign out</button></div>
-    </section>`;
-  }
-
   function renderBookmarkModal() {
-    const slot = state.bookmarkSlots.find((item) => item.id === bookmarkEditingId) || state.bookmarkSlots[0];
-    return `<section class="modal-card" role="dialog" aria-modal="true" aria-label="Edit bookmark">
-      <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Bookmark slot</div></div>
-      <div class="auth-card">
-        <label><strong>Name</strong><input id="bookmarkName" class="form-input" value="${escapeHtml(slot.label === 'Add site' ? '' : slot.label)}" placeholder="Example: Gmail" aria-label="Bookmark name"></label>
-        <label><strong>URL</strong><input id="bookmarkUrl" class="form-input" value="${escapeHtml(slot.url || '')}" placeholder="https://example.com" aria-label="Bookmark URL"></label>
-        <button class="primary-button" data-action="save-bookmark" type="button">Save slot</button>
-      </div>
-    </section>`;
+    const slot = state.bookmarkSlots.find((s) => s.id === bookmarkEditingId) || state.bookmarkSlots[0];
+    return `<div class="modal-backdrop open" data-action="close-modal"></div><section class="simple-modal"><button class="modal-close" data-action="close-modal">${icon('close','xs')}</button><h2>Bookmark</h2><label>Name<input id="bookmarkName" value="${escapeHtml(slot.label === 'Add site' ? '' : slot.label)}" placeholder="Gmail"></label><label>URL<input id="bookmarkUrl" value="${escapeHtml(slot.url || '')}" placeholder="https://example.com"></label><button class="primary-button" data-action="save-bookmark">Save bookmark</button></section>`;
   }
-
-  function renderDrawer() {
-    return `<div class="drawer-backdrop ${drawerOpen ? 'open' : ''}" data-action="close-drawer"></div>
-      <aside class="drawer ${drawerOpen ? 'open' : ''}" aria-label="Settings drawer">
-        <div class="modal-head"><div class="modal-title">Customize LiveDash</div><button class="icon-button" data-action="close-drawer" type="button" aria-label="Close settings">${renderIcon('close', 'Close', 'xs')}</button></div>
-        <section class="drawer-section"><div class="card-title">Background</div><div class="setting-grid">
-          ${['sky','mist','pearl','sunset','forest'].map((theme) => `<button class="setting-tile ${state.settings.theme === theme ? 'active' : ''}" data-action="theme" data-theme="${theme}" type="button">${escapeHtml(theme[0].toUpperCase() + theme.slice(1))}<br><span class="card-subtitle">${theme === 'sky' ? 'Soft blue workspace' : 'Dashboard theme'}</span></button>`).join('')}
-        </div></section>
-        <section class="drawer-section"><div class="card-title">Search</div><div class="setting-grid">
-          ${Object.keys(searchEngines).map((engine) => `<button class="setting-tile ${state.settings.searchEngine === engine ? 'active' : ''}" data-action="engine" data-engine="${engine}" type="button">${escapeHtml(engine)}<br><span class="card-subtitle">Default engine</span></button>`).join('')}
-        </div></section>
-        <section class="drawer-section"><div class="card-title">Data</div><button class="secondary-button" data-action="export" type="button">Export backup</button><label class="secondary-button" style="cursor:pointer"><input id="importFile" type="file" accept="application/json" style="display:none">Import backup</label><button class="secondary-button" data-action="reset" type="button">Reset dashboard</button></section>
-        <section class="drawer-section"><div class="card-title">Keyboard</div><div class="task-row"><div class="task-check">⌘</div><div><div class="task-title">Open command palette</div><div class="task-meta">Cmd/Ctrl + K</div></div><span></span></div></section>
-      </aside>`;
-  }
-
-  function renderCommandPalette() {
-    const commands = [
-      ['home', 'Open widgets home', 'Dashboard widgets and cards', 'home'],
-      ['apps', 'Open app library', 'Daily, tools, public services, Google, AI', 'grid'],
-      ['explore', 'Open explore', 'Notes, clocks, notifications', 'explore'],
-      ['add-task', 'Add task', 'Create a quick task', 'tasks'],
-      ['add-note', 'Add note', 'Create a quick note', 'notes'],
-      ['settings', 'Customize dashboard', 'Themes, search, backup', 'settings'],
-      ['export', 'Export backup', 'Download local dashboard data', 'open'],
-      ['login', 'Sign in', 'Local-first profile flow', 'user']
-    ];
-    return `<div class="command-backdrop ${commandOpen ? 'open' : ''}" data-action="close-command"></div>
-      <section class="command-card ${commandOpen ? 'open' : ''}" role="dialog" aria-label="Command palette">
-        <input id="commandInput" placeholder="Type a command, app, or website..." aria-label="Command search">
-        <div class="command-list" id="commandList">
-          ${commands.map(([action, title, sub, icon]) => `<button class="command-row" data-action="${escapeHtml(action)}" type="button"><span class="command-glyph">${renderIcon(icon, title, 'xs')}</span><span><span class="command-row-title">${escapeHtml(title)}</span><span class="command-row-sub">${escapeHtml(sub)}</span></span><span class="kbd">Enter</span></button>`).join('')}
-        </div>
-      </section>`;
-  }
+  function renderSettings() { return settingsOpen ? `<div class="drawer-backdrop open" data-action="close-settings"></div><aside class="drawer open"><button class="modal-close" data-action="close-settings">${icon('close','xs')}</button><h2>Settings</h2><div class="setting-grid">${['sky','mist','pearl','sunset','forest'].map((t) => `<button class="${state.settings.theme===t?'active':''}" data-action="theme" data-theme="${t}">${escapeHtml(t)}</button>`).join('')}</div><button data-action="export">Export backup</button><label class="import-label">Import backup<input id="importFile" type="file" accept="application/json"></label><button data-action="reset">Reset dashboard</button></aside>` : ''; }
+  function renderCommand() { return commandOpen ? `<div class="modal-backdrop open" data-action="close-command"></div><section class="command-card"><input id="commandInput" placeholder="Type a command or search"><button data-route="home">${icon('home','xs')}Home</button><button data-route="apps">${icon('apps','xs')}Apps</button><button data-action="add-task">${icon('tasks','xs')}Add task</button><button data-action="google-sign-in">${icon('google','xs')}Google sign in</button></section>` : ''; }
 
   function render() {
-    setBodyTheme();
+    document.body.dataset.theme = state.settings.theme || 'sky';
     const route = state.settings.route || 'home';
-    root.innerHTML = `<div class="widgetify-shell route-${escapeHtml(route)}">
-      ${renderProfileHeader()}
-      ${renderTopTabs()}
-      <div class="page-grid">
-        ${route === 'home' ? renderHomePage() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
-      </div>
-    </div>
-    ${renderDock()}
-    ${renderModal()}
-    ${renderDrawer()}
-    ${renderCommandPalette()}`;
-    bindTransientInputs();
-    attachIconFallbacks();
+    root.innerHTML = `<div class="shell">${renderProfileBar()}${renderTabs()}<div class="page">${route === 'home' ? renderHome() : route === 'apps' ? renderApps() : renderExplore()}</div></div>${renderDock()}${accountOpen ? renderAccountModal() : ''}${bookmarkEditingId ? renderBookmarkModal() : ''}${renderSettings()}${renderCommand()}`;
+    bindInputs();
   }
-
-  function bindTransientInputs() {
-    const search = $('#mainSearch');
-    if (search) {
-      search.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') runSearch(search.value);
-      });
-    }
-    const engine = $('#searchEngine');
-    if (engine) {
-      engine.addEventListener('change', async () => {
-        state.settings.searchEngine = engine.value;
-        await save();
-      });
-    }
-    const taskInput = $('#taskInput');
-    if (taskInput) {
-      taskInput.addEventListener('keydown', async (event) => {
-        if (event.key === 'Enter') await addTask(taskInput.value);
-      });
-    }
-    const commandInput = $('#commandInput');
-    if (commandInput) {
-      setTimeout(() => commandInput.focus(), 0);
-      commandInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') runSearch(commandInput.value);
-      });
-    }
-    const importFile = $('#importFile');
-    if (importFile) {
-      importFile.addEventListener('change', async () => {
-        if (importFile.files && importFile.files[0]) await importBackup(importFile.files[0]);
-      });
-    }
+  function bindInputs() {
+    $('#mainSearch')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(e.target.value); });
+    $('#taskInput')?.addEventListener('keydown', async (e) => { if (e.key === 'Enter') await addTask(e.target.value); });
+    $('#commandInput')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(e.target.value); });
+    $('#importFile')?.addEventListener('change', async (e) => { if (e.target.files?.[0]) await importBackup(e.target.files[0]); });
   }
-
   function runSearch(value) {
-    const query = String(value || '').trim();
-    if (!query) {
-      commandOpen = true;
-      render();
-      return;
-    }
-    const lower = query.toLowerCase();
-    const matchingApp = state.categories.flatMap((category) => category.apps).find((app) => app.name.toLowerCase() === lower);
-    if (matchingApp) {
-      window.location.href = matchingApp.url;
-      return;
-    }
-    if (lower.startsWith('task ')) {
-      addTask(query.slice(5));
-      return;
-    }
-    if (lower.startsWith('note ')) {
-      addNote(query.slice(5));
-      return;
-    }
-    const engine = searchEngines[state.settings.searchEngine] || searchEngines.google;
-    window.location.href = engine + encodeURIComponent(query);
+    const q = String(value || '').trim();
+    if (!q) { commandOpen = true; render(); return; }
+    const app = (state.categories || []).flatMap((c) => c.apps || []).find((a) => a.name.toLowerCase() === q.toLowerCase());
+    if (app) { location.href = app.url; return; }
+    if (q.toLowerCase().startsWith('task ')) { addTask(q.slice(5)); return; }
+    if (q.toLowerCase().startsWith('note ')) { addNote(q.slice(5)); return; }
+    location.href = (searchEngines[state.settings.searchEngine] || searchEngines.google) + encodeURIComponent(q);
   }
+  async function addTask(title) { const clean = String(title || '').trim() || prompt('Task title') || 'New task'; state.tasks = [{ id: uid('task'), title: clean, status: 'open', priority: 'medium', due: new Date().toISOString(), source: 'LiveDash' }, ...(state.tasks || [])]; activity('Task added', clean); notice('Task added', clean, 'success'); await save(); toast('Task added'); render(); }
+  async function addNote(body) { const clean = String(body || '').trim() || prompt('Note') || 'New note'; state.notes = [{ id: uid('note'), title: clean.slice(0,50), body: clean, tag: 'quick', createdAt: new Date().toISOString() }, ...(state.notes || [])]; await save(); toast('Note saved'); render(); }
+  async function completeTask(id) { state.tasks = (state.tasks || []).map((t) => t.id === id ? { ...t, status: t.status === 'done' ? 'open' : 'done' } : t); await save(); render(); }
+  async function deleteTask(id) { state.tasks = (state.tasks || []).filter((t) => t.id !== id); await save(); render(); }
+  async function pet(mode) { const p = state.pet || {}; p.mode = mode; p.lastInteractionAt = new Date().toISOString(); if (mode === 'play') { p.score = Number(p.score || 0) + 5; p.energy = Math.max(10, Number(p.energy || 70) - 8); p.mood = 'Playing'; } if (mode === 'feed') { p.score = Number(p.score || 0) + 2; p.energy = Math.min(100, Number(p.energy || 70) + 15); p.mood = 'Happy'; } if (mode === 'rest') { p.energy = Math.min(100, Number(p.energy || 70) + 8); p.mood = 'Resting'; } state.pet = p; await save(); render(); setTimeout(async () => { state.pet.mode = 'idle'; state.pet.mood = 'Ready'; await save(); render(); }, 2600); }
+  async function saveBookmark() { const name = $('#bookmarkName')?.value.trim() || 'New site'; let url = $('#bookmarkUrl')?.value.trim() || ''; if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`; state.bookmarkSlots = (state.bookmarkSlots || []).map((s) => s.id === bookmarkEditingId ? { ...s, label: name, url, icon: keyFor(name,url) } : s); bookmarkEditingId = null; await save(); render(); }
+  async function exportBackup() { const backup = await window.LiveDashStore.exportState(); window.LiveDashStore.downloadJson(`livedash-backup-${new Date().toISOString().slice(0,10)}.json`, backup); toast('Backup exported'); }
+  async function importBackup(file) { try { state = await window.LiveDashStore.importState(await window.LiveDashStore.readJsonFile(file)); toast('Backup imported'); render(); } catch (e) { toast(e.message || 'Import failed'); } }
+  async function resetDashboard() { if (!confirm('Reset LiveDash dashboard?')) return; state = await window.LiveDashStore.resetState(); toast('Dashboard reset'); render(); }
+  async function emailSignIn() { const email = $('#authEmail')?.value.trim(); if (!email) { toast('Enter an email'); return; } state.profile.email = email; state.profile.signedIn = true; accountOpen = false; await save(); render(); }
+  function openUrl(url) { if (url) location.href = url; }
 
-  async function signOut() {
-    state.profile = {
-      ...(state.profile || {}),
-      signedIn: false,
-      backendConnected: false,
-      cloudLoaded: false,
-      authToken: '',
-      plan: 'Local'
-    };
-    loginOpen = false;
-    pushActivity('Signed out', 'Cloud profile disconnected from this browser.');
-    await save();
-    showToast('Signed out');
-    render();
-  }
-
-  async function updatePet(mode) {
-    const current = state.pet || {};
-    const nextMode = mode === 'idle' ? 'idle' : mode;
-    const energyDelta = nextMode === 'feed' ? 18 : nextMode === 'play' ? -10 : 8;
-    const scoreGain = nextMode === 'play' ? 10 : nextMode === 'feed' ? 4 : 1;
-    state.pet = {
-      name: 'Akita',
-      mood: nextMode === 'feed' ? 'Fed' : nextMode === 'play' ? 'Playing' : 'Resting',
-      energy: Math.min(100, Math.max(0, (current.energy || 60) + energyDelta)),
-      hearts: Math.min(5, Math.max(1, (current.hearts || 4) + (nextMode === 'feed' ? 1 : 0))),
-      mode: nextMode,
-      score: (current.score || 0) + scoreGain,
-      lastInteractionAt: new Date().toISOString()
-    };
-    pushActivity(nextMode === 'feed' ? 'Akita fed' : nextMode === 'play' ? 'Akita played' : 'Akita rested', `Companion score ${state.pet.score}.`);
-    if (state.pet.score && state.pet.score % 50 === 0) pushNotification('Akita leveled up', `Companion score reached ${state.pet.score}.`, 'success');
-    await save();
-    render();
-    setTimeout(async () => {
-      if (!state || state.pet?.mode !== nextMode) return;
-      state.pet.mode = 'idle';
-      state.pet.mood = 'Ready';
-      await save();
-      render();
-    }, 1600);
-  }
-
-  async function addTask(title) {
-    const clean = String(title || '').trim() || 'New task';
-    state.tasks = [{ id: uid('task'), title: clean, status: 'open', priority: 'medium', due: new Date().toISOString(), source: 'LiveDash' }, ...(state.tasks || [])];
-    pushActivity('Task added', clean);
-    pushNotification('Task added', clean, 'success');
-    await save();
-    showToast('Task added');
-    render();
-  }
-
-  async function addNote(body) {
-    const clean = String(body || '').trim() || 'New quick note';
-    state.notes = [{ id: uid('note'), title: clean.slice(0, 50), body: clean, tag: 'quick', createdAt: new Date().toISOString() }, ...(state.notes || [])];
-    pushActivity('Note added', clean.slice(0, 70));
-    await save();
-    showToast('Note saved');
-    render();
-  }
-
-  async function completeTask(id) {
-    state.tasks = state.tasks.map((task) => task.id === id ? { ...task, status: 'done' } : task);
-    pushActivity('Task completed', state.tasks.find((task) => task.id === id)?.title || 'Task');
-    await save();
-    showToast('Task completed');
-    render();
-  }
-
-  async function deleteTask(id) {
-    state.tasks = state.tasks.filter((task) => task.id !== id);
-    pushActivity('Task removed', 'Removed from local task list.');
-    await save();
-    render();
-  }
-
-  async function saveBookmark() {
-    const name = $('#bookmarkName')?.value.trim() || 'New site';
-    let url = $('#bookmarkUrl')?.value.trim() || '';
-    const icon = inferIconKey(name, url);
-    if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`;
-    state.bookmarkSlots = state.bookmarkSlots.map((slot) => slot.id === bookmarkEditingId ? { ...slot, label: name, url, icon, color: appColor(name) } : slot);
-    bookmarkEditingId = null;
-    pushActivity('Bookmark updated', name);
-    await save();
-    render();
-  }
-
-  async function exportBackup() {
-    const backup = await window.LiveDashStore.exportState();
-    window.LiveDashStore.downloadJson(`livedash-backup-${new Date().toISOString().slice(0,10)}.json`, backup);
-    pushActivity('Backup exported', 'Downloaded a local LiveDash backup.');
-    await save();
-    showToast('Backup exported');
-  }
-
-  async function importBackup(file) {
-    try {
-      const payload = await window.LiveDashStore.readJsonFile(file);
-      state = await window.LiveDashStore.importState(payload);
-      pushActivity('Backup imported', 'Dashboard data was restored from file.');
-      showToast('Backup imported');
-      render();
-    } catch (error) {
-      showToast(error.message || 'Import failed');
-    }
-  }
-
-  async function resetDashboard() {
-    if (!confirm('Reset LiveDash to the default dashboard? A backup is recommended before reset.')) return;
-    state = await window.LiveDashStore.resetState();
-    showToast('Dashboard reset');
-    render();
-  }
-
-  function openUrl(url) {
-    if (url) window.location.href = url;
-  }
-
-  function closeOverlays() {
-    commandOpen = false;
-    drawerOpen = false;
-    loginOpen = false;
-    bookmarkEditingId = null;
-  }
-
-  async function handleAction(action, button) {
-    if (!action) return;
-    if (['home', 'apps', 'explore'].includes(action)) {
-      state.settings.route = action;
-      commandOpen = false;
-      await save();
-      render();
-      return;
-    }
+  root.addEventListener('click', async (e) => {
+    const el = e.target.closest('button, [data-action], [data-route]');
+    if (!el) return;
+    const route = el.dataset.route;
+    if (route) { state.settings.route = route; commandOpen = false; await save(); render(); return; }
+    const action = el.dataset.action;
+    const id = el.dataset.id;
     const actions = {
-      category: async () => { state.settings.appCategory = button.dataset.category; state.settings.route = 'apps'; await save(); render(); },
-      'open-apps-category': async () => { state.settings.appCategory = button.dataset.category; state.settings.route = 'apps'; await save(); render(); },
-      'open-url': () => openUrl(button.dataset.url),
-      'open-bookmark': () => { const slot = state.bookmarkSlots.find((item) => item.id === button.dataset.id); if (slot?.url) openUrl(slot.url); },
-      'edit-bookmark': () => { bookmarkEditingId = button.dataset.id; render(); },
-      'save-bookmark': saveBookmark,
-      login: () => { loginOpen = true; render(); },
-      'sign-in': async () => { await submitEmailAuth($('#authEmail')?.value.trim() || ''); },
-      'google-sign-in': startGoogleAuth,
-      'password-sign-in': async () => { await submitEmailAuth($('#authEmail')?.value.trim() || '', $('#authPassword')?.value || ''); },
-      'close-modal': () => { loginOpen = false; bookmarkEditingId = null; render(); },
-      settings: () => { drawerOpen = true; commandOpen = false; render(); },
-      'close-drawer': () => { drawerOpen = false; render(); },
-      'open-command': () => { commandOpen = true; render(); },
+      account: () => { accountOpen = true; render(); },
+      'close-modal': () => { accountOpen = false; bookmarkEditingId = null; render(); },
+      settings: () => { settingsOpen = true; render(); },
+      'close-settings': () => { settingsOpen = false; render(); },
+      command: () => { commandOpen = true; render(); },
       'close-command': () => { commandOpen = false; render(); },
-      'toggle-dock': async () => { state.settings.showDock = !state.settings.showDock; await save(); render(); },
-      'refresh-cloud': async () => { const ok = await hydrateCloudProfile('manual-refresh'); await save(); showToast(ok ? 'Cloud profile loaded' : 'Cloud profile unavailable'); render(); scheduleBackendSync('manual-refresh'); },
-      'sign-out': signOut,
-      'pet-feed': async () => updatePet('feed'),
-      'pet-play': async () => updatePet('play'),
-      'pet-rest': async () => updatePet('idle'),
-      theme: async () => { state.settings.theme = button.dataset.theme; await save(); showToast('Theme updated'); render(); },
-      engine: async () => { state.settings.searchEngine = button.dataset.engine; await save(); showToast('Search engine updated'); render(); },
-      'add-task': async () => { await addTask(prompt('Task title') || 'New task'); },
-      'add-task-input': async () => { await addTask($('#taskInput')?.value || 'New task'); },
-      'add-note': async () => { await addNote(prompt('Note') || 'New note'); },
-      'complete-task': async () => { await completeTask(button.dataset.id); },
-      'delete-task': async () => { await deleteTask(button.dataset.id); },
-      'delete-note': async () => { state.notes = state.notes.filter((note) => note.id !== button.dataset.id); await save(); render(); },
-      'clear-done': async () => { state.tasks = state.tasks.filter((task) => task.status !== 'done'); await save(); render(); },
-      'mark-read': async () => { state.notifications = state.notifications.map((notice) => ({ ...notice, read: true })); await save(); render(); },
-      'dismiss-notice': async () => { state.notifications = state.notifications.filter((notice) => notice.id !== button.dataset.id); await save(); render(); },
-      'pomo-toggle': async () => { state.focus.running = !state.focus.running; state.focus.lastStartedAt = state.focus.running ? new Date().toISOString() : state.focus.lastStartedAt; await save(); startTimer(); render(); },
+      category: async () => { state.settings.appCategory = el.dataset.category; state.settings.route = 'apps'; await save(); render(); },
+      'open-url': () => openUrl(el.dataset.url),
+      'open-bookmark': () => { const slot = state.bookmarkSlots.find((s) => s.id === id); if (slot?.url) openUrl(slot.url); },
+      'edit-bookmark': () => { bookmarkEditingId = id; render(); },
+      'save-bookmark': saveBookmark,
+      'google-sign-in': googleSignIn,
+      'email-sign-in': emailSignIn,
+      'refresh-cloud': async () => { const ok = await hydrateCloud('manual'); toast(ok ? 'Cloud profile refreshed' : 'Cloud refresh failed'); render(); },
+      'sign-out': async () => { state.profile = { ...state.profile, signedIn: false, authToken: '', backendConnected: false, cloudLoaded: false }; accountOpen = false; await save(); render(); },
+      'add-task': async () => addTask(''),
+      'add-task-input': async () => addTask($('#taskInput')?.value || ''),
+      'task-filter': () => { activeTaskFilter = el.dataset.filter || 'open'; render(); },
+      'complete-task': async () => completeTask(id),
+      'delete-task': async () => deleteTask(id),
+      'add-note': async () => addNote(''),
+      'pet-play': async () => pet('play'),
+      'pet-feed': async () => pet('feed'),
+      'pet-rest': async () => pet('rest'),
+      'pomo-toggle': async () => { state.focus.running = !state.focus.running; await save(); startTimer(); render(); },
       'pomo-reset': async () => { state.focus.running = false; state.focus.remaining = (state.settings.focusMinutes || 25) * 60; await save(); render(); },
       'pomo-mode': async () => { state.focus.mode = state.focus.mode === 'work' ? 'break' : 'work'; state.focus.remaining = state.focus.mode === 'work' ? (state.settings.focusMinutes || 25) * 60 : 5 * 60; await save(); render(); },
-      refresh: async () => { pushActivity('Widgets refreshed', 'Rates and local widgets updated.'); await save(); showToast('Widgets refreshed'); },
+      theme: async () => { state.settings.theme = el.dataset.theme; await save(); render(); },
       export: exportBackup,
-      reset: resetDashboard
+      reset: resetDashboard,
+      refresh: async () => { activity('Widgets refreshed', 'Local widgets updated'); await save(); toast('Widgets refreshed'); }
     };
     if (actions[action]) await actions[action]();
-  }
-
+  });
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); commandOpen = true; render(); }
+    if (e.key === 'Escape') { accountOpen = false; bookmarkEditingId = null; settingsOpen = false; commandOpen = false; render(); }
+  });
   function startTimer() {
     if (timerId) clearInterval(timerId);
     timerId = setInterval(async () => {
       if (!state?.focus?.running) return;
       state.focus.remaining = Math.max(0, (state.focus.remaining || 0) - 1);
-      if (state.focus.remaining === 0) {
-        state.focus.running = false;
-        pushNotification('Focus session complete', 'Take a short break or start another session.', 'success');
-        await save();
-        render();
-        return;
-      }
-      const ring = $('.pomo-ring');
-      const time = $('.pomo-time');
-      if (ring && time) {
-        const total = (state.focus.mode === 'work' ? (state.settings.focusMinutes || 25) : 5) * 60;
-        const minutes = Math.floor(state.focus.remaining / 60).toString().padStart(2, '0');
-        const seconds = (state.focus.remaining % 60).toString().padStart(2, '0');
-        ring.style.setProperty('--pomo-deg', `${360 - (state.focus.remaining / total) * 360}deg`);
-        time.textContent = `${minutes}:${seconds}`;
-      }
-      if (state.focus.remaining % 15 === 0) await save();
+      if (state.focus.remaining === 0) { state.focus.running = false; notice('Focus session complete', 'Take a break.', 'success'); await save(); render(); }
+      const time = $('.pomo-ring strong'); if (time) { const r = state.focus.remaining || 0; time.textContent = `${Math.floor(r/60).toString().padStart(2,'0')}:${(r%60).toString().padStart(2,'0')}`; }
+      if ((state.focus.remaining || 0) % 15 === 0) await window.LiveDashStore.setState(state);
     }, 1000);
   }
-
-  root.addEventListener('click', async (event) => {
-    const button = event.target.closest('button, [data-action], [data-route]');
-    if (!button) return;
-    const route = button.dataset.route;
-    if (route) {
-      state.settings.route = route;
-      await save();
-      render();
-      return;
-    }
-    await handleAction(button.dataset.action, button);
-  });
-
-  document.addEventListener('keydown', (event) => {
-    const isCommand = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
-    if (isCommand) {
-      event.preventDefault();
-      commandOpen = true;
-      render();
-    }
-    if (event.key === 'Escape') {
-      closeOverlays();
-      render();
-    }
-  });
-
   async function boot() {
     state = await window.LiveDashStore.getState();
-    const returnedFromAuth = consumeAuthReturn();
     state.settings.route = state.settings.route || 'home';
-    state.settings.showDock = state.settings.showDock !== false;
-    if (returnedFromAuth) {
-      await hydrateCloudProfile('auth-return');
-      await save();
-      showToast('LiveDash cloud connected');
-    } else if (state.profile?.authToken) {
-      await hydrateCloudProfile('startup');
-    }
-    render();
-    startTimer();
-    setInterval(() => {
-      const timeBlock = $('.time-tile');
-      if (timeBlock) {
-        const parts = getTimeParts();
-        timeBlock.innerHTML = `<span>${escapeHtml(parts.hour)}</span><span>${escapeHtml(parts.minute)}</span>`;
-      }
-    }, 10000);
+    state.settings.showDock = true;
+    if (state.profile?.authToken && !state.profile.cloudLoaded) await hydrateCloud('boot');
+    render(); startTimer();
   }
-
-  boot().catch((error) => {
-    root.innerHTML = `<div class="modal-card"><div class="modal-title">LiveDash could not start</div><p>${escapeHtml(error.message)}</p></div>`;
-  });
+  boot().catch((e) => { root.innerHTML = `<section class="simple-modal"><h2>LiveDash could not start</h2><p>${escapeHtml(e.message)}</p></section>`; });
 })();
