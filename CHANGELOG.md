@@ -1,6 +1,6 @@
 # Changelog
 
-## v22
+## v23
 
 - Added TypeScript model source and typecheck step.
 - Improved official favicon rendering and fallback behavior for app/bookmark icons.
@@ -10,4 +10,4 @@
 - Added Akita companion minigame states using Widgetify pet sprites.
 - Improved task row contrast and wrapping.
 - Improved bookmark card footer visibility and hover motion.
-- Updated extension package metadata to v22.
+- Updated extension package metadata to v23.

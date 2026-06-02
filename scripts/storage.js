@@ -1,6 +1,6 @@
 (function () {
-  const STORE_KEY = 'livedash_state_v22';
-  const LEGACY_KEYS = ['livedash_state_v21', 'livedash_state_v20', 'livedash_state_v18', 'livedash_state_v121', 'livedash_state_v12', 'livedash_state_v11', 'livedash_state_v10', 'livedash_state_v9'];
+  const STORE_KEY = 'livedash_state_v23';
+  const LEGACY_KEYS = ['livedash_state_v22', 'livedash_state_v21', 'livedash_state_v20', 'livedash_state_v18', 'livedash_state_v121', 'livedash_state_v12', 'livedash_state_v11', 'livedash_state_v10', 'livedash_state_v9'];
 
   const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -50,10 +50,34 @@
     return undefined;
   }
 
+  async function getLooseAuth() {
+    if (hasChromeStorage()) {
+      const result = await chrome.storage.local.get(['livedashToken', 'email', 'signedIn', 'avatarUrl', 'name']);
+      return result || {};
+    }
+    return {
+      livedashToken: localStorage.getItem('livedashToken') || '',
+      email: localStorage.getItem('email') || '',
+      signedIn: localStorage.getItem('signedIn') === 'true'
+    };
+  }
+
   async function getState() {
     const defaults = window.LiveDashDefaults.defaultState;
     const stored = (await rawGet(STORE_KEY)) || (await migrateLegacy());
     const merged = deepMerge(defaults, stored || {});
+    const looseAuth = await getLooseAuth();
+    if ((looseAuth.livedashToken || looseAuth.signedIn) && !merged.profile?.authToken) {
+      merged.profile = {
+        ...(merged.profile || {}),
+        authToken: looseAuth.livedashToken || merged.profile?.authToken || '',
+        email: looseAuth.email || merged.profile?.email || '',
+        signedIn: true,
+        backendConnected: Boolean(looseAuth.livedashToken),
+        avatarUrl: looseAuth.avatarUrl || merged.profile?.avatarUrl || '',
+        name: looseAuth.name || merged.profile?.name || merged.profile?.email || 'LiveDash user'
+      };
+    }
     merged.schemaVersion = window.LiveDashDefaults.SCHEMA_VERSION;
     if (!merged.updatedAt) merged.updatedAt = new Date().toISOString();
     await rawSet(STORE_KEY, merged);
