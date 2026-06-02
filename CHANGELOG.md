@@ -1,13 +1,13 @@
 # Changelog
 
-## v20.0.0
+## v21
 
-- Reworked the new tab UI to closely follow Widgetify's MIT-licensed interaction and visual system.
-- Replaced fake app icons with real favicon-based bookmark/app icons.
-- Added Widgetify-style glass dock, hidden dock restore handle, bookmark cards, app tiles, widget surfaces, and companion card.
-- Added local Widgetify pet assets and third-party license attribution.
-- Preserved LiveDash cloud sign-in, sync, popup, options, and side panel behavior.
-
-## v18.0.0
-
-- Added cloud profile hydration and stronger account-state visibility.
+- Added TypeScript model source and typecheck step.
+- Improved official favicon rendering and fallback behavior for app/bookmark icons.
+- Added signed-in profile modal with cloud profile state, sync action, and sign-out.
+- Added visible profile/cloud status strip.
+- Reworked sign-in modal into a less generic cloud account surface.
+- Added Akita companion minigame states using Widgetify pet sprites.
+- Improved task row contrast and wrapping.
+- Improved bookmark card footer visibility and hover motion.
+- Updated extension package metadata to v21.
