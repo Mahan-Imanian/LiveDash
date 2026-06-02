@@ -8,5 +8,6 @@ window.LiveDashBackendConfig = {
   syncPath: '/api/livedash/sync.php',
   backupPath: '/api/livedash/backup.php',
   healthPath: '/api/health.php',
+  mePath: '/api/me.php',
   timeoutMs: 12000
 };
