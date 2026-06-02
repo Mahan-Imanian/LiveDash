@@ -1,14 +1,8 @@
 import { IconLoading } from '@/components/loading/icon-loading'
 import { useAuth } from '@/context/auth.context'
-import {
-	type AuthResponse,
-	useGoogleSignIn,
-} from '@/services/hooks/auth/authService.hook'
 import { useState } from 'react'
-import { safeAwait } from '@/services/api'
-import type { AxiosError } from 'axios'
+import { getApiBaseUrl } from '@/services/api'
 import { showToast } from '@/common/toast'
-import { translateError } from '@/utils/translate-error'
 import Analytics from '@/analytics'
 import { callEvent } from '@/common/utils/call-event'
 import { sleep } from '@/common/utils/timeout'
@@ -16,64 +10,65 @@ import { sleep } from '@/common/utils/timeout'
 export default function LoginGoogleButton() {
 	const { login } = useAuth()
 	const [isLoading, setIsLoading] = useState(false)
-	const googleSignInMutation = useGoogleSignIn()
 
 	const loginGoogle = async () => {
 		Analytics.event('auth_method_changed_to_google')
 		setIsLoading(true)
 		try {
-			if (
-				await browser.permissions.contains({
-					permissions: ['identity'],
-				})
-			) {
-			} else {
+			const hasIdentityPermission = await browser.permissions.contains({
+				permissions: ['identity'],
+			})
+
+			if (!hasIdentityPermission) {
 				const granted = await browser.permissions.request({
 					permissions: ['identity'],
 				})
+
 				if (!granted) {
-					console.log('Permission denied')
+					showToast('Google sign-in needs browser identity permission.', 'error')
 					return
 				}
 			}
 
 			const redirectUri = browser.identity.getRedirectURL('google')
-			const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
-			url.searchParams.set('client_id', import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID)
-			url.searchParams.set('response_type', 'token')
-			url.searchParams.set('redirect_uri', redirectUri)
-			url.searchParams.set('prompt', 'consent select_account')
-			url.searchParams.set(
-				'scope',
-				'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
-			)
+			const serverAuthUrl = new URL('/auth/google/start.php', getApiBaseUrl())
+			serverAuthUrl.searchParams.set('redirect_uri', redirectUri)
 
 			const redirectUrl = await browser.identity.launchWebAuthFlow({
-				url: url.toString(),
+				url: serverAuthUrl.toString(),
 				interactive: true,
 			})
 
-			const params = new URLSearchParams(redirectUrl?.split('#')[1])
-			const token = params.get('access_token')
-
-			if (token) {
-				const [err, response] = await safeAwait<AxiosError, AuthResponse>(
-					googleSignInMutation.mutateAsync({
-						token,
-						referralCode: undefined,
-					})
-				)
-				if (err) {
-					return showToast(translateError(err) as string, 'error')
-				}
-
-				if (response.isNewUser) {
-					callEvent('openWizardModal')
-					await sleep(300)
-				}
-
-				login(response.data)
+			if (!redirectUrl) {
+				showToast('Google sign-in was cancelled.', 'error')
+				return
 			}
+
+			const parsedUrl = new URL(redirectUrl)
+			const hashParams = new URLSearchParams(parsedUrl.hash.replace(/^#/, ''))
+			const queryParams = new URLSearchParams(parsedUrl.search)
+			const appToken = hashParams.get('token') || queryParams.get('token')
+			const error = hashParams.get('error') || queryParams.get('error')
+			const isNewUser = hashParams.get('new') === '1' || queryParams.get('new') === '1'
+
+			if (error) {
+				showToast(decodeURIComponent(error), 'error')
+				return
+			}
+
+			if (!appToken) {
+				showToast('Google sign-in did not return a LiveDash session.', 'error')
+				return
+			}
+
+			if (isNewUser) {
+				callEvent('openWizardModal')
+				await sleep(300)
+			}
+
+			login(appToken)
+		} catch {
+			showToast('Google sign-in could not be completed. Check the LiveDash backend Google OAuth configuration.', 'error')
 		} finally {
 			setIsLoading(false)
 		}
@@ -91,7 +86,7 @@ export default function LoginGoogleButton() {
 					<IconLoading className="!h-4 !w-4 md:!h-5 md:!w-5" />
 				) : (
 					<img
-						src="https://cdn.livedash.eu/sites/google.png"
+						src="/live-assets/google.svg"
 						alt=""
 						aria-hidden="true"
 						className="w-4 h-4 transition-all duration-200 md:w-5 md:h-5 group-hover:scale-110 group-hover:rotate-3"

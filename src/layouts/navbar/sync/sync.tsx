@@ -198,7 +198,7 @@ export function SyncButton() {
 		<>
 			<Tooltip content="Error syncing data">
 				<div
-					className="relative p-2 transition-all cursor-pointer text-white/40 hover:text-white active:scale-90"
+					className="relative p-2 transition-all cursor-pointer text-white/70 hover:text-white active:scale-90"
 					id="profile-and-friends-list"
 					onClick={() => setShowModal(true)}
 				>

@@ -1,4 +1,5 @@
 import { getMainClient } from '@/services/api'
+import { localContents } from '@/services/local/catalog'
 import { useQuery } from '@tanstack/react-query'
 
 export interface ExplorerCategoryBadge {
@@ -46,11 +47,17 @@ export const useGetContents = () => {
 	return useQuery<FetchedContentsResponse>({
 		queryKey: ['contents'],
 		queryFn: async () => {
-			const api = await getMainClient()
+			try {
+				const api = await getMainClient()
 
-			const { data } = await api.get<FetchedContentsResponse>('/contents')
-			return data
+				const { data } = await api.get<FetchedContentsResponse>('/contents')
+				return data
+			} catch {
+				return localContents
+			}
 		},
-		staleTime: 5 * 60 * 1000, // 5 minutes
+		retry: 0,
+		staleTime: 5 * 60 * 1000,
+		initialData: localContents,
 	})
 }

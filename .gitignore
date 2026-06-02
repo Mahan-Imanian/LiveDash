@@ -29,3 +29,5 @@ packages
 .output
 dev
 local_output
+server/.env
+server/config.local.php

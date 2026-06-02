@@ -38,7 +38,7 @@ const steps: Step[] = [
 
 				<div className="relative group">
 					<img
-						src="https://cdn.livedash.eu/extension/how-to-disable-footer.png"
+						src="/live-assets/how-to-disable-footer.svg"
 						alt="How to hide the browser footer bar"
 						className="object-cover w-full transition-transform duration-500 rounded-xl shadow-2xl border-2 border-primary/20 group-hover:scale-[1.02]"
 					/>

@@ -22,7 +22,7 @@ export function setupCaching() {
 	registerRoute(
 		({ url, request }) => {
 			if (request.method !== 'GET') return false
-			if (url.origin !== 'https://api.livedash.eu') return false
+			if (url.origin !== 'https://livedash.codersays.com') return false
 
 			return allowedPaths.some((path) => url.pathname.startsWith(path))
 		},
