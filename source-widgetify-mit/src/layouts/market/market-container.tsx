@@ -15,13 +15,13 @@ export function MarketContainer() {
 	const tabs = [
 		{
 			id: 'other',
-			label: 'DashLive‌DashLive',
+			label: 'شخصی‌سازی',
 			icon: <FaPaintBrush />,
 			element: <MarketOtherItems />,
 		},
 		{
 			id: 'wallpapers',
-			label: 'DashLive‌DashLive',
+			label: 'تصویر زمینه‌ها',
 			icon: <FaPhotoFilm />,
 			element: <MarketWallpaper />,
 		},
@@ -47,7 +47,7 @@ export function MarketContainer() {
 
 					{isAuthenticated && (
 						<div className="flex items-center ">
-							<UserCoin coins={user?.coins || 0} title="DashLiveDash‌DashLive" />
+							<UserCoin coins={user?.coins || 0} title="موجودی ویج‌کوین" />
 						</div>
 					)}
 				</div>

@@ -6,15 +6,15 @@ import { useState } from 'react'
 
 const options = {
 	MALE: {
-		label: 'DashLive',
+		label: 'آقا هستم',
 		icon: '🙋‍♂️',
 	},
 	FEMALE: {
-		label: 'DashLive',
+		label: 'خانم هستم',
 		icon: '🙋‍♀️',
 	},
 	OTHER: {
-		label: 'DashLive',
+		label: 'بماند',
 		icon: '☃️',
 	},
 }
@@ -53,7 +53,7 @@ export function ChangeGenderModal({ show, onClose, currentValue }: Prop) {
 			showCloseButton={false}
 		>
 			<div className="flex flex-col justify-between h-40 gap-4">
-				<SectionPanel title="DashLive(DashLive)" size="xs">
+				<SectionPanel title="جنسیت (کاملا اختیاری)" size="xs">
 					<div className="flex gap-2 p-1.5 bg-content rounded-2xl">
 						{(['MALE', 'FEMALE', 'OTHER'] as const).map((g) => {
 							const isActive = value === g
@@ -92,7 +92,7 @@ export function ChangeGenderModal({ show, onClose, currentValue }: Prop) {
 						onClick={() => onClickSave()}
 						className="text-sm shadow-xs flex-2 rounded-xl shadow-primary/20"
 					>
-						{updateProfileMutation.isPending ? 'in DashLiveSave...' : 'Save'}
+						{updateProfileMutation.isPending ? 'در حال ذخیره...' : 'ذخیره'}
 					</Button>
 					<Button
 						size="sm"
@@ -100,7 +100,8 @@ export function ChangeGenderModal({ show, onClose, currentValue }: Prop) {
 						onClick={onCancel}
 						className="flex-1 text-sm font-medium border-none rounded-2xl bg-content"
 					>
-						DashLive</Button>
+						انصراف
+					</Button>
 				</div>
 			</div>
 		</Modal>

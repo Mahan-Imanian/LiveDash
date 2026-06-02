@@ -41,7 +41,7 @@ export const BASE_PET_OPTIONS: PetSettings = {
 	petType: PetTypes.DOG_AKITA,
 	petOptions: {
 		[PetTypes.DOG_AKITA]: {
-			name: 'DashLive',
+			name: 'آکیتا',
 			emoji: '🐶',
 			type: 'dog',
 			hungryState: {
@@ -50,7 +50,7 @@ export const BASE_PET_OPTIONS: PetSettings = {
 			},
 		},
 		[PetTypes.CHICKEN]: {
-			name: 'DashLive',
+			name: 'قدقدپور',
 			emoji: '🐔',
 			type: 'chicken',
 			hungryState: {
@@ -59,7 +59,7 @@ export const BASE_PET_OPTIONS: PetSettings = {
 			},
 		},
 		[PetTypes.CRAB]: {
-			name: 'DashLive',
+			name: 'چنگولی',
 			emoji: '🦀',
 			type: 'crab',
 			hungryState: {
@@ -68,7 +68,7 @@ export const BASE_PET_OPTIONS: PetSettings = {
 			},
 		},
 		[PetTypes.CAT]: {
-			name: 'DashLive',
+			name: 'زردآلو',
 			emoji: '🐈',
 			type: 'cat',
 			hungryState: {
@@ -77,7 +77,7 @@ export const BASE_PET_OPTIONS: PetSettings = {
 			},
 		},
 		[PetTypes.FROG]: {
-			name: 'DashLive',
+			name: 'قوری',
 			emoji: '🐸',
 			type: 'frog',
 			hungryState: {

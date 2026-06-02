@@ -29,7 +29,7 @@ export function FolderHeader({ folderPath, onNavigate }: FolderHeaderProps) {
 					onNavigate={onNavigate}
 					className="w-full "
 				/>
-				<Tooltip content={'DashLive'}>
+				<Tooltip content={'آموزش'}>
 					<Button
 						onClick={() => setIsOpen(true)}
 						size="xs"
@@ -38,7 +38,7 @@ export function FolderHeader({ folderPath, onNavigate }: FolderHeaderProps) {
 						<IoMdHelp size={12} />
 					</Button>
 				</Tooltip>
-				<Tooltip content={'Close'}>
+				<Tooltip content={'بستن'}>
 					<Button
 						onClick={() => onNavigate(null, -1)}
 						size="xs"
@@ -54,81 +54,94 @@ export function FolderHeader({ folderPath, onNavigate }: FolderHeaderProps) {
 				onClose={() => setIsOpen(false)}
 				closeOnBackdropClick={true}
 				direction="rtl"
-				title="DashLiveBookmark"
+				title="راهنمای استفاده از بوکمارک"
 			>
 				<div className="p-4 space-y-6">
 					<div>
 						<h3 className="mb-3 text-base font-semibold text-primary">
-							💡 DashLive‌DashLiveFolder‌DashLive</h3>
+							💡 ویژگی‌های پوشه‌ها
+						</h3>
 						<ul className="space-y-3 text-sm leading-relaxed text-muted">
 							<li className="flex items-start gap-2">
 								<span className="text-success mt-0.5">•</span>
 								<span>
-									<strong>DashLiveBookmark:</strong> in Folder‌DashLive‌DashLiveNameDashLiveBookmark DashLive</span>
+									<strong>بینهایت بوکمارک:</strong> در پوشه‌ها می‌توانید
+									نامحدود بوکمارک اضافه کنید
+								</span>
 							</li>
 							<li className="flex items-start gap-2">
 								<span className="text-success mt-0.5">•</span>
 								<span>
-									<strong>DashLiveWork:</strong> DashLive10 DashLive‌DashLive</span>
+									<strong>اسکرول خودکار:</strong> وقتی بیشتر از 10 ایتم
+									داشتید، لیست قابل اسکرول می‌شود
+								</span>
 							</li>
 							<li className="flex items-start gap-2">
 								<span className="text-success mt-0.5">•</span>
 								<span>
-									<strong>DashLive:</strong> Bookmark‌DashLivein Folder‌DashLive</span>
+									<strong>سازماندهی بهتر:</strong> بوکمارک‌های مشابه را
+									در پوشه‌های جداگانه قرار دهید
+								</span>
 							</li>
 						</ul>
 					</div>
 
 					<div>
 						<h3 className="mb-3 text-base font-semibold text-primary">
-							🎯 DashLive</h3>
+							🎯 نحوه استفاده
+						</h3>
 						<ul className="space-y-3 text-sm leading-relaxed text-muted">
 							<li className="flex items-start gap-2">
 								<span className="text-info mt-0.5">1.</span>
 								<span>
-									<strong>DashLive:</strong> DashLiveFolder
+									<strong>کلیک معمولی:</strong> برای وارد شدن به پوشه
 								</span>
 							</li>
 							<li className="flex items-start gap-2">
 								<span className="text-info mt-0.5">2.</span>
 								<span>
-									<strong>Ctrl + DashLive:</strong> DashLiveMay
-									Bookmark‌DashLiveFolder
+									<strong>Ctrl + کلیک:</strong> برای باز کردن همه
+									بوکمارک‌های پوشه
 								</span>
 							</li>
 							<li className="flex items-start gap-2">
 								<span className="text-info mt-0.5">3.</span>
 								<span>
-									<strong>DashLive:</strong> DashLiveMay
-									Bookmark‌DashLivein DashLive‌DashLive</span>
+									<strong>کلیک میانی:</strong> برای باز کردن همه
+									بوکمارک‌ها در تب‌های جدید
+								</span>
 							</li>
 							<li className="flex items-start gap-2">
 								<span className="text-info mt-0.5">4.</span>
 								<span>
-									<strong>DashLive:</strong> DashLiveBookmark‌DashLive</span>
+									<strong>کشیدن و رها کردن:</strong> برای تغییر ترتیب
+									بوکمارک‌ها
+								</span>
 							</li>
 						</ul>
 					</div>
 
 					<div>
 						<h3 className="mb-3 text-base font-semibold text-primary">
-							⚡ DashLive</h3>
+							⚡ نکات مفید
+						</h3>
 						<ul className="space-y-3 text-sm leading-relaxed text-muted">
 							<li className="flex items-start gap-2">
 								<span className="text-warning mt-0.5">💡</span>
 								<span>
-									DashLiveName‌DashLiveFolder‌DashLive(DashLive"Work"DashLive
-									"Entertainment")
+									از نام‌های توصیفی برای پوشه‌ها استفاده کنید (مثل "کار"،
+									"سرگرمی")
 								</span>
 							</li>
 							<li className="flex items-start gap-2">
 								<span className="text-warning mt-0.5">💡</span>
-								<span>Folder‌DashLiveinDashLive</span>
+								<span>پوشه‌های تودرتو برای سازماندهی بهتر ایجاد کنید</span>
 							</li>
 							<li className="flex items-start gap-2">
 								<span className="text-warning mt-0.5">💡</span>
 								<span>
-									DashLive</span>
+									از مسیر بالای صفحه برای ناوبری سریع استفاده کنید
+								</span>
 							</li>
 						</ul>
 					</div>

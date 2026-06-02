@@ -9,7 +9,7 @@ interface VoiceSearchPortalProps {
 
 export type Language = 'fa-IR' | 'en-US'
 const languages = [
-	{ code: 'fa-IR' as Language, name: 'DashLive' },
+	{ code: 'fa-IR' as Language, name: 'فارسی' },
 	{ code: 'en-US' as Language, name: 'English' },
 ]
 
@@ -35,7 +35,8 @@ export function VoiceSearchPortal({ onClose, onSearch }: VoiceSearchPortalProps)
 			<div className="flex items-center justify-between px-1 mb-6">
 				<div className="flex items-center gap-2">
 					<span className="text-[15px] font-medium text-base-content/90">
-						SearchDashLive</span>
+						جستجوی صوتی
+					</span>
 					<div className="flex items-end h-3 gap-1 mb-1">
 						{[...Array(4)].map((_, i) => (
 							<div
@@ -66,7 +67,7 @@ export function VoiceSearchPortal({ onClose, onSearch }: VoiceSearchPortalProps)
 					>
 						{currentTranscript ||
 							(selectedLanguage === 'fa-IR'
-								? 'in DashLive'
+								? 'در حال گوش دادن...'
 								: 'Listening...')}
 					</p>
 				</div>

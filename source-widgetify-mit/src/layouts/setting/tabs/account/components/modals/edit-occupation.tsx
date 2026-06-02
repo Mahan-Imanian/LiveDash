@@ -44,7 +44,7 @@ export function ChangeOccupationModal({ show, onClose, currentValue }: Prop) {
 			showCloseButton={false}
 		>
 			<div className="flex flex-col justify-between h-40 gap-4">
-				<SectionPanel title="DashLive‌WorkDashLive‌DashLive" size="xs">
+				<SectionPanel title="چه‌کاره‌ای؟" size="xs">
 					<OccupationSelector
 						occupations={FetchedOccupations}
 						selectedOccupation={occupation}
@@ -61,7 +61,7 @@ export function ChangeOccupationModal({ show, onClose, currentValue }: Prop) {
 											? FetchedOccupations.find(
 													(o) => o.id === occupation
 												)?.title
-											: 'DashLive'}
+											: 'انتخاب شغل'}
 									</span>
 								</div>
 								<LuChevronRight size={18} className="text-muted" />
@@ -78,7 +78,7 @@ export function ChangeOccupationModal({ show, onClose, currentValue }: Prop) {
 						onClick={() => onClickSave()}
 						className="text-sm shadow-xs flex-2 rounded-xl shadow-primary/20"
 					>
-						{updateProfileMutation.isPending ? 'in DashLiveSave...' : 'Save'}
+						{updateProfileMutation.isPending ? 'در حال ذخیره...' : 'ذخیره'}
 					</Button>
 					<Button
 						size="sm"
@@ -86,7 +86,8 @@ export function ChangeOccupationModal({ show, onClose, currentValue }: Prop) {
 						onClick={onCancel}
 						className="flex-1 text-sm font-medium border-none rounded-2xl bg-content"
 					>
-						DashLive</Button>
+						انصراف
+					</Button>
 				</div>
 			</div>
 		</Modal>

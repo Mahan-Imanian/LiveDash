@@ -122,7 +122,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 			}
 
 			let noteIndex = notes.findIndex((n) => n.id === id)
-			if (noteIndex === -1) return showToast('Notes DashLive', 'error')
+			if (noteIndex === -1) return showToast('یادداشت پیدا نشد', 'error')
 			notes[noteIndex] = updatedNote
 			sync(notes, true)
 		}, 400)

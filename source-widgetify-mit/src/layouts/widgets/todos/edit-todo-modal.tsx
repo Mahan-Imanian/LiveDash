@@ -71,7 +71,7 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 
 	const handleSave = useCallback(async () => {
 		if (!text.trim()) {
-			showToast('DashLiveTask DashLive‌DashLive', 'error')
+			showToast('متن وظیفه نمی‌تواند خالی باشد', 'error')
 			return
 		}
 
@@ -94,7 +94,7 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 			showToast(translateError(err) as any, 'error')
 			return
 		}
-		showToast('Task DashLiveEdit DashLive', 'success')
+		showToast('وظیفه با موفقیت ویرایش شد', 'success')
 		onClose()
 		queryClient.invalidateQueries({ queryKey: ['getTodos'] })
 	}, [text, notes, category, priority, selectedDate, onClose])
@@ -103,7 +103,7 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 		<Modal
 			isOpen={isOpen}
 			onClose={onClose}
-			title="Edit Task"
+			title="ویرایش وظیفه"
 			size="md"
 			direction="rtl"
 		>
@@ -112,7 +112,7 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 					<TextInput
 						value={text}
 						onChange={handleTextChange}
-						placeholder="DashLiveTask DashLive"
+						placeholder="متن وظیفه را وارد کنید"
 						className="text-sm"
 						debounce={false}
 					/>
@@ -130,8 +130,8 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 							className="min-w-full text-right px-2 py-1.5 min-h-8 text-xs rounded-xl border border-base-300 hover:border-primary/50 transition-colors bg-content text-content opacity-75 cursor-pointer"
 						>
 							{selectedDate
-								? selectedDate.locale('fa').format('ddddDashLive jD jMMMM')
-								: 'DashLive'}
+								? selectedDate.locale('fa').format('dddd، jD jMMMM')
+								: 'انتخاب تاریخ'}
 						</button>
 						<ClickableTooltip
 							triggerRef={datePickerButtonRef}
@@ -167,7 +167,7 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 					<TextInput
 						value={category}
 						onChange={handleCategoryChange}
-						placeholder="DashLive‌DashLive(DashLive: DashLiveWorkDashLive)"
+						placeholder="دسته‌بندی (مثال: شخصی، کاری)"
 						className="text-xs placeholder:text-xs py-1.5"
 						debounce={false}
 					/>
@@ -180,7 +180,7 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 					<textarea
 						value={notes}
 						onChange={handleNotesChange}
-						placeholder="Notes DashLiveLink (DashLive)"
+						placeholder="یادداشت یا لینک (اختیاری)"
 						className="w-full px-4 py-2 mt-2 text-base font-light leading-relaxed transition-all border-none outline-none resize-none bg-content min-h-48 focus:ring-1 focus:ring-primary/30 rounded-xl text-muted "
 					/>
 				</div>
@@ -195,7 +195,7 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 							'btn btn-circle !bg-base-300 hover:!bg-error/10 text-muted hover:!text-error px-10 border-none shadow-none !rounded-2xl transition-colors duration-300 ease-in-out'
 						}
 					>
-						Cancel
+						لغو
 					</Button>
 					<Button
 						onClick={handleSave}
@@ -207,7 +207,7 @@ export function EditTodoModal({ todo, isOpen, onClose }: EditTodoModalProps) {
 							'btn btn-circle !w-fit px-8 border-none shadow-none text-secondary !rounded-2xl transition-colors duration-300 ease-in-out'
 						}
 					>
-						Save
+						ذخیره
 					</Button>
 				</div>
 			</div>

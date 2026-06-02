@@ -23,7 +23,7 @@ export function ConnectionModal({
 		<Modal
 			isOpen={isOpen}
 			onClose={onClose}
-			title={`DashLive‌DashLiveOnline`}
+			title={`مدیریت پلتفرم‌های متصل`}
 			direction="rtl"
 		>
 			<div className="p-4">
@@ -34,7 +34,7 @@ export function ConnectionModal({
 						{platform.icon}
 					</div>
 					<h2 className="text-xl font-semibold text-content">
-						{platform.connected ? 'DashLive' : 'DashLive'} {platform.name}
+						{platform.connected ? 'قطع اتصال از' : 'اتصال به'} {platform.name}
 					</h2>
 				</div>
 
@@ -42,9 +42,13 @@ export function ConnectionModal({
 					{platform.connected ? (
 						<div className="space-y-2">
 							<p className="text-content">
-								DashLive‌DashLive{platform.name} DashLive</p>
+								آیا مطمئن هستید که می‌خواهید اتصال به {platform.name} را
+								قطع کنید؟
+							</p>
 							<div className="p-3 text-sm rounded-2xl text-warning-content bg-warning/80">
-								⚠️ DashLive‌DashLive‌DashLive</div>
+								⚠️ با قطع اتصال، دسترسی به داده‌ها و ویژگی‌های مربوط به این
+								پلتفرم از دست خواهد رفت.
+							</div>
 						</div>
 					) : (
 						<div className="space-y-3">
@@ -52,7 +56,7 @@ export function ConnectionModal({
 							{platform.features && platform.features.length > 0 && (
 								<div>
 									<p className="mb-2 text-sm font-medium text-content">
-										DashLive:
+										امکانات:
 									</p>
 									<ul className="space-y-1">
 										{platform.features.map(
@@ -72,7 +76,7 @@ export function ConnectionModal({
 							{platform.permissions && platform.permissions.length > 0 && (
 								<div>
 									<p className="mb-2 text-sm font-medium text-content">
-										DashLive:
+										مجوزهای مورد نیاز:
 									</p>
 									<ul className="space-y-1">
 										{platform.permissions.map(
@@ -100,7 +104,7 @@ export function ConnectionModal({
 						disabled={isLoading}
 						className="flex-1 text-xs font-bold border-none cursor-pointer h-9 rounded-xl bg-base-200 text-content hover:bg-base-300/90"
 					>
-						Cancel
+						لغو
 					</Button>
 					<Button
 						size="sm"
@@ -109,12 +113,13 @@ export function ConnectionModal({
 						loadingText={
 							<span className="flex items-center justify-center gap-2">
 								<div className="w-4 h-4 border-2 rounded-full border-white/30 border-t-white animate-spin" />
-								in DashLive</span>
+								در حال پردازش
+							</span>
 						}
 						className={`flex-[2] h-9 rounded-xl font-black text-sm transition-all shadow-sm active:scale-95
                     ${platform.connected ? 'bg-error text-white' : 'bg-primary text-white'}`}
 					>
-						{platform.connected ? 'DashLive' : 'Confirm DashLive Start DashLive'}
+						{platform.connected ? 'قطع اتصال' : 'تایید و شروع اتصال'}
 					</Button>
 				</div>
 			</div>

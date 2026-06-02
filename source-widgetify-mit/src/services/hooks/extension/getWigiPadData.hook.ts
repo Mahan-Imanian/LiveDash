@@ -48,7 +48,7 @@ export interface WigiPadDataResponse {
 	birthdays: WigiPadBirthday[]
 	notifications: WigiPadNotification[]
 	upcomingCalendarEvents: UpcomingCalendarEvent[]
-	dashliveCardNotifications: NotificationItem[]
+	widgetifyCardNotifications: NotificationItem[]
 }
 
 async function fetchWigiPadData(timezone: string): Promise<WigiPadDataResponse> {

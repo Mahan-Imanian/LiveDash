@@ -24,7 +24,7 @@ export function FilterTooltip({
 	options,
 	value,
 	onChange,
-	placeholder = 'DashLive',
+	placeholder = 'فیلتر',
 	className,
 	buttonClassName,
 	tooltipClassName,

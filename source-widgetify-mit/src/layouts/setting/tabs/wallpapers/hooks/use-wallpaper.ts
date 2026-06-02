@@ -31,8 +31,8 @@ export function useWallpaper(
 					const gradientWallpaper: Wallpaper = {
 						id: wallpaper.id,
 						name: wallpaper.id.includes('custom')
-							? 'DashLive'
-							: 'DashLive',
+							? 'گرادیان سفارشی'
+							: 'گرادیان',
 						type: 'GRADIENT',
 						src: '',
 						previewSrc: '',
@@ -90,7 +90,7 @@ export function useWallpaper(
 	const handleSelectBackground = async (wallpaper: Wallpaper) => {
 		if (wallpaper.coin && !isAuthenticated) {
 			return showToast(
-				'DashLiveAccount DashLive',
+				'برای انتخاب این تصویر تصویر زمینه باید وارد حساب کاربری شوید.',
 				'error'
 			)
 		}
@@ -110,7 +110,7 @@ export function useWallpaper(
 			setSelectedBackground(wallpaper)
 
 			if (wallpaper.coin && !wallpaper.isOwned) {
-				showToast('DashLive🎉', 'success')
+				showToast('هووورا! تصویر زمینه فعال شد 🎉', 'success')
 			}
 		}
 

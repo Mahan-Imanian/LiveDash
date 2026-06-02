@@ -24,7 +24,8 @@ export function ProfileProgressNotification() {
 			<div className="flex flex-row items-center w-full gap-2 rounded-xl ">
 				<RadialProgressSmall percentage={profilePercentage} size={15} />
 				<p className="text-[11px] w-fit font-normal text-base-content/60">
-					DashLive</p>
+					پروفایلت رو کامل کن و پاداش بگیر!
+				</p>
 			</div>
 			<div className="flex items-start justify-between">
 				<button

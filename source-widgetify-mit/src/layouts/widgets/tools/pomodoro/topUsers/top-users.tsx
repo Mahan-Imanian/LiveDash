@@ -23,14 +23,16 @@ export const TopUsersTab: React.FC<TopUsersTabProps> = ({ type }) => {
 	if (error) {
 		return (
 			<div className="p-4 font-bold text-center text-error bg-error/20 rounded-2xl">
-				Error in DashLive‌DashLive</div>
+				خطا در بارگذاری داده‌ها
+			</div>
 		)
 	}
 
 	if (!data?.tops || data.tops.length === 0) {
 		return (
 			<div className="p-4 font-bold text-center text-primary bg-primary/20 rounded-2xl">
-				DashLiveWorkDashLive</div>
+				لیست کاربران خالی است
+			</div>
 		)
 	}
 

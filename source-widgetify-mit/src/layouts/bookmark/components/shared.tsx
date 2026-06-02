@@ -22,8 +22,8 @@ export function IconSourceSelector({
 			size="small"
 			tabMode="sample"
 			tabs={[
-				{ id: 'auto', label: 'DashLiveWork' },
-				{ id: 'upload', label: 'DashLive' },
+				{ id: 'auto', label: 'آیکون خودکار' },
+				{ id: 'upload', label: 'آپلود آیکون' },
 			]}
 			activeTab={iconSource}
 			onTabClick={(tab) => setIconSource(tab)}
@@ -46,10 +46,10 @@ export function TypeSelector({
 			tabs={[
 				{
 					id: 'BOOKMARK',
-					label: 'Bookmark',
+					label: 'بوکمارک',
 					icon: <HiOutlineBookmark size={14} />,
 				},
-				{ id: 'FOLDER', label: 'Folder', icon: <HiOutlineFolder size={14} /> },
+				{ id: 'FOLDER', label: 'پوشه', icon: <HiOutlineFolder size={14} /> },
 			]}
 			activeTab={type}
 			onTabClick={(tab) => setType(tab)}
@@ -150,7 +150,8 @@ export function useBookmarkIcon() {
 					{iconLoadError && (
 						<div className="absolute bottom-[-20px] left-0 right-0 text-center">
 							<span className="text-xs text-yellow-500">
-								DashLive</span>
+								آیکون بارگذاری نشد
+							</span>
 						</div>
 					)}
 				</div>
@@ -186,7 +187,7 @@ export function useBookmarkIcon() {
 		if (!file) return
 
 		if (!file.type.startsWith('image/')) {
-			showToast('DashLive', 'error')
+			showToast('لطفاً فقط فایل تصویری آپلود کنید', 'error')
 			return
 		}
 
@@ -220,7 +221,7 @@ export function ShowAdvancedButton({
 				'bg-base-300 hover:bg-base-300/70 border border-base-300/70 flex items-center gap-1 px-3 py-1 text-sm font-medium transition-all duration-200 cursor-pointer text-content rounded-xl active:scale-95'
 			}
 		>
-			<span>{showAdvanced ? 'DashLive‌DashLive' : 'DashLive‌DashLive'}</span>
+			<span>{showAdvanced ? 'گزینه‌های کمتر' : 'گزینه‌های بیشتر'}</span>
 			<FiChevronUp
 				size={16}
 				className={`transition-all duration-300 ${showAdvanced ? 'rotate-0' : 'rotate-180'}`}

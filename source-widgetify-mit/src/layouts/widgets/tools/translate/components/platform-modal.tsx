@@ -41,20 +41,23 @@ export function PlatformModal({ isOpen, onClose, platform }: PlatformModalProps)
 					</div>
 				</div>
 
-				<h3 className="text-lg font-semibold text-content">Privacy DashLiveMay</h3>
+				<h3 className="text-lg font-semibold text-content">حریم خصوصی ترجمه</h3>
 
 				<div className="space-y-2 text-sm leading-relaxed text-content/80">
 					<p>
-						DashLivein DashLiveMay DashLiveMay DashLive{' '}
+						ویجتیفای هیچگونه نقشی در ترجمه ندارد. ترجمه توسط{' '}
 						<button
 							onClick={handleOpenLink}
 							className="font-medium text-blue-400 underline cursor-pointer hover:text-blue-500"
 						>
 							{platform.name}
 						</button>{' '}
-						DashLive‌DashLive</p>
+						انجام می‌شود.
+					</p>
 					<p className="text-xs text-content/60">
-						DashLive‌DashLive(DashLiveSign inDashLive) DashLiveMay DashLiveyear DashLive‌DashLive</p>
+						داده‌های شما (فقط متن ورودی) مستقیماً به سرویس ترجمه ارسال می‌شود و
+						ویجتیفای دسترسی به آن ندارد.
+					</p>
 				</div>
 
 				<div className="pt-2">
@@ -63,7 +66,8 @@ export function PlatformModal({ isOpen, onClose, platform }: PlatformModalProps)
 						size="md"
 						className="w-full text-white border-none bg-primary hover:bg-primary/90 rounded-2xl"
 					>
-						DashLive</Button>
+						متوجه شدم
+					</Button>
 				</div>
 			</div>
 		</Modal>

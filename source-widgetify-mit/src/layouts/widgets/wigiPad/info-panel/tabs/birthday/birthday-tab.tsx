@@ -28,7 +28,7 @@ export function BirthdayTab({ birthdays }: Props) {
 					>
 						<LuGift className="text-content" size={24} />
 					</div>
-					<p className="mt-1 text-center text-content">DashLiveToday DashLive</p>
+					<p className="mt-1 text-center text-content">هیچ تولدی امروز نیست.</p>
 				</div>
 			)}
 		</div>

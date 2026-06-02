@@ -8,12 +8,12 @@ import { InfoWeather } from '../widgets/wigiPad/info-panel/infoWeather'
 import { NotificationItem } from '../widgets/wigiPad/info-panel/components/ann-item'
 import Analytics from '@/analytics'
 import { PomodoroTimer } from '../widgets/tools/pomodoro/pomodoro-timer'
-import { NotificationCenter } from '../dashlive-card/notification-center/notification-center'
+import { NotificationCenter } from '../widgetify-card/notification-center/notification-center'
 
 const sections = [
-	{ id: 'all', label: 'Dash DashLive', icon: <MdOutlineTab size={14} /> },
-	{ id: 'weather', label: 'Weather', icon: <MdOutlineCloud size={14} /> },
-	{ id: 'pomodoro', label: 'Pomodoro', icon: <MdOutlineTimer size={14} /> },
+	{ id: 'all', label: 'ویجی تب', icon: <MdOutlineTab size={14} /> },
+	{ id: 'weather', label: 'آب و هوا', icon: <MdOutlineCloud size={14} /> },
+	{ id: 'pomodoro', label: 'پومودورو', icon: <MdOutlineTimer size={14} /> },
 ]
 
 export function SimplifyYadkar() {

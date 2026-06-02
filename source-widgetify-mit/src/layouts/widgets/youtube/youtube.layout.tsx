@@ -94,10 +94,11 @@ export function YouTubeLayout() {
 						<div className="flex items-center gap-2">
 							<FaYoutube className="w-5 h-5 text-red-500" />
 							<h3 className={'text-sm font-medium text-content'}>
-								YouTube stats
+								آمار یوتیوب
 							</h3>
 							<span className="bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary rounded-2xl">
-								DashLive</span>
+								آزمایشی
+							</span>
 						</div>
 
 						<Button
@@ -134,7 +135,8 @@ export function YouTubeLayout() {
 									<FaYoutube className="text-content" size={24} />
 								</div>
 								<p className="mt-1 text-center text-content">
-									Error in inDashLiveUsername DashLive</p>
+									خطا در دریافت اطلاعات نام کاربری را بررسی کنید کنید.
+								</p>
 							</div>
 						)}
 
@@ -152,7 +154,8 @@ export function YouTubeLayout() {
 									<FaYoutube className="text-content" size={24} />
 								</div>
 								<p className="mt-1 text-center text-content">
-									DashLiveSettings Username DashLive</p>
+									لطفاً از تنظیمات نام کاربری یوتیوب را وارد کنید.
+								</p>
 							</div>
 						)}
 

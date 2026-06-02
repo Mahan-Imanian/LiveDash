@@ -16,8 +16,8 @@ import Analytics from '@/analytics'
 import { HiRectangleGroup } from 'react-icons/hi2'
 import { usePage } from '@/context/page.context'
 
-const DASHLIVE_URLS = {
-	website: 'https://dashlive.ir',
+const WIDGETIFY_URLS = {
+	website: 'https://widgetify.ir',
 } as const
 
 const tabs = [
@@ -125,7 +125,7 @@ export function NavbarLayout(): JSX.Element {
 								size={16}
 								className="animate-bounce text-warning"
 							/>
-							<span>DashLiveDashDashLive</span>
+							<span>حالت جابجایی فعال، ویجت هارو جابجا کنید</span>
 							<button
 								onClick={() => toggleCanReOrderWidget()}
 								className="transition-colors hover:text-red-400"
@@ -186,13 +186,13 @@ export function NavbarLayout(): JSX.Element {
 					<div className="relative z-10 flex items-center gap-2 pr-1 ml-0.5">
 						<NavbarTabs />
 						<a
-							href={DASHLIVE_URLS.website}
+							href={WIDGETIFY_URLS.website}
 							target="_blank"
 							rel="noopener noreferrer"
 							className="flex items-center justify-center w-8 h-8 border rounded-full border-white/10 bg-black/20"
 						>
 							<img
-								src={'https://cdn.dashlive.ir/extension/logo.png'}
+								src={'https://cdn.widgetify.ir/extension/logo.png'}
 								alt="Logo"
 								className="object-contain w-5 h-5 opacity-80"
 							/>

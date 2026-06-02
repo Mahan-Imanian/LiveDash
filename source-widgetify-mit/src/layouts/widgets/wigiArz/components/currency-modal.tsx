@@ -162,13 +162,13 @@ export const CurrencyModalComponent = ({
 								handleCurrencyAmountChange(parseFormattedNumber(e))
 							}
 							className=" !rounded-2xl !px-4 border-content"
-							placeholder="DashLive"
+							placeholder="مبلغ"
 						/>
 					</div>
 
 					<div className="flex items-center gap-2 p-1 transition-colors duration-200 border border-transparent rounded-2xl bg-content hover:bg-base-200 hover:border-base-300">
 						<span className="text-sm font-medium text-base-content min-w-fit">
-							USD
+							تومان
 						</span>
 						<TextInput
 							type="text"
@@ -177,7 +177,7 @@ export const CurrencyModalComponent = ({
 								handleTomanAmountChange(parseFormattedNumber(value))
 							}
 							className=" !rounded-2xl !px-4 border-content"
-							placeholder="DashLive"
+							placeholder="مبلغ"
 						/>
 					</div>
 				</div>

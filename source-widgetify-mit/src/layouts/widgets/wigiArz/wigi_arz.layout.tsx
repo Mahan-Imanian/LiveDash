@@ -86,14 +86,16 @@ export function WigiArzLayout({
 								<FiDollarSign className="text-content" size={24} />
 							</div>
 							<p className="mt-1 text-center text-content">
-								RatesDashLive</p>
+								ارزهای مورد نظر خود را اضافه کنید
+							</p>
 							<Button
 								rounded="full"
 								size="sm"
 								className="mt-1 border border-base-300/70 px-5 bg-base-300/70 hover:!bg-primary hover:text-white hover:border-primary"
 								onClick={onSettingClick}
 							>
-								Add DashLive</Button>
+								افزودن ارز
+							</Button>
 						</div>
 					) : (
 						<DndContext
@@ -130,7 +132,7 @@ export function WigiArzLayout({
 					className={'flex flex-col gap-1'}
 				>
 					<ArzHeader
-						title="Dash‌ DashLive"
+						title="ویجی‌ ارز"
 						onSettingsClick={() => onSettingClick()}
 					/>
 
@@ -148,14 +150,16 @@ export function WigiArzLayout({
 								<FiDollarSign className="text-content" size={24} />
 							</div>
 							<p className="text-center text-content">
-								RatesDashLive</p>
+								ارزهای مورد نظر خود را اضافه کنید.
+							</p>
 							<Button
 								rounded="full"
 								onClick={() => onSettingClick()}
 								size="sm"
 								className="border border-base-300/70 px-5 bg-base-300/70 hover:!bg-primary hover:text-white hover:border-primary"
 							>
-								Add DashLive</Button>
+								افزودن ارز
+							</Button>
 						</div>
 					) : (
 						<DndContext

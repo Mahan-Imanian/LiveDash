@@ -8,7 +8,7 @@ import { CalendarEvent } from './google-event.item'
 import { useAuth } from '@/context/auth.context'
 import { Button } from '@/components/button/button'
 import { callEvent } from '@/common/utils/call-event'
-import type { DashLiveDate } from '../../utils'
+import type { WidgetifyDate } from '../../utils'
 import { GoogleEventItemSkeleton } from './google-event.item-skeleton'
 
 export const GoogleCalendarView: React.FC = () => {
@@ -24,12 +24,12 @@ export const GoogleCalendarView: React.FC = () => {
 		return () => clearInterval(timer)
 	}, [])
 
-	const getStartOfDay = (date: DashLiveDate) => {
-		return `${date.clone().locale('en').format('YYYY-MM-DD')}T00:00:00+00:00`
+	const getStartOfDay = (date: WidgetifyDate) => {
+		return `${date.clone().locale('en').format('YYYY-MM-DD')}T00:00:00+03:30`
 	}
 
-	const getEndOfDay = (date: DashLiveDate) => {
-		return `${date.clone().locale('en').format('YYYY-MM-DD')}T23:59:59+00:00`
+	const getEndOfDay = (date: WidgetifyDate) => {
+		return `${date.clone().locale('en').format('YYYY-MM-DD')}T23:59:59+03:30`
 	}
 
 	const { data: events, isLoading } = useGetGoogleCalendarEvents(
@@ -90,15 +90,15 @@ export const GoogleCalendarView: React.FC = () => {
 				</div>
 				<p className="text-[11px] text-base-content/60 leading-relaxed">
 					{isAuthenticated
-						? 'DashLiveNameDashLive‌DashLiveCalendar DashLiveOnline DashLive'
-						: 'DashLiveAccount DashLive'}
+						? 'برای مشاهده برنامه‌ها، تقویم گوگل را متصل کنید.'
+						: 'لطفاً وارد حساب کاربری خود شوید.'}
 				</p>
 				<Button
 					size="sm"
 					className="text-xs rounded-xl"
 					onClick={() => callEvent('openProfile', 'platforms')}
 				>
-					{isAuthenticated ? 'DashLiveCalendar' : 'Sign in'}
+					{isAuthenticated ? 'اتصال تقویم' : 'ورود'}
 				</Button>
 			</div>
 		)
@@ -136,7 +136,7 @@ export const GoogleCalendarView: React.FC = () => {
 						className={`text-[12px] font-black leading-tight text-base-content`}
 					>
 						{todayFlag
-							? `TodayDashLive ${selectedDay.format('dddd')}`
+							? `امروز، ${selectedDay.format('dddd')}`
 							: selectedDay.format('dddd')}
 					</span>
 					<span
@@ -164,7 +164,8 @@ export const GoogleCalendarView: React.FC = () => {
 					<div className="flex flex-col items-center justify-center flex-1 gap-2 py-8 opacity-25">
 						<HiOutlineCalendar size={28} strokeWidth={1.5} />
 						<p className="text-[10px] font-medium text-base-content">
-							DashLive</p>
+							رویدادی وجود ندارد
+						</p>
 					</div>
 				)}
 

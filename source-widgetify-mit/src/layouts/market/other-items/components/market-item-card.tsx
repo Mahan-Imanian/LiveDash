@@ -19,11 +19,11 @@ const SUPPORTED_TYPES: MarketItemType[] = ['BROWSER_TITLE', 'THEME', 'FONT']
 const getItemTypeLabel = (type: string) => {
 	switch (type) {
 		case 'BROWSER_TITLE':
-			return 'Title DashLive'
+			return 'عنوان مرورگر'
 		case 'FONT':
-			return 'DashLive'
+			return 'فونت'
 		case 'THEME':
-			return 'DashLive'
+			return 'تم'
 		default:
 			return type
 	}
@@ -53,7 +53,7 @@ export function MarketItemCard({
 
 	function onPurchaseButtonClick() {
 		if (needUpgrade) {
-			showToast('DashLive‌dayDashLive', 'error')
+			showToast('نیاز به به‌روزرسانی افزونه دارد!', 'error')
 			return
 		}
 		onPurchase()
@@ -93,7 +93,7 @@ export function MarketItemCard({
 				{isOwned ? (
 					<div className="flex items-center h-8 gap-1 px-1 border bg-success/10 text-success rounded-xl border-success/20">
 						<FiCheck size={14} />
-						<span>DashLive‌DashLive</span>
+						<span>خریداری‌شده</span>
 					</div>
 				) : (
 					<Button
@@ -106,7 +106,7 @@ export function MarketItemCard({
 					>
 						<div className="flex items-center gap-1">
 							<FiShoppingCart size={14} />
-							<span>{canAfford ? 'DashLive' : 'DashLive'}</span>
+							<span>{canAfford ? 'خرید' : 'موجودی'}</span>
 						</div>
 					</Button>
 				)}

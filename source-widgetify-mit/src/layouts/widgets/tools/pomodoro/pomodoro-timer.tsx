@@ -117,18 +117,18 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onComplete }) => {
 					//todo: implement Firefox specific audio playback
 				} else {
 					const audio = new Audio(
-						'https://cdn.dashlive.ir/effects/alarm_1.mp3'
+						'https://cdn.widgetify.ir/effects/alarm_1.mp3'
 					)
 					audio.autoplay = true
 					audio.play()
 				}
 			}
 			const textList: Record<TimerMode, string> = {
-				work: 'DashLiveWork DashLiveBreak DashLive',
-				'short-break': 'Break DashLive‌DashLiveWork Continue DashLive',
+				work: 'تایمر کار تمام شد! حالا وقت یه استراحت کوتاهه.',
+				'short-break': 'استراحت کوتاه تموم شد! آماده‌اید به کار ادامه بدید؟',
 			}
 
-			new Notification('DashLivePomodoro', {
+			new Notification('تایمر پومودورو', {
 				body: textList[mode],
 				dir: 'rtl',
 			})
@@ -296,11 +296,11 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onComplete }) => {
 							onTabClick={(v) => handleModeChange(v as any)}
 							tabs={[
 								{
-									label: 'Work',
+									label: 'کار',
 									id: 'work',
 								},
 								{
-									label: 'Break',
+									label: 'استراحت',
 									id: 'short-break',
 								},
 							]}
@@ -311,9 +311,9 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onComplete }) => {
 						<SelectBox
 							value={topUsersType}
 							options={[
-								{ label: 'DashLive', value: TopUsersType.ALL_TIME },
-								{ label: 'DashLive', value: TopUsersType.WEEKLY },
-								{ label: 'DashLivedayDashLive', value: TopUsersType.DAILY },
+								{ label: 'جدول کلی', value: TopUsersType.ALL_TIME },
+								{ label: 'جدول هفتگی', value: TopUsersType.WEEKLY },
+								{ label: 'جدول روزانه', value: TopUsersType.DAILY },
 							]}
 							onChange={(val) => onChangeTopUsersType(val)}
 						/>
@@ -324,8 +324,8 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onComplete }) => {
 					<Tooltip
 						content={
 							currentTab === 'timer'
-								? 'DashLiveWorkDashLive'
-								: 'DashLive'
+								? 'جدول برترین کاربران'
+								: 'بازگشت به تایمر'
 						}
 					>
 						<Button
@@ -340,7 +340,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({ onComplete }) => {
 							<TfiCup size={12} />
 						</Button>
 					</Tooltip>
-					<Tooltip content="Settings">
+					<Tooltip content="تنظیمات">
 						<Button
 							size="sm"
 							onClick={() => setShowSettings(!showSettings)}

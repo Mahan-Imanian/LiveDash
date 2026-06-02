@@ -40,7 +40,7 @@ export function NetworkLayout({ enableBackground, inComboWidget }: Prop) {
 		city: null,
 		isp: null,
 		ping: null,
-		speed: 'DashLive',
+		speed: 'به زودی..',
 	})
 
 	const [isLoading, setIsLoading] = useState(true)
@@ -120,10 +120,10 @@ export function NetworkLayout({ enableBackground, inComboWidget }: Prop) {
 					{!inComboWidget && (
 						<div className="flex items-center justify-between mb-2">
 							<h4 className="flex items-center gap-2 text-sm font-semibold text-content">
-								Network
+								شبکه
 							</h4>
 
-							<Tooltip content="DashLive">
+							<Tooltip content="بارگذاری مجدد">
 								<Button
 									onClick={handleRefresh}
 									size="xs"
@@ -149,15 +149,15 @@ export function NetworkLayout({ enableBackground, inComboWidget }: Prop) {
 										></div>
 										<span className="text-xs font-medium text-muted">
 											{networkInfo.status === 'online'
-												? 'Online'
-												: 'Offline'}
+												? 'متصل'
+												: 'قطع شده'}
 										</span>
 									</div>
 									{networkInfo.countryIcon && (
 										<Tooltip
 											content={
 												networkInfo.isp ||
-												'DashLive‌DashLiveNameDashLive'
+												'ارائه‌دهنده خدمات اینترنتی نامشخص'
 											}
 										>
 											<AvatarComponent
@@ -202,7 +202,7 @@ export function NetworkLayout({ enableBackground, inComboWidget }: Prop) {
 								size={14}
 								className={isLoading ? 'animate-spin' : ''}
 							/>
-							DashLive‌dayDashLiveNetwork
+							به‌روزرسانی شبکه
 						</Button>
 					</div>
 				</div>

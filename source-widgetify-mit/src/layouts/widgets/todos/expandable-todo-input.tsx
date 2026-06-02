@@ -135,7 +135,7 @@ export function ExpandableTodoInput({ onAddTodo }: ExpandableTodoInputProps) {
 							ref={inputRef}
 							defaultValue=""
 							onChange={handleTodoTextChange}
-							placeholder="Title Task DashLive"
+							placeholder="عنوان وظیفه جدید..."
 							className="!h-6 !border-none !outline-none !shadow-none !ring-0 w-full p-0 pr-1 text-sm !bg-transparent rounded-2xl focus:placeholder:text-base-content/20"
 							onFocus={handleInputFocus}
 							onKeyDown={handleKeyDown}
@@ -172,7 +172,7 @@ export function ExpandableTodoInput({ onAddTodo }: ExpandableTodoInputProps) {
 											onChange={(e) =>
 												handleNotesChange(e.target.value)
 											}
-											placeholder="DashLiveLink DashLive"
+											placeholder="توضیحات بیشتر یا لینک اضافه کنید..."
 											className="w-full px-4 py-2 text-xs leading-relaxed transition-all outline-none resize-none rounded-2xl min-h-28 focus:placeholder:text-base-content/20 text-base-content/60"
 										/>
 									</div>
@@ -205,7 +205,7 @@ export function ExpandableTodoInput({ onAddTodo }: ExpandableTodoInputProps) {
 												className="text-base-content/40 "
 											/>
 											<p className="truncate max-w-14 min-w-5">
-												{category || 'DashLive‌DashLive'}
+												{category || 'دسته‌بندی'}
 											</p>
 										</Button>
 									</div>
@@ -222,7 +222,7 @@ export function ExpandableTodoInput({ onAddTodo }: ExpandableTodoInputProps) {
 												<TextInput
 													value={category}
 													onChange={(val) => setCategory(val)}
-													placeholder="DashLive: WorkDashLive"
+													placeholder="مثلا: کارهای خونه"
 												/>
 												<Button
 													size="xs"

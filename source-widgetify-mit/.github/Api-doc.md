@@ -26,11 +26,11 @@ Response:
   "wallpapers": [
     {
       "id": "67c20fb09985263793140b49",
-      "name": "DashLive",
+      "name": "حاله های رنگی",
       "source": "https://www.google.com",
       "category": "Abstract",
       "type": "IMAGE",
-      "src": "https://storage.c2.liara.space/dashlive-ir/wallpapers/243ee1f4-3ce9-4120-9250-1d765572f926.jpeg"
+      "src": "https://storage.c2.liara.space/widgetify-ir/wallpapers/243ee1f4-3ce9-4120-9250-1d765572f926.jpeg"
     }
   ],
   "totalPages": 9
@@ -50,29 +50,29 @@ Response:
 {
     "city": {
         "fa": "Tehran",
-        "en": "Tehran/DashLive"
+        "en": "Tehran/تهران"
     },
     "weather": {
         "description": {
-            "text": "DashLive",
+            "text": "پوشیده از ابر",
             "emoji": "☁️"
         },
         "icon": {
-            "url": "https://storage.c2.liara.space/dashlive-ir/weather/04n.png",
+            "url": "https://storage.c2.liara.space/widgetify-ir/weather/04n.png",
         },
-        "label": "DashLive‌DashLive",
+        "label": "ابرهای متراکم، خورشید رو می‌پوشونن!",
         "temperature": {
             "clouds": 93,
             "humidity": 59,
             "pressure": 1014,
             "temp": 18.79,
-            "temp_description": "DashLive🌠",
+            "temp_description": "شب رویایی 🌠",
             "temp_max": 18.79,
             "temp_min": 18.79,
             "wind_speed": 0.94
         },
         "ai": {
-            "description": "DashLive19 inDashLive‌DashLive‌DashLive",
+            "description": "تهران آسمانی پوشیده از ابر دارد و هوا نسبتا خنک است. سرعت باد ملایم و دمای هوا حدود 19 درجه سانتی‌گراد است؛ انگار ابرها دارند قایم باشک بازی می‌کنند!",
             "playlist": null
         }
     }
@@ -90,22 +90,22 @@ Response:
 [
     {
         "temp": 18.57,
-        "icon": "https://storage.c2.liara.space/dashlive-ir/weather/04n.svg",
+        "icon": "https://storage.c2.liara.space/widgetify-ir/weather/04n.svg",
         "date": "2025-03-09 18:00:00"
     },
     {
         "temp": 18.03,
-        "icon": "https://storage.c2.liara.space/dashlive-ir/weather/04n.svg",
+        "icon": "https://storage.c2.liara.space/widgetify-ir/weather/04n.svg",
         "date": "2025-03-09 21:00:00"
     },
     {
         "temp": 16.8,
-        "icon": "https://storage.c2.liara.space/dashlive-ir/weather/04n.svg",
+        "icon": "https://storage.c2.liara.space/widgetify-ir/weather/04n.svg",
         "date": "2025-03-10 00:00:00"
     },
     {
         "temp": 14.75,
-        "icon": "https://storage.c2.liara.space/dashlive-ir/weather/04n.svg",
+        "icon": "https://storage.c2.liara.space/widgetify-ir/weather/04n.svg",
         "date": "2025-03-10 03:00:00"
     }
 ]
@@ -139,17 +139,17 @@ Response:
         {
             "id": "67ca1528f0eeeba246d0e6f2",
             "isHoliday": true,
-            "title": "DashLiveday",
+            "title": "آغاز نوروز",
             "day": 1,
             "month": 1,
-            "icon": "https://storage.c2.liara.space/dashlive-ir/events/5e30a5de-2ad8-4fe5-88b6-4c402c07e297.png"
+            "icon": "https://storage.c2.liara.space/widgetify-ir/events/5e30a5de-2ad8-4fe5-88b6-4c402c07e297.png"
         },
      
     ],
     "gregorianEvents": [
         {
             "isHoliday": false,
-            "title": "📱 DashLive",
+            "title": "📱 معرفی اولین آیفون",
             "day": 9,
             "month": 1,
             "icon": null
@@ -159,7 +159,7 @@ Response:
         {
             "id": "67ca1528f0eeeba246d0e7c7",
             "isHoliday": true,
-            "title": "DashLive",
+            "title": "تعطیل به مناسبت عید سعید فطر",
             "day": 2,
             "month": 10,
             "icon": null
@@ -173,9 +173,9 @@ Response:
 ```json
 [
   {
-    "label": "Europe / London",
-    "value": "Europe/London",
-    "offset": "+00:00"
+    "label": "آسیا / تهران",
+    "value": "Asia/Tehran",
+    "offset": "+03:30"
   }
 ]
 ``` 

@@ -49,18 +49,18 @@ export default defineConfig({
 	],
 	manifest: {
 		version: '1.0.83',
-		name: 'DashLive',
+		name: 'Widgetify',
 		description:
-			'Transform your new tab into a smart dashboard with DashLive! Get currency rates, crypto prices, weather & more.',
+			'Transform your new tab into a smart dashboard with Widgetify! Get currency rates, crypto prices, weather & more.',
 		permissions: ['storage', 'search'],
 		optional_permissions: ['tabs', 'tabGroups', 'bookmarks', 'identity'],
 		browser_specific_settings: {
 			gecko: {
-				id: 'dashlive@dashlive-app.github.io',
+				id: 'widgetify@widgetify-app.github.io',
 			},
 		},
 		action: {
-			default_title: 'Open DashLive Dashboard',
+			default_title: 'Open Widgetify Dashboard',
 			default_icon: {
 				16: 'icons/icon16.png',
 				32: 'icons/icon32.png',
@@ -72,7 +72,7 @@ export default defineConfig({
 			'https://github.com/*',
 			'https://raw.githubusercontent.com/*',
 			'https://api.github.com/*',
-			'https://api.dashlive.ir/*',
+			'https://api.widgetify.ir/*',
 			'https://www.google-analytics.com/collect*',
 			'https://storage.c2.liara.space/*',
 		],

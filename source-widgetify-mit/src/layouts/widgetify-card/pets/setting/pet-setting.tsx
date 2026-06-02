@@ -4,7 +4,7 @@ import { callEvent } from '@/common/utils/call-event'
 import { ItemSelector } from '@/components/item-selector'
 import { TextInput } from '@/components/text-input'
 import { ToggleSwitch } from '@/components/toggle-switch.component'
-import { BASE_PET_OPTIONS, PetTypes } from '@/layouts/dashlive-card/pets/pet.context'
+import { BASE_PET_OPTIONS, PetTypes } from '@/layouts/widgetify-card/pets/pet.context'
 
 export function PetSettings() {
 	const [enablePets, setEnablePets] = useState(true)
@@ -57,9 +57,9 @@ export function PetSettings() {
 		})
 	}
 	const persianType: Record<string, string> = {
-		dog: 'DashLive',
-		chicken: 'DashLive',
-		crab: 'DashLive',
+		dog: 'سگ',
+		chicken: 'مرغ',
+		crab: 'خرچنگ',
 	}
 	const availablePets = Object.entries(BASE_PET_OPTIONS.petOptions).map(
 		([key, value]) => ({
@@ -72,9 +72,10 @@ export function PetSettings() {
 		<div className="flex flex-col w-full max-w-xl mx-auto">
 			<div className="flex items-center justify-between flex-1 gap-3">
 				<div className="overflow-hidden">
-					<span className={`block truncate`}>DashLive</span>
+					<span className={`block truncate`}>نمایش حیوان خانگی</span>
 					<span className={'block text-sm font-light text-muted'}>
-						DashLive</span>
+						نمایش حیوان خانگی تعاملی روی صفحه اصلی
+					</span>
 				</div>
 				<ToggleSwitch
 					enabled={enablePets}
@@ -84,7 +85,7 @@ export function PetSettings() {
 			</div>
 
 			<div className={'p-4 mt-4 rounded-lg border border-content'}>
-				<p className={'mb-3 font-medium text-content'}>DashLive</p>
+				<p className={'mb-3 font-medium text-content'}>نوع حیوان خانگی</p>
 				<div className="grid grid-cols-3 gap-1.5 mb-2">
 					{availablePets.map((pet) => (
 						<ItemSelector
@@ -97,21 +98,21 @@ export function PetSettings() {
 					))}
 				</div>
 
-				<p className={'mb-3 font-medium text-content'}>Name DashLive</p>
+				<p className={'mb-3 font-medium text-content'}>نام حیوان خانگی</p>
 				<TextInput
 					type="text"
 					value={petName}
 					onChange={(value) => onChangePetName(value)}
-					placeholder={'DashLive'}
+					placeholder={'اسم دلخواه...'}
 				/>
 
 				<div className="p-3 mt-2 border rounded-lg border-primary/30 bg-primary/20">
 					<p className="mb-1 text-xs font-medium text-primary">
-						💡 DashLive:
+						💡 نکات مراقبت:
 					</p>
 					<ul className="text-xs text-primary-content space-y-0.5">
-						<li>• DashLiveClick</li>
-						<li>• DashLivein DashLiveClick</li>
+						<li>• برای بازی با حیوان خانگی، روی آن کلیک کنید</li>
+						<li>• برای غذا دادن به حیوان، در محیط اطراف کلیک کنید</li>
 					</ul>
 				</div>
 			</div>

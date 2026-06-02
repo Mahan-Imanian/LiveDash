@@ -28,11 +28,11 @@ export function TopUserItem({
 	const convertToHours = (duration: number) => {
 		const hours = Math.floor(duration / 60)
 		const minutes = duration % 60
-		return `${hours} hour DashLive ${minutes} minute`
+		return `${hours} ساعت و ${minutes} دقیقه`
 	}
 
 	const duration: string =
-		user.duration > 500 ? convertToHours(user.duration) : `${user.duration} minute`
+		user.duration > 500 ? convertToHours(user.duration) : `${user.duration} دقیقه`
 
 	return (
 		<>

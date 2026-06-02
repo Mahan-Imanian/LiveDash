@@ -6,10 +6,10 @@ import { WigiPadDateSettingsModal } from './date-display/date-setting'
 export function WigiPadSetting() {
 	return (
 		<WidgetSettingWrapper>
-			<SectionPanel title="DashLive" size="sm">
+			<SectionPanel title="مدیریت تاریخ" size="sm">
 				<WigiPadDateSettingsModal />
 			</SectionPanel>
-			<SectionPanel title="DashLivehour" size="sm">
+			<SectionPanel title="مدیریت ساعت" size="sm">
 				<ClockSetting />
 			</SectionPanel>
 		</WidgetSettingWrapper>

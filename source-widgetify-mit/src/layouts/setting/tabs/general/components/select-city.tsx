@@ -81,7 +81,7 @@ export function SelectCity({ onSave, size }: Prop) {
 		: null
 
 	return (
-		<SectionPanel title="DashLive" size={size ? size : 'sm'}>
+		<SectionPanel title="انتخاب شهر" size={size ? size : 'sm'}>
 			<div className="space-y-2">
 				<button
 					onClick={onModalOpen}
@@ -93,7 +93,7 @@ export function SelectCity({ onSave, size }: Prop) {
 					) : selected ? (
 						selected.city
 					) : (
-						'DashLive'
+						'انتخاب شهر...'
 					)}
 					{isSettingCity ? (
 						<IconLoading />
@@ -105,9 +105,11 @@ export function SelectCity({ onSave, size }: Prop) {
 				{error && (
 					<div className="p-3 text-sm text-right duration-300 border rounded-lg border-error/20 bg-error/10 backdrop-blur-sm animate-in fade-in-0">
 						<div className="font-medium text-error">
-							Error in inDashLive</div>
+							خطا در دریافت اطلاعات
+						</div>
 						<div className="mt-1 text-error/80">
-							DashLive</div>
+							لطفا اتصال اینترنت خود را بررسی کرده و مجدداً تلاش کنید.
+						</div>
 					</div>
 				)}
 			</div>
@@ -115,7 +117,7 @@ export function SelectCity({ onSave, size }: Prop) {
 				<AuthRequiredModal
 					isOpen={showAuthModal}
 					onClose={() => setShowAuthModal(!showAuthModal)}
-					message="DashLiveAccount DashLive"
+					message="برای انتخاب شهر، لطفاً وارد حساب کاربری خود شوید."
 				/>
 			)}
 			<Modal
@@ -124,7 +126,7 @@ export function SelectCity({ onSave, size }: Prop) {
 					setIsModalOpen(false)
 					setSearchTerm('')
 				}}
-				title="DashLive"
+				title="انتخاب شهر"
 				size="lg"
 				direction="rtl"
 			>
@@ -132,7 +134,7 @@ export function SelectCity({ onSave, size }: Prop) {
 					<div className="relative">
 						<TextInput
 							type="text"
-							placeholder="SearchDashLive"
+							placeholder="جستجوی شهر..."
 							value={searchTerm}
 							ref={searchInputRef}
 							onChange={(value) => setSearchTerm(value)}
@@ -144,7 +146,8 @@ export function SelectCity({ onSave, size }: Prop) {
 						{isLoading ? (
 							<div className="flex items-center justify-center p-4 text-center text-primary">
 								<IconLoading />
-								in DashLive</div>
+								در حال بارگذاری...
+							</div>
 						) : filteredCities?.length > 0 ? (
 							filteredCities.map((city) => (
 								<div
@@ -160,21 +163,24 @@ export function SelectCity({ onSave, size }: Prop) {
 							))
 						) : searchTerm ? (
 							<div className="p-4 text-center text-base-content/60">
-								DashLive‌DashLive</div>
+								نتیجه‌ای یافت نشد
+							</div>
 						) : cities && cities.length === 0 ? (
 							<div className="p-4 text-center text-base-content/60">
-								DashLive</div>
+								هیچ شهری موجود نیست
+							</div>
 						) : (
 							<div className="p-4 text-center text-base-content/60">
-								DashLiveSearch DashLive</div>
+								شهر مورد نظر خود را جستجو کنید
+							</div>
 						)}
 					</div>
 
 					<div className="pt-2 border-t border-base-300">
 						<p className="text-sm text-center text-base-content/60">
-							DashLivein DashLive‌DashLive{' '}
+							شهر شما در لیست نیست یا مشکلی مشاهده می‌کنید؟{' '}
 							<a
-								href="https://feedback.dashlive.ir"
+								href="https://feedback.widgetify.ir"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="font-medium text-primary hover:underline"
@@ -184,7 +190,8 @@ export function SelectCity({ onSave, size }: Prop) {
 									})
 								}
 							>
-								DashLive</a>
+								اطلاع دهید
+							</a>
 						</p>
 					</div>
 				</div>

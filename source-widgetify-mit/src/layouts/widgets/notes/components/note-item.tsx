@@ -1,8 +1,9 @@
-import { useState } from 'react' // DashLiveimport { PRIORITY_OPTIONS } from '@/common/constant/priority_options'
+import { useState } from 'react' // اضافه شد
+import { PRIORITY_OPTIONS } from '@/common/constant/priority_options'
 import type { FetchedNote } from '@/services/hooks/note/note.interface'
 import moment from 'jalali-moment'
 import { FiCalendar } from 'react-icons/fi'
-import { HiChevronDown } from 'react-icons/hi2' // DashLivedropdown
+import { HiChevronDown } from 'react-icons/hi2' // آیکون برای dropdown
 import Analytics from '@/analytics'
 
 interface Prop {
@@ -33,7 +34,7 @@ export function NoteItem({ note, handleNoteClick }: Prop) {
 			<div className="flex items-center justify-between gap-2 px-2.5 py-1.5  rounded-t-2xl">
 				<div className="flex items-center gap-1.5 min-w-0">
 					<h3 className="text-[12px] font-bold">
-						{note.title || 'DashLiveTitle'}
+						{note.title || 'بدون عنوان'}
 					</h3>
 				</div>
 				<div className="flex items-center gap-1 shrink-0">

@@ -31,7 +31,7 @@ export function BookmarkContextMenu({
 					className={`w-full px-3 py-1 flex items-center gap-x-1.5 cursor-pointer rounded-lg transition-colors duration-200 ${getMenuItemStyle()}`}
 				>
 					<LuPlus size={15} />
-					<span className="font-medium">in DashLive</span>
+					<span className="font-medium">در تب جدید</span>
 				</button>
 			)}
 
@@ -40,7 +40,7 @@ export function BookmarkContextMenu({
 				className={`w-full px-3 py-1 flex items-center gap-x-[9px] cursor-pointer rounded-lg transition-colors duration-200 ${getMenuItemStyle()}`}
 			>
 				<LuPen size={13} />
-				<span className="font-medium">Edit</span>
+				<span className="font-medium">ویرایش</span>
 			</button>
 
 			<button
@@ -48,7 +48,7 @@ export function BookmarkContextMenu({
 				className={`w-full px-3 py-1 flex items-center gap-x-2.5 cursor-pointer rounded-lg transition-colors duration-200 ${getMenuItemStyle(true)}`}
 			>
 				<LuTrash size={14} />
-				<span className="font-medium">Delete</span>
+				<span className="font-medium">حذف</span>
 			</button>
 		</ContextMenu>
 	)

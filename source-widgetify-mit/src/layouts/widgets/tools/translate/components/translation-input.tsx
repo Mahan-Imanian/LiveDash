@@ -18,7 +18,7 @@ export function TranslationInput({
 			<textarea
 				value={inputText}
 				onChange={(e) => onChangeInputText(e)}
-				placeholder="DashLiveMay..."
+				placeholder="متن برای ترجمه..."
 				className="w-full h-16 p-2 text-xs resize-none textarea textarea-bordered bg-content text-content placeholder:text-content/60 !border-none !outline-none focus:ring-1 focus:ring-primary rounded-xl"
 				maxLength={500}
 			/>
@@ -27,7 +27,7 @@ export function TranslationInput({
 					{inputText.length}/500
 				</span>
 				{inputText && (
-					<Tooltip content="DashLive" position="top">
+					<Tooltip content="پخش صوتی" position="top">
 						<Button
 							size="xs"
 							onClick={() => speakTextInLanguage(inputText, fromLanguage)}

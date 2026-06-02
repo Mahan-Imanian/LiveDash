@@ -18,7 +18,7 @@ const renderFriendsDropdownContent = (
 	<div className="py-2 bg-content bg-glass min-w-[280px] rounded-2xl">
 		<div className="px-3 pb-2 mb-2 border-b border-content">
 			<div className="flex items-center justify-between">
-				<h3 className="text-sm font-medium">DashLive</h3>
+				<h3 className="text-sm font-medium">دوستان</h3>
 				<button
 					onClick={(e) => {
 						e.stopPropagation()
@@ -38,7 +38,7 @@ const renderFriendsDropdownContent = (
 		{friends.length === 0 ? (
 			<div className="px-3 py-4 text-sm text-center text-muted">
 				<FiUserPlus size={24} className="mx-auto mb-2 opacity-50" />
-				<p>DashLive‌DashLive</p>
+				<p>هنوز دوستی اضافه نکرده‌اید</p>
 				<button
 					onClick={(e) => {
 						e.stopPropagation()
@@ -47,7 +47,8 @@ const renderFriendsDropdownContent = (
 					}}
 					className="mt-2 text-xs text-primary hover:underline"
 				>
-					DashLive</button>
+					اضافه کردن دوست
+				</button>
 			</div>
 		) : (
 			<div className="overflow-y-auto max-h-64">
@@ -125,10 +126,10 @@ export function FriendsList() {
 				<AuthRequiredModal
 					isOpen={firstAuth}
 					onClose={handleAuthModalClose}
-					title="Sign in DashLiveAccount"
-					message="DashLiveAccount DashLive"
-					loginButtonText="Sign in DashLive"
-					cancelButtonText="DashLive"
+					title="ورود به حساب کاربری"
+					message="برای دسترسی به بخش مدیریت دوستان، ابتدا وارد حساب کاربری خود شوید."
+					loginButtonText="ورود به حساب"
+					cancelButtonText="بعداً"
 				/>
 			)}
 		</>

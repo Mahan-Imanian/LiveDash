@@ -42,7 +42,7 @@ export function TranslationResult({
 					!translateMutation.isPending &&
 					!(validationError || translateMutation.error) && (
 						<div className="absolute flex items-center gap-1 bottom-1 left-1">
-							<Tooltip content="DashLive" position="top">
+							<Tooltip content="کپی" position="top">
 								<Button
 									size="xs"
 									onClick={() => handleCopy(translatedText)}
@@ -51,7 +51,7 @@ export function TranslationResult({
 									<TbCopy className="w-3 h-3" />
 								</Button>
 							</Tooltip>
-							<Tooltip content="DashLive" position="top">
+							<Tooltip content="پخش صوتی" position="top">
 								<Button
 									size="xs"
 									onClick={() =>

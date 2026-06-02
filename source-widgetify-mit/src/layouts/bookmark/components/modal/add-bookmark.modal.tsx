@@ -188,7 +188,7 @@ export function AddBookmarkModal({
 			isOpen={isOpen}
 			onClose={() => onCloseHandler()}
 			size="md"
-			title={`${type === 'FOLDER' ? 'Folder DashLive' : 'Bookmark DashLive'}`}
+			title={`${type === 'FOLDER' ? 'پوشه جدید' : 'بوکمارک جدید'}`}
 			direction="rtl"
 			className="!overflow-y-hidden"
 			closeOnBackdropClick={false}
@@ -239,7 +239,7 @@ export function AddBookmarkModal({
 						<TextInput
 							type="text"
 							name="title"
-							placeholder={type === 'FOLDER' ? 'Name Folder' : 'Title Bookmark'}
+							placeholder={type === 'FOLDER' ? 'نام پوشه' : 'عنوان بوکمارک'}
 							value={formData.title}
 							onChange={(v) => updateFormData('title', v)}
 							className={
@@ -251,7 +251,7 @@ export function AddBookmarkModal({
 								<TextInput
 									type="text"
 									name="url"
-									placeholder="Address Link"
+									placeholder="آدرس لینک"
 									value={formData.url || ''}
 									onChange={(v) => handleUrlChange(v)}
 									className={
@@ -269,7 +269,7 @@ export function AddBookmarkModal({
 						bookmark={formData}
 						isOpen={showAdvanced}
 						onClose={handleAdvancedModalClose}
-						title={'Settings agoDashLive'}
+						title={'تنظیمات پیشرفته'}
 					/>
 				</div>
 
@@ -287,7 +287,7 @@ export function AddBookmarkModal({
 								'btn btn-circle !bg-base-300 hover:!bg-error/10 text-muted hover:!text-error px-10 border-none shadow-none rounded-xl transition-colors duration-300 ease-in-out'
 							}
 						>
-							Cancel
+							لغو
 						</Button>
 						<Button
 							type="submit"
@@ -303,7 +303,7 @@ export function AddBookmarkModal({
 								'btn btn-circle !w-fit px-8 border-none shadow-none text-secondary rounded-xl transition-colors duration-300 ease-in-out'
 							}
 						>
-							Save
+							ذخیره
 						</Button>
 					</div>
 				</div>

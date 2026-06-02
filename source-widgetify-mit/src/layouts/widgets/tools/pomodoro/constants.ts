@@ -1,11 +1,11 @@
 import type { TimerMode } from './types'
 
 export const modeLabels: Record<TimerMode, string> = {
-	work: 'Work',
-	'short-break': 'DashLive',
+	work: 'کار',
+	'short-break': 'کوتاه',
 }
 
 export const modeFullLabels: Record<TimerMode, string> = {
-	work: 'DashLiveWork',
-	'short-break': 'Break DashLive',
+	work: 'زمان کار',
+	'short-break': 'استراحت کوتاه',
 }

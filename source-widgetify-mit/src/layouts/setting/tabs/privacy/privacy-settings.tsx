@@ -14,15 +14,17 @@ export function PrivacySettings() {
 
 	return (
 		<div className="w-full max-w-xl mx-auto">
-			<SectionPanel title="Privacy" delay={0.1}>
+			<SectionPanel title="حریم خصوصی" delay={0.1}>
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
 						<div className="flex-1 space-y-2">
 							<h3 className="font-medium text-content">
-								DashLive(Analytics)
+								ردیابی استفاده از افزونه (Analytics)
 							</h3>
 							<p className="text-sm font-light leading-relaxed text-muted">
-								DashLive‌DashLive‌DashLiveyear DashLive</p>
+								با فعال کردن این گزینه، آمار استفاده از افزونه برای بهبود
+								عملکرد جمع‌آوری می‌شود. هیچ اطلاعات شخصی ارسال نخواهد شد
+							</p>
 						</div>
 						<div className="flex-shrink-0 ml-4">
 							<ToggleSwitch
@@ -34,10 +36,13 @@ export function PrivacySettings() {
 					<div className="flex items-center justify-between">
 						<div className="flex-1 space-y-2">
 							<h3 className="font-medium text-content">
-								DashLiveBookmark DashLive</h3>
+								دسترسی به بوکمارک های مرورگر
+							</h3>
 							<p className="text-sm font-light leading-relaxed text-muted">
-								DashLive‌DashLiveBookmark‌DashLiveSave DashLiveyear
-								DashLive‌DashLiveBookmark‌DashLivein DashLive‌DashLive</p>
+								با فعال‌سازی این گزینه، افزونه فقط برای نمایش بوکمارک‌های
+								مرورگر شما دسترسی خواهد داشت. هیچ اطلاعاتی ذخیره یا ارسال
+								نمی‌شود و بوکمارک‌ها صرفاً در محیط افزونه نمایش داده می‌شوند.
+							</p>
 						</div>
 						<div className="flex-shrink-0 ml-4">
 							<ToggleSwitch
@@ -50,9 +55,12 @@ export function PrivacySettings() {
 					</div>
 					<div className="flex items-center justify-between">
 						<div className="flex-1 space-y-2">
-							<h3 className="font-medium text-content">DashLive‌DashLive</h3>
+							<h3 className="font-medium text-content">دسترسی به تب‌ها</h3>
 							<p className="text-sm font-light leading-relaxed text-muted">
-								DashLive‌DashLiveBookmark‌DashLiveFolder‌DashLiveSave DashLiveyear DashLive‌DashLive</p>
+								با فعال کردن این گزینه، افزونه می‌تواند بوکمارک‌های داخل
+								پوشه‌ها را به صورت گروهی باز و مدیریت کند. هیچ اطلاعات شخصی
+								ذخیره یا ارسال نمی‌شود.
+							</p>
 						</div>
 						<div className="flex-shrink-0 ml-4">
 							<ToggleSwitch

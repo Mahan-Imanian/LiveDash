@@ -89,7 +89,7 @@ function wallpaperItem({
 				{error && (
 					<div className="flex flex-col items-center justify-center w-full h-full bg-red-500/10">
 						<FiHeart className="text-red-400" />
-						<p className="mt-2 text-xs text-gray-400">Error in DashLive</p>
+						<p className="mt-2 text-xs text-gray-400">خطا در بارگذاری</p>
 					</div>
 				)}
 
@@ -132,8 +132,8 @@ function wallpaperItem({
 											coins={wallpaper.coin}
 											title={
 												wallpaper.isOwned
-													? 'DashLive'
-													: 'DashLive'
+													? 'باز شده'
+													: 'قیمت باز کردن'
 											}
 										/>
 									</div>
@@ -150,7 +150,7 @@ function wallpaperItem({
 						{!isSelected && wallpaper.isOwned && (
 							<div className="absolute flex gap-0.5 px-1 rounded-full shadow-sm text-success bg-black/80 items-center top-2 right-2">
 								<FiShoppingBag size={10} />
-								<span className="!text-[10px] font-normal">DashLive</span>
+								<span className="!text-[10px] font-normal">باز شده</span>
 							</div>
 						)}
 

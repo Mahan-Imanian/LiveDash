@@ -50,12 +50,12 @@ export function DailyMoodNotification() {
 		if (response.action === 'removed') {
 			setMood(value)
 			showToast(
-				'DashLiveDelete DashLive‌DashLive',
+				'مودت حذف شد. اگه بعداً خواستی دوباره می‌تونی یکی انتخاب کنی.',
 				'info'
 			)
 		} else {
 			setMood(value as MoodType)
-			showToast('DashLive', 'success', {
+			showToast('مود شما با موفقیت ثبت شد.', 'success', {
 				alarmSound: true,
 			})
 		}
@@ -80,7 +80,8 @@ export function DailyMoodNotification() {
 			<div className="flex-1 min-w-0 ">
 				<div className="flex items-center justify-between">
 					<h4 className="text-[10px] font-medium truncate text-content">
-						{user?.name}DashLive Today DashLive</h4>
+						{user?.name}، امروز حالت چطوره؟
+					</h4>
 					<button
 						type="button"
 						className="flex p-0.5 transition-opacity rounded-md cursor-pointer top-2 left-2 bg-base-content/5 text-base-content/40 hover:bg-error/10 hover:text-error"

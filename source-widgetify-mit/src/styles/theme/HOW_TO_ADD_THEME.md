@@ -1,6 +1,6 @@
 # How to Add a New Theme
 
-This guide explains how to add a new theme to DashLive.
+This guide explains how to add a new theme to Widgetify.
 
 ## Steps
 
@@ -66,7 +66,7 @@ In `src/layouts/setting/tabs/appearance/components/theme-selector.tsx`, add a ne
 ```typescript
 {
     id: 'newtheme',
-    name: 'Name DashLive',  // Persian name for the theme
+    name: 'نام تم جدید',  // Persian name for the theme
     icon: <YourIcon size={18} />,  // Import and use an appropriate icon
     buttonClass: 'your-button-styles',  // CSS classes for the theme button
     activeClass: 'ring-2 ring-blue-500',

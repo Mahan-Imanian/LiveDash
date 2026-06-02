@@ -35,7 +35,7 @@ export function CategoryView({ onCategorySelect }: CategoryGridProps) {
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center h-48">
-				<div className="text-muted">in DashLive‌DashLive‌DashLive</div>
+				<div className="text-muted">در حال بارگذاری دسته‌بندی‌ها...</div>
 			</div>
 		)
 	}
@@ -43,7 +43,7 @@ export function CategoryView({ onCategorySelect }: CategoryGridProps) {
 	if (error) {
 		return (
 			<div className="flex items-center justify-center h-48">
-				<div className="text-red-500">Error in DashLive‌DashLive‌DashLive</div>
+				<div className="text-red-500">خطا در بارگذاری دسته‌بندی‌ها</div>
 			</div>
 		)
 	}

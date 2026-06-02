@@ -14,7 +14,7 @@ import { DateProvider } from '@/context/date.context'
 import { useWidgetVisibility, type WidgetItem } from '@/context/widget-visibility.context'
 import { BookmarksList } from '@/layouts/bookmark/bookmarks'
 import { SearchLayout } from '@/layouts/search/search'
-import { DashLiveLayout } from '@/layouts/dashlive-card/dashlive.layout'
+import { WidgetifyLayout } from '@/layouts/widgetify-card/widgetify.layout'
 import { WigiPadWidget } from '@/layouts/widgets/wigiPad/wigiPad.layout'
 import { BookmarkProvider } from '@/layouts/bookmark/context/bookmark.context'
 import { HomeContentSimplify } from './home-content-simplify'
@@ -124,7 +124,7 @@ export function ContentSection() {
 			>
 				<div className="flex flex-col w-full gap-4 lg:flex-row lg:gap-2">
 					<div className="order-3 w-full lg:w-[28%] lg:order-1">
-						<DashLiveLayout />
+						<WidgetifyLayout />
 					</div>
 
 					<div

@@ -68,7 +68,7 @@ export function CurrentWeatherBox({
 
 			<div className="p-2 border rounded-2xl bg-base-200/40 border-content">
 				<div className="grid grid-cols-3 gap-1.5">
-					<Tooltip content={'DashLive'}>
+					<Tooltip content={'باد'}>
 						<div className="flex items-center justify-center gap-1.5 py-2 transition-colors border rounded-xl border-content">
 							<TbWind className="w-4 h-4 text-muted" />
 							<span className="text-xs font-medium text-muted">
@@ -80,7 +80,7 @@ export function CurrentWeatherBox({
 						</div>
 					</Tooltip>
 
-					<Tooltip content={'DashLive'}>
+					<Tooltip content={'رطوبت'}>
 						<div className="flex items-center justify-center gap-1.5 py-2 transition-colors border rounded-xl border-content">
 							<WiHumidity className="w-4 h-4 text-muted" />
 							<span className="text-xs font-medium text-muted">
@@ -89,7 +89,7 @@ export function CurrentWeatherBox({
 						</div>
 					</Tooltip>
 
-					<Tooltip content="DashLive">
+					<Tooltip content="پوشش ابری">
 						<div className="flex items-center justify-center gap-1.5 py-2 transition-colors border rounded-xl border-content">
 							<WiCloudy className="w-4 h-4 text-muted" />
 							<span className="text-xs font-medium text-muted">
@@ -104,6 +104,6 @@ export function CurrentWeatherBox({
 }
 
 function cleanCityName(name: string) {
-	const regex = /\s*DashLive\s*/g
+	const regex = /\s*شهرستان\s*/g
 	return name.replace(regex, ' ').trim()
 }

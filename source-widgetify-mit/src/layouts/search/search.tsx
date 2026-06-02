@@ -106,7 +106,7 @@ export function SearchLayout() {
 							className={
 								'w-full py-1.5 text-base  font-light text-right focus:outline-none text-content placeholder:text-base-content/60 placeholder:font-medium focus:placeholder:opacity-50 bg-transparent'
 							}
-							placeholder="Search Google..."
+							placeholder="جستجو در گوگل..."
 							autoComplete="off"
 						/>
 						<button

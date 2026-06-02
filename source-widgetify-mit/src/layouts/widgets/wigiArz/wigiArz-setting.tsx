@@ -96,10 +96,10 @@ export function WigiArzSetting() {
 	return (
 		<WidgetSettingWrapper>
 			<div className={`transition-all duration-300 ease-out`}>
-				<SectionPanel title="DashLive" size="xs">
+				<SectionPanel title="رنگ تغییر قیمت" size="xs">
 					<div className="flex flex-row gap-2">
 						<ItemSelector
-							label="DashLive"
+							label="عادی"
 							isActive={currencyColorMode === CurrencyColorMode.NORMAL}
 							className="w-full"
 							onClick={() =>
@@ -107,7 +107,7 @@ export function WigiArzSetting() {
 							}
 						/>
 						<ItemSelector
-							label="DashLive"
+							label="معکوس"
 							isActive={currencyColorMode === CurrencyColorMode.X}
 							className="w-full"
 							onClick={() => toggleCurrencyColorMode(CurrencyColorMode.X)}
@@ -115,20 +115,20 @@ export function WigiArzSetting() {
 					</div>
 				</SectionPanel>
 
-				<SectionPanel title="Rates" size="xs">
+				<SectionPanel title="ارزها" size="xs">
 					<div className="flex flex-col gap-1 mb-2">
 						<TextInput
 							type="text"
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e)}
-							placeholder="Search ..."
+							placeholder="جستجو ..."
 						/>
 						<SelectBox
 							options={[
-								{ value: 'all', label: 'DashLiveMay Rates' },
-								{ value: CurrenciesType.CRYPTO, label: 'RatesDashLive' },
-								{ value: CurrenciesType.CURRENCY, label: 'Rates' },
-								{ value: CurrenciesType.COIN, label: 'DashLive' },
+								{ value: 'all', label: 'همه ارزها' },
+								{ value: CurrenciesType.CRYPTO, label: 'ارزهای دیجیتال' },
+								{ value: CurrenciesType.CURRENCY, label: 'ارزها' },
+								{ value: CurrenciesType.COIN, label: 'طلا و سکه' },
 							]}
 							value={currencyType as any}
 							onChange={(value) => setCurrencyType(value)}
@@ -189,8 +189,8 @@ export function WigiArzSetting() {
 
 			{showAuthRequired && (
 				<AuthRequiredModal
-					message="DashLiveWorkDashLiveSign in DashLiveAccount DashLiveRatesDashLive‌DashLiveAccount DashLive"
-					title="🔐 Sign in DashLiveAccount"
+					message="برای بهبود تجربه کاربری و جلوگیری از بارگذاری بیش از حد، امکان انتخاب حداکثر ارز بدون ورود به حساب کاربری وجود دارد. برای دسترسی به ارزهای بیشتر و بهره‌مندی از خدمات کامل، لطفاً وارد حساب کاربری خود شوید."
+					title="🔐 ورود به حساب کاربری"
 					isOpen={showAuthRequired}
 					onClose={() => setShowAuthRequired(false)}
 				/>
@@ -223,7 +223,7 @@ function getCurrencyOptions(supported: SupportedCurrencies): Option[] {
 
 	return [
 		{
-			label: '🪙 RatesDashLive',
+			label: '🪙 ارزهای دیجیتال',
 			options: isCrypto.map((index) => ({
 				value: supported[index].key,
 				label: supported[index].label.fa,
@@ -231,7 +231,7 @@ function getCurrencyOptions(supported: SupportedCurrencies): Option[] {
 			})),
 		},
 		{
-			label: '💵 Rates',
+			label: '💵 ارزها',
 			options: isCurrency.map((index) => ({
 				value: supported[index].key,
 				label: supported[index].label.fa,
@@ -239,7 +239,7 @@ function getCurrencyOptions(supported: SupportedCurrencies): Option[] {
 			})),
 		},
 		{
-			label: '🥇 DashLive',
+			label: '🥇 طلا و سکه',
 			options: supportedCoins.map((index) => ({
 				value: supported[index].key,
 				label: supported[index].label.fa,

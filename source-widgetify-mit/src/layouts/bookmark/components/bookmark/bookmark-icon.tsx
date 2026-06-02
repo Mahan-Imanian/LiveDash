@@ -19,14 +19,14 @@ export function BookmarkIcon({ bookmark }: { bookmark: Bookmark }) {
 	}
 
 	if (displayIcon === '') {
-		displayIcon = 'https://cdn.dashlive.ir/system/bookmark.png'
+		displayIcon = 'https://cdn.widgetify.ir/system/bookmark.png'
 	}
 
 	const handleImageAnalysis = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
 		const img = e.target as HTMLImageElement
 
 		if (img.naturalWidth < 32 || img.naturalHeight < 32) {
-			img.src = 'https://cdn.dashlive.ir/system/bookmark.png'
+			img.src = 'https://cdn.widgetify.ir/system/bookmark.png'
 		}
 	}
 

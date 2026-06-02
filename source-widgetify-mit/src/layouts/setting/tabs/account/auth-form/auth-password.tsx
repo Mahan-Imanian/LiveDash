@@ -30,26 +30,26 @@ export default function AuthPassword() {
 		if (isEmpty(email))
 			return setError((prev) => ({
 				...prev,
-				email: 'DashLiveEmail DashLive',
+				email: 'لطفاً ایمیل خود را وارد کنید.',
 			}))
 
 		if (!isEmail(email))
 			return setError((prev) => ({
 				...prev,
-				email: 'DashLiveEmail DashLive',
+				email: 'لطفاً یک ایمیل معتبر وارد کنید.',
 			}))
 
 		// Password validation
 		if (isEmpty(password))
 			return setError((prev) => ({
 				...prev,
-				password: 'DashLivePassword DashLive',
+				password: 'لطفا رمز عبور خود را وارد کنید.',
 			}))
 
 		if (isLessThan(password, 6))
 			return setError((prev) => ({
 				...prev,
-				password: 'Password DashLive6 WorkDashLive',
+				password: 'رمز عبور باید حداقل ۶ کاراکتر باشد.',
 			}))
 	}
 
@@ -79,7 +79,7 @@ export default function AuthPassword() {
 					setError({
 						email: null,
 						password: null,
-						api: 'ErrorDashLive',
+						api: 'خطای ناشناخته رخ داد. لطفا دوباره تلاش کنید.',
 					})
 					return
 				}
@@ -103,10 +103,11 @@ export default function AuthPassword() {
 				</div>
 				<div>
 					<h3 className="text-base font-semibold md:text-lg text-content">
-						Sign in DashLivePassword
+						ورود با رمز عبور
 					</h3>
 					<p className="text-xs md:text-sm text-muted mt-0.5">
-						DashLiveEmail DashLive Password DashLive</p>
+						با ایمیل و رمز عبور خود وارد شوید
+					</p>
 				</div>
 			</header>
 
@@ -125,7 +126,7 @@ export default function AuthPassword() {
 						htmlFor="email"
 						className="block mb-1 md:mb-1.5 text-xs md:text-sm font-semibold text-content"
 					>
-						Email
+						ایمیل
 					</label>
 
 					<TextInput
@@ -147,7 +148,7 @@ export default function AuthPassword() {
 						htmlFor="password"
 						className="block mb-1 md:mb-1.5 text-xs md:text-sm font-semibold text-content"
 					>
-						Password
+						رمز عبور
 					</label>
 
 					<TextInput
@@ -155,7 +156,7 @@ export default function AuthPassword() {
 						type="password"
 						value={password}
 						onChange={setPassword}
-						placeholder="Password DashLive"
+						placeholder="رمز عبور خود را وارد کنید"
 						disabled={isPending}
 						className="w-full !py-2.5 md:!py-3.5"
 					/>
@@ -170,7 +171,7 @@ export default function AuthPassword() {
 					size="md"
 					className="relative w-full py-2.5 md:py-3 text-sm md:text-base transition-all duration-200 shadow text-white group rounded-xl disabled:cursor-not-allowed disabled:text-base-content disabled:opacity-50"
 				>
-					{isPending ? 'inDashLive' : 'Sign in DashLive'}
+					{isPending ? 'درحال پردازش...' : 'ورود به حساب'}
 				</Button>
 			</form>
 		</section>

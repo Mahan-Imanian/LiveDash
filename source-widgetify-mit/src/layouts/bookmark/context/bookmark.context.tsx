@@ -159,12 +159,12 @@ export const BookmarkProvider: React.FC<{ children: React.ReactNode }> = ({
 		cb: () => void
 	) => {
 		if (!isAuthenticated)
-			return showToast('DashLiveAdd Bookmark DashLive', 'error')
+			return showToast('برای افزودن بوکمارک باید وارد شوید.', 'error')
 
 		try {
 			if (inputBookmark.icon && inputBookmark.icon.size > MAX_ICON_SIZE) {
 				showToast(
-					`DashLive(${(inputBookmark.icon.size / (1024 * 1024)).toFixed(1)} DashLive) DashLive`,
+					`تصویر انتخاب شده (${(inputBookmark.icon.size / (1024 * 1024)).toFixed(1)} مگابایت) بزرگتر از حداکثر مجاز است.`,
 					'error'
 				)
 				cb()
@@ -218,7 +218,7 @@ export const BookmarkProvider: React.FC<{ children: React.ReactNode }> = ({
 			Analytics.event('add_bookmark')
 		} catch (error) {
 			console.error('Error adding bookmark:', error)
-			showToast('Error in Add Bookmark', 'error')
+			showToast('خطا در افزودن بوکمارک', 'error')
 		}
 	}
 
@@ -232,7 +232,7 @@ export const BookmarkProvider: React.FC<{ children: React.ReactNode }> = ({
 				b.id === input.id ||
 				(typeof b.onlineId === 'string' && b.onlineId === input.onlineId)
 		)
-		if (!foundedBookmark) return showToast('Bookmark DashLive', 'error')
+		if (!foundedBookmark) return showToast('بوکمارک یافت نشد!', 'error')
 
 		let bookmarkIdToEdit = input.id
 		if (validate(bookmarkIdToEdit)) {
@@ -241,7 +241,7 @@ export const BookmarkProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		if (!bookmarkIdToEdit || validate(bookmarkIdToEdit)) {
 			showToast(
-				'DashLiveEdit DashLiveBookmarkDashLiveBookmark‌DashLive‌DashLive',
+				'برای ویرایش این بوکمارک، لطفا ابتدا بوکمارک‌های خود را همگام‌سازی کنید.',
 				'error',
 				{
 					duration: 8000, // 8 seconds
@@ -290,7 +290,7 @@ export const BookmarkProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		if (validate(idToDelete)) {
 			showToast(
-				'DashLiveBookmarkDashLiveBookmark‌DashLive‌DashLive',
+				'برای حـذف این بوکمارک، لطفا ابتدا بوکمارک‌های خود را همگام‌سازی کنید.',
 				'error',
 				{
 					duration: 8000, // 8 seconds

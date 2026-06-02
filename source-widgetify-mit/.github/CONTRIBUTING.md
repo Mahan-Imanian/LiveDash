@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Thank you for your interest in contributing to DashLive! This document provides guidelines to help you with the contribution process.
+Thank you for your interest in contributing to Widgetify! This document provides guidelines to help you with the contribution process.
 
 ## Required Tools
 To contribute, you'll need to install the following tools and software:
@@ -14,10 +14,10 @@ API documentation can be found in the [Api-doc.md](./Api-doc.md) file.
 To get started, fork and clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/dashlive-app/dashlive-extension.git
+git clone https://github.com/widgetify-app/widgetify-extension.git
 ```
 ```bash
-cd dashlive-extension
+cd widgetify-extension
 ```
 ```bash
 bun install

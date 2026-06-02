@@ -51,38 +51,38 @@ const NewsSimplify = React.lazy(() =>
 const tabs = [
 	{
 		id: 'todos',
-		label: 'Tasks',
+		label: 'وظایف',
 		icon: <HiOutlineCheckCircle />,
 		element: TodosLayout,
 	},
 	{
 		id: 'notes',
-		label: 'Notes',
+		label: 'یادداشت',
 		icon: <HiOutlineDocumentText />,
 		element: NotesLayout,
 	},
 	{
 		id: 'calendar',
-		label: 'Calendar',
+		label: 'تقویم',
 		icon: <MdOutlineCalendarMonth />,
 		element: Calendar,
 	},
 
 	{
 		id: 'currency',
-		label: 'Rates',
+		label: 'ارزها',
 		icon: <HiOutlineCurrencyBangladeshi />,
 		element: ArzSimplify,
 	},
 	{
 		id: 'news',
-		label: 'News',
+		label: 'اخبار',
 		icon: <HiOutlineNewspaper />,
 		element: NewsSimplify,
 	},
 	{
 		id: 'network',
-		label: 'Network',
+		label: 'شبکه',
 		icon: <MdOutlineNetworkWifi />,
 		element: NetworkSimplify,
 	},
@@ -122,7 +122,8 @@ export function SimpleTools() {
 						<Suspense
 							fallback={
 								<div className="flex items-center justify-center h-full text-sm text-gray-400">
-									in DashLive</div>
+									در حال بارگذاری...
+								</div>
 							}
 						>
 							<ElementData />

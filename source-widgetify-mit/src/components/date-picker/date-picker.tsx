@@ -9,7 +9,7 @@ interface DatePickerProps {
 	className?: string
 }
 
-const WEEKDAYS = ['DashLive', 'DashLive', 'DashLive', 'DashLive', 'DashLive', 'DashLive', 'DashLive']
+const WEEKDAYS = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج']
 
 export function DatePicker({
 	onDateSelect,
@@ -194,7 +194,7 @@ export function DatePicker({
 		>
 			<div className="flex items-center justify-between mb-3">
 				<h3 className="text-xs font-medium text-content">
-					{currentDate.format('ddddDashLive jD jMMMM jYYYY')}
+					{currentDate.format('dddd، jD jMMMM jYYYY')}
 				</h3>
 				<div className="flex gap-0.5">
 					{showTodayButton && (

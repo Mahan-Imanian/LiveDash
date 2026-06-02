@@ -24,7 +24,8 @@ export function FolderPath({ folderPath, onNavigate, className }: FolderPathProp
 						}
 						aria-label="Go to root folder"
 					>
-						DashLive</button>
+						بازگشت
+					</button>
 				</li>
 
 				{folderPath.map((item, index) => (

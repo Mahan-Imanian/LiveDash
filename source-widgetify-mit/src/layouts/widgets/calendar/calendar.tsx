@@ -28,7 +28,7 @@ const CalendarTabSelector: React.FC<CalendarTabSelectorProps> = ({
 				tabs={[
 					{
 						id: 'calendar',
-						label: 'Calendar',
+						label: 'تقویم',
 						icon: (
 							<FcCalendar
 								size={18}
@@ -38,7 +38,7 @@ const CalendarTabSelector: React.FC<CalendarTabSelectorProps> = ({
 					},
 					{
 						id: 'google',
-						label: 'Google Calendar',
+						label: 'گوگل‌کلندر',
 						icon: (
 							<img
 								src={GoogleCalendar}
@@ -49,7 +49,7 @@ const CalendarTabSelector: React.FC<CalendarTabSelectorProps> = ({
 					},
 					{
 						id: 'mood',
-						label: 'Daily mode',
+						label: 'مود روزانه',
 						icon: (
 							<img
 								src={emotions}

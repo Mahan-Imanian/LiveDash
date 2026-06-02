@@ -58,7 +58,7 @@ export function NoteNavigation() {
 		<div
 			className={`flex items-center ${activeNoteId ? 'justify-end' : 'justify-between'} gap-x-1`}
 		>
-			{isSaving && <IconLoading title="inDashLiveSave..." />}
+			{isSaving && <IconLoading title="درحال ذخیره..." />}
 			{activeNoteId ? (
 				<>
 					<Tooltip
@@ -70,7 +70,7 @@ export function NoteNavigation() {
 									onCancel={() => setShowDeleteConfirm(false)}
 								/>
 							) : (
-								'Delete Notes'
+								'حذف یادداشت'
 							)
 						}
 						position="bottom"
@@ -83,7 +83,7 @@ export function NoteNavigation() {
 							<FiTrash2 size={14} />
 						</Button>
 					</Tooltip>
-					<Tooltip content="DashLiveNotes DashLive" position="top">
+					<Tooltip content="لیست یادداشت ها" position="top">
 						<button
 							className={`h-7 w-7 flex items-center justify-center rounded-full cursor-pointer transition-colors text-muted opacity-70 hover:bg-base-300 hover:opacity-100 ${activeNoteIndex > 0 ? 'opacity-100' : 'opacity-30 cursor-not-allowed'} duration-300`}
 							onClick={() => onBackToList()}
@@ -99,15 +99,16 @@ export function NoteNavigation() {
 						size="xs"
 						disabled={isCreatingNote}
 						loading={isCreatingNote}
-						loadingText={<IconLoading title="inDashLive" />}
+						loadingText={<IconLoading title="درحال ساخت..." />}
 						className={`h-6 w-fit px-2! text-xs font-medium  hover:scale-95 rounded-xl`}
 						isPrimary={true}
 					>
 						<MdEdit size={12} />
-						DashLive</Button>
+						چیزی بنویس
+					</Button>
 					<div className="space-x-1">
 						<BlurModeButton />
-						<Tooltip content="DashLive">
+						<Tooltip content="بارگزاری مجدد">
 							<Button
 								size="sm"
 								className={`px-2 py-0! border-none! rounded-xl text-base-content/40 shrink-0 active:scale-95 h-7!`}
@@ -135,16 +136,18 @@ function ToolTipConfirmContent({ onConfirm, onCancel }: Props) {
 	return (
 		<div className="flex flex-col gap-1 p-3 w-52">
 			<p className="mb-2 text-sm font-medium text-muted">
-				DashLiveDelete DashLiveNotes DashLive</p>
+				آیا از حذف این یادداشت مطمئن هستید؟
+			</p>
 			<div className="flex justify-between gap-2">
 				<Button onClick={onCancel} size="xs" className="btn rounded-2xl">
-					DashLive</Button>
+					انصراف
+				</Button>
 				<Button
 					onClick={onConfirm}
 					size="xs"
 					className="text-white btn btn-error rounded-2xl"
 				>
-					Delete Notes
+					حذف یادداشت
 				</Button>
 			</div>
 		</div>

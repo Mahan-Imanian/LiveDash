@@ -105,7 +105,7 @@ export function NotificationCardItem(prop: NotificationItemProps) {
 								onClick={toggleExpand}
 								className="mt-1 flex items-center gap-1 text-[10px] font-light text-muted hover:underline cursor-pointer"
 							>
-								{isExpanded ? 'DashLive' : 'DashLive'}
+								{isExpanded ? 'نمایش کمتر' : 'مشاهده بیشتر'}
 								<HiChevronDown
 									className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
 									size={12}

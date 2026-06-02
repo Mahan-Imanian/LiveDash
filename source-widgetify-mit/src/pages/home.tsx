@@ -27,17 +27,19 @@ const steps: Step[] = [
 		content: (
 			<div className="flex flex-col gap-1 text-center">
 				<h4 className="text-[14px] font-black text-primary italic">
-					DashLive</h4>
+					خلوت کردن فضای مرورگر
+				</h4>
 
 				<p className="text-[12px] leading-6 text-base-200 font-medium">
-					DashLive{' '}
-					<span className="font-black text-error">DashLive</span> DashLive:
+					برای مخفی کردن این نوار، کافیست روی آن{' '}
+					<span className="font-black text-error">راست کلیک</span> کرده و گزینه
+					زیر را انتخاب کنید:
 				</p>
 
 				<div className="relative group">
 					<img
-						src="https://cdn.dashlive.ir/extension/how-to-disable-footer.png"
-						alt="DashLive"
+						src="https://cdn.widgetify.ir/extension/how-to-disable-footer.png"
+						alt="نحوه مخفی کردن نوار پایین مرورگر"
 						className="object-cover w-full transition-transform duration-500 rounded-xl shadow-2xl border-2 border-primary/20 group-hover:scale-[1.02]"
 					/>
 					<div className="absolute inset-0 pointer-events-none rounded-xl bg-gradient-to-t from-black/20 to-transparent" />
@@ -62,22 +64,22 @@ const steps: Step[] = [
 	{
 		target: '#settings-button',
 		content:
-			'DashLiveMay DashLive‌DashLiveSettings General DashLiveDashDashLive‌DashLive‌DashLive‌DashLive',
+			'از این دکمه می‌توانید به تنظیمات عمومی افزونه و مدیریت ویجت‌ها دسترسی پیدا کنید و آن‌ها را سفارشی‌سازی کنید.',
 	},
 	{
 		target: '#profile-and-friends-list',
 		content:
-			'DashLive‌DashLive‌DashLive',
+			'از این بخش می‌توانید به پروفایل شخصی خود و لیست دوستان دسترسی پیدا کنید و آن‌ها را مدیریت کنید.',
 	},
 	{
 		target: '#bookmarks',
 		content:
-			'DashLive‌DashLiveBookmark‌DashLive: Bookmark DashLiveBookmark‌DashLiveEdit DashLiveDelete DashLiveSettings DashLiveBookmark DashLive',
+			'این بخش به شما امکان می‌دهد بوکمارک‌ها را مدیریت کنید: بوکمارک جدید اضافه کنید، بوکمارک‌های موجود را ویرایش یا حذف کنید و تنظیمات هر بوکمارک را تغییر دهید.',
 	},
 	{
 		target: '#widgets',
 		content:
-			'DashLiveDashDashLive‌DashLive‌DashLiveDashDashLive‌DashLiveagoDashLive‌DashLive4 DashDashLive',
+			'این محیط اصلی ویجت‌ها است. شما می‌توانید بدون محدودیت از ویجت‌ها استفاده کنید، اما برای جلوگیری از شلوغی بیش از حد، پیشنهاد می‌کنیم حداکثر ۴ ویجت را همزمان فعال نگه دارید.',
 	},
 ]
 export function HomePage() {
@@ -299,12 +301,12 @@ export function HomePage() {
 				showProgress
 				showSkipButton
 				locale={{
-					next: 'Next',
-					back: 'Back',
-					skip: 'Skip',
-					last: 'Finish',
-					close: 'Close',
-					nextLabelWithProgress: 'Next {step}/{steps}',
+					next: 'بعدی',
+					back: 'قبلی',
+					skip: 'رد کردن',
+					last: 'پایان',
+					close: 'بستن',
+					nextLabelWithProgress: 'بعدی {step}/{steps}',
 				}}
 				callback={onDoneTour}
 				styles={{

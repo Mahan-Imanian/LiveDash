@@ -17,7 +17,7 @@ export function ActivityInput({ activity }: Prop) {
 	const handleActivityUpdate = () => {
 		if (activityText.length > ACTIVITY_MAX_LENGTH) {
 			showToast(
-				`DashLive‌DashLive${ACTIVITY_MAX_LENGTH} WorkDashLive`,
+				`وضعیت فعالیت نمی‌تواند بیشتر از ${ACTIVITY_MAX_LENGTH} کاراکتر باشد.`,
 				'error'
 			)
 			return
@@ -27,7 +27,7 @@ export function ActivityInput({ activity }: Prop) {
 			{ activity: activityText || undefined },
 			{
 				onSuccess: () => {
-					showToast('DashLivedayDashLive', 'success')
+					showToast('وضعیت با موفقیت بروزرسانی شد', 'success')
 				},
 				onError: (error) => {
 					const content = translateError(error)
@@ -35,7 +35,7 @@ export function ActivityInput({ activity }: Prop) {
 						showToast(content, 'error')
 					} else {
 						showToast(
-							'Error in DashLivedayDashLive',
+							'خطا در بروزرسانی وضعیت. لطفاً دوباره تلاش کنید.',
 							'error'
 						)
 					}
@@ -45,16 +45,16 @@ export function ActivityInput({ activity }: Prop) {
 	}
 
 	return (
-		<SectionPanel title="DashLive" size="xs">
+		<SectionPanel title="وضعیت فعالیت" size="xs">
 			<div className="flex flex-col p-2 space-y-3 transition-colors rounded-lg">
 				<p className={'text-xs text-content font-light opacity-80'}>
-					DashLive‌DashLive(DashLive{' '}
-					{ACTIVITY_MAX_LENGTH} WorkDashLive)
+					وضعیت فعالیت شما به دوستانتان نمایش داده می‌شود. (حداکثر{' '}
+					{ACTIVITY_MAX_LENGTH} کاراکتر)
 				</p>
 				<div className="flex flex-col gap-2">
 					<TextInput
 						id="activity"
-						placeholder="DashLive: ⚒️ in DashLiveWork"
+						placeholder="مثال: ⚒️ در حال کار"
 						value={activityText}
 						onChange={setActivityText}
 						disabled={isUpdatingActivity}
@@ -72,7 +72,7 @@ export function ActivityInput({ activity }: Prop) {
 							isPrimary={true}
 							className="rounded-2xl"
 						>
-							{isUpdatingActivity ? 'in DashLiveSave...' : 'Save DashLive'}
+							{isUpdatingActivity ? 'در حال ذخیره...' : 'ذخیره وضعیت'}
 						</Button>
 					</div>
 				</div>

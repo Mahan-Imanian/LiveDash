@@ -49,7 +49,7 @@ export const CalendarDayDetails: React.FC<CalendarDayDetailsProps> = ({
 		if (isAdding) return
 		if (value === '') return
 		if (!isAuthenticated) {
-			showToast('DashLiveDaily mode DashLiveAccount DashLive', 'error')
+			showToast('برای ثبت مود روزانه باید وارد حساب کاربری خود شوید.', 'error')
 			return
 		}
 
@@ -57,7 +57,7 @@ export const CalendarDayDetails: React.FC<CalendarDayDetailsProps> = ({
 		const selectedGregorian = selectedDate.clone().doAsGregorian()
 
 		if (selectedGregorian.isAfter(currentGregorian, 'day')) {
-			showToast('DashLive‌DashLivein DashLive', 'error')
+			showToast('تاریخ انتخاب شده نمی‌تواند در آینده باشد.', 'error')
 			return
 		}
 
@@ -67,7 +67,7 @@ export const CalendarDayDetails: React.FC<CalendarDayDetailsProps> = ({
 				'day'
 			)
 		) {
-			showToast('DashLive‌DashLive7 day DashLive', 'error')
+			showToast('تاریخ انتخاب شده نمی‌تواند بیش از ۷ روز گذشته باشد.', 'error')
 			return
 		}
 
@@ -82,7 +82,7 @@ export const CalendarDayDetails: React.FC<CalendarDayDetailsProps> = ({
 		)
 		if (error) {
 			const msg = translateError(error)
-			showToast(typeof msg === 'string' ? msg : 'ErrorDashLive', 'error')
+			showToast(typeof msg === 'string' ? msg : 'خطایی رخ داد!', 'error')
 			return
 		}
 
@@ -90,12 +90,12 @@ export const CalendarDayDetails: React.FC<CalendarDayDetailsProps> = ({
 		if (response.action === 'removed') {
 			setMood('')
 			showToast(
-				'DashLiveDelete DashLive‌DashLive',
+				'مودت حذف شد. اگه بعداً خواستی دوباره می‌تونی یکی انتخاب کنی.',
 				'info'
 			)
 		} else {
 			setMood(value as MoodType)
-			showToast('DashLive', 'success', {
+			showToast('مود شما با موفقیت ثبت شد.', 'success', {
 				alarmSound: true,
 			})
 		}
@@ -160,7 +160,7 @@ export const CalendarDayDetails: React.FC<CalendarDayDetailsProps> = ({
 					<div className="flex items-center gap-1 mb-1.5 px-0.5">
 						<TbMoodHappy className="text-secondary" size={12} />
 						<span className="text-[10px] font-medium text-content">
-							DashLiveToday
+							مود امروز
 						</span>
 					</div>
 					<div className="grid grid-cols-4 gap-1">

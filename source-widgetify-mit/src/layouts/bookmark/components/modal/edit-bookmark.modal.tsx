@@ -156,7 +156,7 @@ export function EditBookmarkModal({
 			isOpen={isOpen}
 			onClose={onClose}
 			size="md"
-			title={`Edit ${type === 'FOLDER' ? 'Folder' : 'Bookmark'}`}
+			title={`ویرایش ${type === 'FOLDER' ? 'پوشه' : 'بوکمارک'}`}
 			direction="rtl"
 			className="!overflow-y-hidden"
 			closeOnBackdropClick={false}
@@ -183,7 +183,8 @@ export function EditBookmarkModal({
 									onClick={() => onRemoveIcon()}
 									className="mt-1 btn btn-ghost text-error hover:bg-error/10 rounded-xl"
 								>
-									Delete DashLive</Button>
+									حذف آیکون
+								</Button>
 							)}
 						</div>
 					</div>
@@ -205,7 +206,7 @@ export function EditBookmarkModal({
 					<TextInput
 						type="text"
 						name="title"
-						placeholder={type === 'FOLDER' ? 'Name Folder' : 'Title Bookmark'}
+						placeholder={type === 'FOLDER' ? 'نام پوشه' : 'عنوان بوکمارک'}
 						value={formData.title}
 						onChange={(value) => updateFormData('title', value)}
 						className={
@@ -218,7 +219,7 @@ export function EditBookmarkModal({
 							<TextInput
 								name="url"
 								type="text"
-								placeholder="Address Link"
+								placeholder="آدرس لینک"
 								value={formData.url || ''}
 								onChange={(value) => updateFormData('url', value)}
 								className={
@@ -244,7 +245,7 @@ export function EditBookmarkModal({
 								'btn btn-circle !bg-base-300 hover:!bg-error/10 text-muted hover:!text-error px-10 border-none shadow-none !rounded-2xl transition-colors duration-300 ease-in-out'
 							}
 						>
-							Cancel
+							لغو
 						</Button>
 						<Button
 							onClick={handleSave}
@@ -260,7 +261,7 @@ export function EditBookmarkModal({
 								'btn btn-circle !w-fit px-8 border-none shadow-none text-secondary !rounded-2xl transition-colors duration-300 ease-in-out'
 							}
 						>
-							Save
+							ذخیره
 						</Button>
 					</div>
 				</div>
@@ -278,7 +279,7 @@ export function EditBookmarkModal({
 					title: formData.title,
 					url: formData.url,
 				}}
-				title="DashLive‌DashLiveagoDashLive"
+				title="گزینه‌های پیشرفته"
 			/>
 		</Modal>
 	)

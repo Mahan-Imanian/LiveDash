@@ -26,12 +26,12 @@ export function YadkarWidget() {
 							tabs={[
 								{
 									id: 'todos',
-									label: 'Tasks',
+									label: 'وظایف',
 									icon: <HiOutlineCheckCircle size={14} />,
 								},
 								{
 									id: 'notes',
-									label: 'Notes',
+									label: 'یادداشت',
 									icon: <HiOutlineDocumentText size={14} />,
 								},
 							]}

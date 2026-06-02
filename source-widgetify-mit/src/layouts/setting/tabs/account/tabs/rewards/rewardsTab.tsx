@@ -25,11 +25,11 @@ export const RewardsTab = () => {
 							<div className="flex items-center justify-center">
 								<img
 									src={ConfigKey.WIG_COIN_ICON}
-									alt="Dash‌DashLive"
+									alt="ویج‌کوین"
 									className="object-center w-8 h-8"
 								/>
 							</div>
-							<span>Dash‌DashLive</span>
+							<span>ویج‌کوین چیست؟</span>
 						</div>
 					}
 					size="xs"
@@ -39,10 +39,13 @@ export const RewardsTab = () => {
 							<FiInfo className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
 							<div className="flex-1">
 								<p className="mb-2 text-sm font-medium text-content">
-									Dash‌DashLive‌DashLive‌DashLive🎉
+									ویج‌کوین، سکه ویژه ویجتیفای است که می‌توانید آن را
+									جمع‌آوری و خرج کنید! 🎉
 								</p>
 								<p className="text-xs text-muted">
-									DashLive‌DashLiveDash‌DashLive‌DashLive‌DashLive</p>
+									با جمع‌آوری ویج‌کوین می‌توانید آن‌ها را خرج کنید و محصولات
+									و امکانات ویژه داخل ویجتیفای را بخرید.
+								</p>
 							</div>
 						</div>
 					</div>

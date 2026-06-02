@@ -28,7 +28,7 @@ export const SettingsDropdown = ({ setShowSettings }: SettingsProps) => {
 
 	const onClick = () => {
 		if (ui === 'SIMPLE') {
-			showToast('in DashLiveAppearanceDashLiveDashDashLive', 'error')
+			showToast('در حالت ظاهری ساده، امکان تغییر و جابجایی ویجت ها نیست!', 'error')
 			return
 		}
 		toggleCanReOrderWidget()
@@ -44,7 +44,7 @@ export const SettingsDropdown = ({ setShowSettings }: SettingsProps) => {
 				className="flex items-center w-full gap-3 px-3 py-2 text-sm text-right transition-colors rounded-none cursor-pointer group hover:bg-primary/10 hover:text-primary"
 			>
 				<HiCog size={16} className="text-muted group-hover:!text-primary" />
-				<span>Settings</span>
+				<span>تنظیمات</span>
 			</button>
 
 			<button
@@ -58,7 +58,7 @@ export const SettingsDropdown = ({ setShowSettings }: SettingsProps) => {
 						size={16}
 						className="text-muted group-hover:!text-primary"
 					/>
-					<span>DashLiveDashDashLive‌DashLive</span>
+					<span>مدیریت ویجت‌ها</span>
 				</div>
 			</button>
 
@@ -72,9 +72,9 @@ export const SettingsDropdown = ({ setShowSettings }: SettingsProps) => {
 						className="text-muted group-hover:!text-primary"
 					/>
 					{canReOrderWidget ? (
-						<span>DashLive‌DashLive</span>
+						<span>غیرفعال‌سازی حالت جابجایی</span>
 					) : (
-						<span>DashLiveDashDashLive</span>
+						<span>حالت جابجایی ویجت ها</span>
 					)}
 				</div>
 			</div>

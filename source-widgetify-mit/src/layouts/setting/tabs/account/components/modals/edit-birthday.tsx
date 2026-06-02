@@ -49,7 +49,7 @@ export function ChangeBirthdayModal({ show, onClose, currentValue }: Prop) {
 			showCloseButton={false}
 		>
 			<div className="flex flex-col justify-between h-40 gap-4">
-				<SectionPanel title="DashLive">
+				<SectionPanel title="تاریخ تولدت؟">
 					<JalaliDatePicker
 						value={value}
 						enable={!updateProfileMutation.isPending}
@@ -66,7 +66,7 @@ export function ChangeBirthdayModal({ show, onClose, currentValue }: Prop) {
 						onClick={() => onClickSave()}
 						className="text-sm shadow-xs flex-2 rounded-xl shadow-primary/20"
 					>
-						{updateProfileMutation.isPending ? 'in DashLiveSave...' : 'Save'}
+						{updateProfileMutation.isPending ? 'در حال ذخیره...' : 'ذخیره'}
 					</Button>
 					<Button
 						size="sm"
@@ -74,7 +74,8 @@ export function ChangeBirthdayModal({ show, onClose, currentValue }: Prop) {
 						onClick={onCancel}
 						className="flex-1 text-sm font-medium border-none rounded-2xl bg-content"
 					>
-						DashLive</Button>
+						انصراف
+					</Button>
 				</div>
 			</div>
 		</Modal>

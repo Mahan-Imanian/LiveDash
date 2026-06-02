@@ -45,7 +45,7 @@ export function BookmarksList() {
 	const handleDragEnd = async (event: DragEndEvent) => {
 		if (!isAuthenticated)
 			return showToast(
-				'DashLive‌DashLiveBookmark‌DashLiveAccount DashLive',
+				'برای مرتب‌سازی بوکمارک‌ها باید وارد حساب کاربری خود شوید.',
 				'error'
 			)
 
@@ -192,8 +192,8 @@ export function BookmarksList() {
 				<AuthRequiredModal
 					isOpen={true}
 					onClose={() => setShowAddBookmarkModal(false)}
-					message="DashLiveAdd Bookmark DashLiveAccount DashLive"
-					loginButtonText="Sign in DashLiveAccount"
+					message="برای افزودن بوکمارک جدید باید وارد حساب کاربری خود شوید."
+					loginButtonText="ورود به حساب کاربری"
 				/>
 			) : (
 				showAddBookmarkModal && (
