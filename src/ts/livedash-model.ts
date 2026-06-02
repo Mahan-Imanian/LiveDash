@@ -1,12 +1,13 @@
 type LiveDashRoute = 'home' | 'apps' | 'explore';
 type LiveDashSearchEngine = 'google' | 'bing' | 'duckduckgo';
-type LiveDashPetMode = 'idle' | 'feed' | 'play';
+type LiveDashPetMode = 'idle' | 'feed' | 'play' | 'rest';
 
 interface LiveDashAppLink {
   id?: string;
-  name: string;
+  name?: string;
+  label?: string;
   url: string;
-  note: string;
+  note?: string;
   icon?: string;
   color?: string;
 }
@@ -76,11 +77,11 @@ interface LiveDashState {
   updatedAt: string;
 }
 
-const liveDashV21Model = {
-  schemaVersion: 220,
-  storageKey: 'livedash_state_v24',
+const liveDashV26Model = {
+  schemaVersion: 260,
+  storageKey: 'livedash_state_v26',
   chromeIdentityRedirectPath: 'google',
-  widgetifyStyleCompatibility: true
+  widgetifyCompatibilityMode: 'layout-css-icons'
 } as const;
 
 export type {
@@ -96,4 +97,4 @@ export type {
   LiveDashState
 };
 
-export { liveDashV21Model };
+export { liveDashV26Model };

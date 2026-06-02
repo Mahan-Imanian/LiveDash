@@ -1,34 +1,16 @@
-# LiveDash v25
+# LiveDash v26
 
-LiveDash is a Manifest V3 Chrome new tab extension with a Widgetify-style personalized dashboard, cloud profile sync, bookmarks, widgets, tasks, notes, and a companion pet surface.
+LiveDash is a Manifest V3 Chrome extension for a Widgetify-style personalized new tab dashboard.
+
+## v26 changes
+
+- Rebuilt the runtime UI around the Widgetify layout model: compact glass widgets, centered search, 5x2 bookmark grid, side widgets, and bottom glass dock.
+- App and bookmark icons now use official favicons through the same Google favicon pattern used by Widgetify, with local fallbacks.
+- Rebuilt tasks into readable interactive rows with filters, completion, delete, and quick add.
+- Rebuilt sign-in/profile states so signed-in users see a cloud profile panel instead of the sign-in page.
+- Stabilized Akita with real Widgetify dog assets and non-twitching care controls.
+- Improved bookmark footer contrast and responsive spacing.
 
 ## Install
 
-1. Open `chrome://extensions`.
-2. Enable Developer Mode.
-3. Click Load unpacked.
-4. Select this folder.
-5. Open a new tab.
-
-## Cloud profile
-
-The extension connects to `https://livedash.codersays.com` through the backend configured in `scripts/backend-config.js`. Google sign-in uses Chrome identity web auth flow.
-
-## v25 changes
-
-- Added TypeScript source model in `src/ts/livedash-model.ts` with `tsconfig.json` typechecking.
-- Improved cloud profile UI after sign-in.
-- Replaced the dead sign-in reopening behavior with a profile modal for signed-in users.
-- Improved bookmark cards with real favicon loading, readable footer text, and Widgetify-style hover motion.
-- Improved tasks readability.
-- Added Akita companion interactions with play/feed state, energy, hearts, and score.
-- Added additional Widgetify pet assets.
-
-## Validate
-
-Run:
-
-```bash
-npm run build
-npm run package
-```
+Open `chrome://extensions`, enable Developer Mode, and load the unzipped folder.
