@@ -1,21 +1,22 @@
-# LiveDash v18
+# LiveDash v19
 
-LiveDash is a Manifest V3 Chrome extension that turns the new tab page into a polished personalized dashboard with search, bookmarks, widgets, tasks, notes, focus timer, and optional LiveDash Cloud sync.
+LiveDash is a Manifest V3 Chrome extension new tab dashboard. This build adapts Widgetify's MIT-licensed UI mechanics and visual language while keeping LiveDash's English-first cloud sync flow.
 
 ## Install
 
 1. Unzip this folder.
 2. Open `chrome://extensions`.
 3. Enable Developer Mode.
-4. Choose **Load unpacked**.
+4. Click **Load unpacked**.
 5. Select this folder.
-6. Open a new tab.
 
-## Cloud sync
+## Cloud configuration
 
-The extension points to `https://livedash.codersays.com` in `scripts/backend-config.js`.
+Edit `scripts/backend-config.js` if your API endpoint changes.
 
-Google sign-in uses Chrome Identity and the website backend. After sign-in, the extension loads `/api/me.php` to hydrate profile, avatar, dashboard state, and sync metadata.
+## Attribution
+
+Widgetify reference assets/styles are MIT licensed. See `third_party/widgetify/LICENSE`.
 
 ## Validate
 

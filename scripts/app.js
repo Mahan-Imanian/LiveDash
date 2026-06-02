@@ -560,9 +560,26 @@
     return `<span class="ld-icon ld-icon-${size} ${className}" style="--icon-bg:${escapeHtml(bg)};--icon-fg:${escapeHtml(fg)}">${iconSvg(normalized, label)}</span>`;
   }
 
+  function getFaviconFromUrl(url) {
+    try {
+      const clean = String(url || '').trim();
+      if (!clean) return '';
+      const parsed = new URL(/^https?:\/\//i.test(clean) ? clean : `https://${clean}`);
+      return `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=64&fallback_opts=404`;
+    } catch {
+      return '';
+    }
+  }
+
+  function renderFaviconIcon(url, label, size = 'md') {
+    const src = getFaviconFromUrl(url);
+    const initials = getInitials(label);
+    if (!src) return `<span class="favicon-icon favicon-icon-${size} favicon-fallback">${escapeHtml(initials)}</span>`;
+    return `<span class="favicon-icon favicon-icon-${size}"><img src="${escapeHtml(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.favicon-icon').classList.add('failed');this.remove();"><span>${escapeHtml(initials)}</span></span>`;
+  }
+
   function renderAppIcon(app, size = 'md') {
-    const key = inferIconKey(app?.name || app?.label || '', app?.url || '');
-    return renderIcon(key, app?.name || app?.label || '', size);
+    return renderFaviconIcon(app?.url || '', app?.name || app?.label || '', size);
   }
 
   function appUrl(app) {
@@ -605,7 +622,7 @@
   }
 
   function renderTopTabs() {
-    return `<nav class="top-tabs widget-nav" aria-label="App categories">
+    return `<nav class="top-tabs widgetify-topbar" aria-label="App categories">
       ${state.categories.map((category) => `<button class="top-tab ${state.settings.appCategory === category.id ? 'active' : ''}" data-action="category" data-category="${escapeHtml(category.id)}" type="button">
         ${renderIcon(category.id, category.label, 'sm', 'tab-icon')}<span>${escapeHtml(category.label)}</span>
       </button>`).join('')}
@@ -683,33 +700,30 @@
   }
 
   function renderBookmarkSlots() {
-    return `<section class="bookmark-grid" aria-label="Pinned sites">
+    return `<section class="bookmark-grid widgetify-bookmarks" id="bookmarks" aria-label="Bookmarks">
       ${state.bookmarkSlots.map((slot) => {
         const filled = Boolean(slot.url);
-        const color = slot.color || appColor(slot.label || slot.id);
-        const icon = filled ? renderAppIcon(slot, 'lg') : renderIcon('add', 'Add site', 'lg', 'bookmark-add-icon');
-        const host = filled ? safeHost(slot.url) : 'Empty slot';
-        return `<article class="bookmark-slot ${filled ? 'filled' : 'empty'}" style="--slot-color:${escapeHtml(color)}">
-          <button class="bookmark-main" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
-            <span class="bookmark-icon">${icon}</span>
-            <span class="bookmark-text"><span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span><span class="bookmark-host">${escapeHtml(host)}</span></span>
-          </button>
-          <button class="bookmark-edit" data-action="edit-bookmark" data-id="${escapeHtml(slot.id)}" type="button" aria-label="Edit ${escapeHtml(slot.label || 'bookmark')}">${renderIcon('settings', 'Edit', 'xs')}</button>
-        </article>`;
+        return `<button class="bookmark-slot ${filled ? 'filled' : 'empty'}" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
+          <span class="bookmark-menu-dot" aria-hidden="true">•••</span>
+          <span class="bookmark-icon">${filled ? renderFaviconIcon(slot.url, slot.label, 'bookmark') : renderIcon('add', 'Add site', 'empty')}</span>
+          <span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span>
+          <span class="bookmark-shine"></span>
+        </button>`;
       }).join('')}
     </section>`;
   }
 
   function renderPetCard() {
     const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').length;
-    return `<section class="widget-card pet-card premium-card" aria-label="Daily quick win">
-      <div class="pet-banner">
-        <div class="pet-avatar">${renderIcon('tasks', 'Tasks', 'sm')}</div>
-        <div><div class="pet-title">Need a quick win?</div><div class="pet-subtitle">${openTasks} open tasks · capture one page, review priorities, or open your calendar.</div></div>
+    const signed = Boolean(state?.profile?.signedIn);
+    return `<section class="widget-card pet-card widget-container" aria-label="LiveDash companion">
+      <div class="pet-card-head">
+        <div><div class="card-title">LiveDash</div><div class="card-subtitle">${signed ? 'Cloud profile active' : 'Local workspace'}</div></div>
+        <button class="mini-button" data-action="login" type="button" aria-label="Account">${renderIcon('user', 'Account', 'xs')}</button>
       </div>
-      <div class="pet-character" aria-hidden="true"><div class="pet-face"></div></div>
-      <div class="pet-hearts">♥ ♥ ♥ ♥ ♥</div>
-      <button class="primary-button" data-action="add-task" type="button">Add today’s task</button>
+      <div class="pet-stage"><img src="assets/widgetify/animals/dog/akita_idle_8fps.gif" alt="LiveDash companion"></div>
+      <div class="pet-copy"><strong>${openTasks} tasks open</strong><span>${cloudStatusText()}</span></div>
+      <button class="primary-button" data-action="add-task" type="button">Add task</button>
     </section>`;
   }
 
@@ -771,11 +785,12 @@
   }
 
   function renderAppTile(app) {
-    const color = app.color || appColor(app.name);
-    return `<a class="app-tile" style="--app-color:${escapeHtml(color)}" href="${appUrl(app)}" target="_self" rel="noreferrer" aria-label="Open ${escapeHtml(app.name)}">
-      <span class="app-icon">${renderAppIcon(app, 'lg')}</span>
+    return `<a class="app-tile bookmark-item-card" href="${appUrl(app)}" target="_self" rel="noreferrer" aria-label="Open ${escapeHtml(app.name)}">
+      <span class="bookmark-menu-dot" aria-hidden="true">•••</span>
+      <span class="app-icon">${renderAppIcon(app, 'app')}</span>
       <span class="app-label">${escapeHtml(app.name)}</span>
       <span class="app-note">${escapeHtml(app.note || '')}</span>
+      <span class="bookmark-shine"></span>
     </a>`;
   }
 
@@ -788,21 +803,10 @@
   }
 
   function renderHomePage() {
-    return `<main class="dashboard-layout" aria-label="Dashboard home">
-      ${renderClockCard()}
-      <section class="main-stack">
-        ${renderSearchHero()}
-        ${renderBookmarkSlots()}
-        <div class="triple-widgets">
-          ${renderCurrencyCard()}
-          ${renderPomodoro()}
-          ${renderTasks()}
-        </div>
-      </section>
-      <section class="side-stack">
-        ${renderPetCard()}
-        ${renderCalendar()}
-      </section>
+    return `<main class="dashboard-layout widgetify-content" aria-label="Dashboard home">
+      <section class="left-stack">${renderClockCard()}${renderCurrencyCard()}</section>
+      <section class="center-stack">${renderSearchHero()}${renderBookmarkSlots()}<div class="lower-widget-grid">${renderPomodoro()}${renderTasks()}</div></section>
+      <section class="right-stack">${renderPetCard()}${renderCalendar()}</section>
     </main>`;
   }
 
@@ -811,7 +815,6 @@
     const secondaryA = state.settings.appCategory === 'tools' ? categoryById('daily') : categoryById('tools');
     const secondaryB = state.settings.appCategory === 'public' ? categoryById('google') : categoryById('public');
     return `<main class="apps-grid-page" aria-label="Apps library">
-      ${renderTopTabs()}
       ${renderAppPanel(selected, { featured: true })}
       <div class="two-col-panels">
         ${renderAppPanel(secondaryA, { limit: 9 })}
@@ -841,25 +844,21 @@
 
   function renderDock() {
     if (!state.settings.showDock) {
-      return `<button class="dock-restore" data-action="toggle-dock" type="button" aria-label="Show LiveDash dock">
-        <span class="restore-line"></span>
-        <span>Show dock</span>
-      </button>`;
+      return `<button class="dock-restore widgetify-dock-restore" data-action="toggle-dock" type="button" aria-label="Show LiveDash dock"><span></span></button>`;
     }
     const route = state.settings.route;
-    return `<nav class="bottom-dock" aria-label="LiveDash navigation">
-      <div class="dock-side">
-        <button class="dock-button" data-action="login" type="button" aria-label="Account">${renderIcon('user', 'Account', 'xs')}</button>
-        <button class="dock-button" data-action="open-apps-category" data-category="daily" type="button" aria-label="Daily essentials">${renderIcon('daily', 'Daily', 'xs')}</button>
-        <button class="dock-button" data-action="settings" type="button" aria-label="Settings">${renderIcon('settings', 'Settings', 'xs')}</button>
-        <button class="dock-button" data-action="toggle-dock" type="button" aria-label="Hide dock">${renderIcon('close', 'Hide', 'xs')}</button>
-      </div>
-      <div class="dock-center">
-        <button class="dock-button ${route === 'apps' ? 'active' : ''}" data-route="apps" type="button" aria-label="App grid">${renderIcon('grid', 'Apps', 'xs')}</button>
-        <button class="dock-button ${route === 'explore' ? 'active' : ''}" data-route="explore" type="button" aria-label="Explore">${renderIcon('explore', 'Explore', 'xs')}</button>
-        <button class="dock-button ${route === 'home' ? 'active' : ''}" data-route="home" type="button" aria-label="Widgets home">${renderIcon('home', 'Home', 'xs')}</button>
-      </div>
-      <div class="brand-side"><span class="brand-text">LiveDash</span><span class="brand-mark">L</span></div>
+    return `<nav class="bottom-dock widgetify-dock" aria-label="LiveDash navigation">
+      <button class="dock-button dock-hide" data-action="toggle-dock" type="button" aria-label="Hide dock">${renderIcon('close', 'Hide', 'xs')}</button>
+      <span class="dock-divider"></span>
+      <button class="dock-button" data-action="login" type="button" aria-label="Account">${renderIcon('user', 'Account', 'xs')}</button>
+      <button class="dock-button" data-action="refresh-cloud" type="button" aria-label="Sync">${renderIcon('refresh', 'Sync', 'xs')}</button>
+      <button class="dock-button" data-action="settings" type="button" aria-label="Settings">${renderIcon('settings', 'Settings', 'xs')}</button>
+      <span class="dock-divider"></span>
+      <button class="dock-button ${route === 'apps' ? 'active' : ''}" data-route="apps" type="button" aria-label="Apps">${renderIcon('grid', 'Apps', 'xs')}</button>
+      <button class="dock-button ${route === 'home' ? 'active' : ''}" data-route="home" type="button" aria-label="Home">${renderIcon('home', 'Home', 'xs')}</button>
+      <button class="dock-button ${route === 'explore' ? 'active' : ''}" data-route="explore" type="button" aria-label="Explore">${renderIcon('explore', 'Explore', 'xs')}</button>
+      <span class="dock-divider"></span>
+      <button class="dock-button" data-action="open-command" type="button" aria-label="Command">${renderIcon('search', 'Command', 'xs')}</button>
     </nav>`;
   }
 
@@ -932,6 +931,7 @@
     const route = state.settings.route || 'home';
     root.innerHTML = `<div class="widgetify-shell route-${escapeHtml(route)}">
       ${renderProfileHeader()}
+      ${renderTopTabs()}
       <div class="page-grid">
         ${route === 'home' ? renderHomePage() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
       </div>
