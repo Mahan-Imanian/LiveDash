@@ -103,7 +103,7 @@ export function translateValidationMessage(message: string): string {
 	return validationTranslations[message] || message
 }
 
-export function translateError(error: any): string | Record<string, string[]> {
+export function translateError(error: any): string | Record<string, string> {
 	const defaultMessage = 'An error occurred. Try again'
 	if (!error) return defaultMessage
 
@@ -111,15 +111,15 @@ export function translateError(error: any): string | Record<string, string[]> {
 		error.response?.data?.formValidation &&
 		Array.isArray(error.response.data.formValidation)
 	) {
-		const fieldErrors: Record<string, string[]> = {}
+		const fieldErrors: Record<string, string> = {}
 
 		error.response.data.formValidation.forEach((validationError: any) => {
 			const field = validationError.property
 			const messages = Object.values(validationError.constraints || {}) as string[]
 
-			fieldErrors[field] = messages.map((message) =>
-				translateValidationMessage(message)
-			)
+			fieldErrors[field] = messages
+				.map((message) => translateValidationMessage(message))
+				.join(', ')
 		})
 
 		return fieldErrors

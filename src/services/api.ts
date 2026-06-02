@@ -8,7 +8,7 @@ import { getFromStorage, setToStorage } from '@/common/storage'
 import { callEvent } from '@/common/utils/call-event'
 
 const rawGithubApi = axios.create({
-	baseURL: 'https://raw.githubusercontent.com/livedash-app/livedash-extension/main',
+	baseURL: 'https://raw.githubusercontent.com/Mahan-Imanian/LiveDash/main',
 })
 export let API_URL = ''
 export async function getMainClient(): Promise<AxiosInstance> {

@@ -14,7 +14,7 @@ API documentation can be found in the [Api-doc.md](./Api-doc.md) file.
 To get started, fork and clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/livedash-app/livedash-extension.git
+git clone https://github.com/Mahan-Imanian/LiveDash.git
 ```
 ```bash
 cd livedash-extension

@@ -1,71 +1,56 @@
+# LiveDash
 
+LiveDash is a browser extension that turns the new tab page into a smart personal dashboard for European users, with support for US users as well.
 
-# ![logo](./public/icons/icon32.png) LiveDash
+Repository: https://github.com/Mahan-Imanian/LiveDash
 
- LiveDash is a browser extensions that adds useful widgets to the new page of your browser. Numerous weather, currency, calendar, to-do list, search, and bookmark widgets can improve your exploring experience.
+## Features
 
-Official Website: [livedash.eu](https://livedash.eu)
+- Weather
+- Currency and crypto prices
+- Gregorian calendar
+- To-do lists
+- Notes
+- Bookmarks
+- Search tools
+- Dashboard widgets
+- Animated visual elements
 
-<a href="https://discord.gg/p9TZzEV39e" target="_blank">
-         <img src="https://discordapp.com/api/guilds/1375251820326162578/widget.png?style=banner2" alt="total" >
-</a>
+## Development
 
-![Alt](https://repobeats.axiom.co/api/embed/50a64e3cf86c61211e3c0ee3daf94215e9fb0ec4.svg "Repobeats analytics image")
+```bash
+git clone https://github.com/Mahan-Imanian/LiveDash.git
+cd LiveDash
+npm install --legacy-peer-deps
+npm run dev
+```
 
-## Contributing | Development
+## Build
 
-We welcome your contributions to improve LiveDash! To contribute please read the following document:
+```bash
+npm run build
+```
 
-[Contribution Guide](./.github/CONTRIBUTING.md).
+The Chrome MV3 build is generated in:
+
+```bash
+.output/chrome-mv3
+```
+
+Load that folder in the browser as an unpacked extension.
 
 ## Analytics and privacy
 
-The LiveDash extension uses Google Analytics 4 to collect statistical data and improve the user experience. The following Data is collected anonymously:
-  
+LiveDash uses Google Analytics 4 for anonymous usage statistics and product improvement. It does not collect note contents or personal content entered into widgets.
 
-### Collected Data
+Users can disable analytics in the extension settings.
 
--  **Page Views**: Visit duration of extension pages
+## Feedback and issues
 
--  **Features**: The type of user interaction with widgets, including:
+Use GitHub issues:
 
-- Changing the background image
+https://github.com/Mahan-Imanian/LiveDash/issues
 
-- Using the weather widget and selecting a city
+## License
 
-- ⚠️ When creating a note (note subject is not sent)⚠️
-
-- Interact with different widgets
-
--  **Errors**: Reporting possible errors to improve extension performance
-
-  
-
-### Disable Analytics
-
-Users can select the "Disable Analytics" option in the extension's general settings section to prevent data collection.
-
-  
-
-### Privacy Policy
-
-The collected data never includes personal information or the content of the notes and it's only used to improve the livedash functionality.
-  
-
-## Feedback and Report
-
-Please share your comments and suggestions with us through one of the following methods:
-
-
--  [Github issues](https://github.com/livedash-app/livedash-extension/issues)
-
--  [Send feedback](https://feedback.livedash.eu)
-
-  
-
-
-
-  
-
-## LICENSE
-For more information please read [License](LICENSE) 
+See [LICENSE](LICENSE).
