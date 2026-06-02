@@ -1,0 +1,82 @@
+import { SlOptions } from 'react-icons/sl'
+import { addOpacityToColor } from '@/common/color'
+import type { Bookmark } from '../types/bookmark.types'
+import { BookmarkIcon } from './bookmark/bookmark-icon'
+import { RenderStickerPattern } from './bookmark/bookmark-sticker'
+import { BookmarkTitle } from './bookmark/bookmark-title'
+
+interface BookmarkItemProps {
+	bookmark: Bookmark
+	theme?: string
+	onClick: (e?: React.MouseEvent<any>) => void
+	isDragging?: boolean
+	onMenuClick?: (e: React.MouseEvent<HTMLElement>) => void
+}
+
+export function BookmarkItem({
+	bookmark,
+	onClick,
+	isDragging = false,
+	onMenuClick,
+}: BookmarkItemProps) {
+	const customStyles = bookmark.customBackground
+		? {
+				backgroundColor: bookmark.customBackground,
+				borderColor: addOpacityToColor(bookmark.customBackground, 0.2),
+			}
+		: {}
+
+	const handleMouseDown = (e: React.MouseEvent) => {
+		if (e.button === 1) {
+			e.preventDefault()
+		}
+	}
+
+	return (
+		<div className={`relative ${isDragging ? 'opacity-50' : ''}`}>
+			<button
+				onClick={onClick}
+				onAuxClick={onClick}
+				onMouseDown={handleMouseDown}
+				style={customStyles}
+				className={`relative  flex flex-col items-center justify-center px-2 py-0.5 transition-all duration-300 border border-content cursor-pointer group rounded-2xl shadow-sm w-full h-20 md:h-[5.5rem] ${!bookmark.customBackground ? `bg-content hover:bg-base-300 text-content backdrop-blur-sm bg-glass` : 'border'} transition-transform ease-in-out group-hover:scale-102`}
+			>
+				{onMenuClick && bookmark && (
+					<div
+						onMouseDown={(e) => {
+							e.stopPropagation()
+							onMenuClick(e)
+						}}
+						onClick={(e) => {
+							e.stopPropagation()
+							onMenuClick(e)
+						}}
+						className={
+							'absolute cursor-pointer top-0.5 right-0.5 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-base-content/10 z-10'
+						}
+					>
+						<SlOptions size={12} />
+					</div>
+				)}
+				{RenderStickerPattern(bookmark)}
+
+				<div className="flex flex-col h-full">
+					<div className="flex items-center justify-center flex-1">
+						<BookmarkIcon bookmark={bookmark} />
+					</div>
+
+					<BookmarkTitle
+						title={bookmark.title}
+						customTextColor={bookmark.customTextColor || ''}
+					/>
+				</div>
+
+				<div
+					className={
+						'absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-black/5 to-transparent rounded-xl'
+					}
+				/>
+			</button>
+		</div>
+	)
+}

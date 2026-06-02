@@ -1,0 +1,134 @@
+import type React from 'react'
+import { useEffect, useState } from 'react'
+import { FiShoppingBag } from 'react-icons/fi'
+import { IoMdMoon, IoMdStar, IoMdSunny } from 'react-icons/io'
+import { MdOutlineBlurOn } from 'react-icons/md'
+import Analytics from '@/analytics'
+import { callEvent } from '@/common/utils/call-event'
+import { ItemSelector } from '@/components/item-selector'
+import { SectionPanel } from '@/components/section-panel'
+import Tooltip from '@/components/toolTip'
+import { useTheme } from '@/context/theme.context'
+import type { UserInventoryItem } from '@/services/hooks/market/market.interface'
+
+interface ThemeItem {
+	id: string
+	name: string
+	icon: React.ReactElement
+	description?: string
+}
+
+const defaultThemes: ThemeItem[] = [
+	{
+		id: 'glass',
+		name: 'DashLive‌DashLive',
+		icon: <MdOutlineBlurOn size={14} />,
+		description: 'DashLive‌DashLive',
+	},
+	{
+		id: 'icy',
+		name: 'DashLive',
+		icon: <MdOutlineBlurOn size={14} />,
+		description: 'DashLive',
+	},
+	{
+		id: 'light',
+		name: 'DashLive',
+		icon: <IoMdSunny size={14} />,
+		description: 'DashLive',
+	},
+	{
+		id: 'dark',
+		name: 'DashLive',
+		icon: <IoMdMoon size={14} />,
+		description: 'DashLive',
+	},
+	{
+		id: 'zarna',
+		name: 'DashLive',
+		icon: <IoMdStar size={14} />,
+		description: 'DashLive‌DashLive',
+	},
+]
+
+interface Props {
+	fetched_themes: UserInventoryItem[]
+}
+
+export function ThemeSelector({ fetched_themes }: Props) {
+	const { setTheme, theme } = useTheme()
+	const [themes, setThemes] = useState<ThemeItem[]>(defaultThemes)
+	const [selected, setSelected] = useState<ThemeItem | null>(null)
+
+	function onClick(item: ThemeItem) {
+		setTheme(item.id)
+		setSelected(item)
+		Analytics.event('theme_selected')
+	}
+
+	useEffect(() => {
+		const currentTheme = themes.find((t) => t.id === theme)
+		if (currentTheme) {
+			setSelected(currentTheme)
+		}
+	}, [themes])
+
+	useEffect(() => {
+		if (fetched_themes.length) {
+			const mapped: ThemeItem[] = fetched_themes.map((item) => ({
+				id: item.value,
+				name: item.name ?? 'DashLiveName',
+				icon: <IoMdStar size={14} />,
+				description: item?.description || 'DashLive',
+			}))
+			setThemes([...defaultThemes, ...mapped])
+		}
+	}, [fetched_themes])
+
+	const handleMoreClick = () => {
+		Analytics.event('theme_market_opened')
+		callEvent('openMarketModal')
+	}
+
+	const renderThemePreview = (item: ThemeItem) => (
+		<Tooltip content={item.description}>
+			<div className="flex items-center gap-2">
+				<span
+					className="flex items-center justify-center w-5 h-5 rounded-full bg-content bg-glass text-primary"
+					data-theme={item.id}
+				>
+					{item.icon}
+				</span>
+				<span className="w-32 text-xs truncate">{item.description}</span>
+			</div>
+		</Tooltip>
+	)
+
+	return (
+		<SectionPanel title="DashLive" delay={0.2} size="sm">
+			<div className="space-y-3">
+				<p className="text-sm text-muted">DashLiveAppearanceDashLive</p>
+
+				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+					{themes.map((item) => (
+						<ItemSelector
+							isActive={selected?.id === item.id}
+							onClick={() => onClick(item)}
+							key={item.id}
+							className="w-full !h-20 !max-h-20 !min-h-20"
+							label={item.name}
+							description={renderThemePreview(item)}
+						/>
+					))}
+					<div
+						className="flex items-center justify-center w-full h-20 text-xs border border-content border-muted gap-0.5 text-muted hover:!text-primary cursor-pointer hover:!border-primary transition-all duration-200 rounded-xl"
+						onClick={() => handleMoreClick()}
+					>
+						<FiShoppingBag size={18} />
+						<span>DashLive</span>
+					</div>
+				</div>
+			</div>
+		</SectionPanel>
+	)
+}

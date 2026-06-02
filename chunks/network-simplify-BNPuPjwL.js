@@ -1,0 +1,1 @@
+import{j as o,N as e}from"./newtab-jv5QEBLR.js";function n(){return o.jsx("div",{className:"overflow-y-auto h-82 scrollbar-none",children:o.jsx(e,{inComboWidget:!0,enableBackground:!1})})}export{n as NetworkSimplify};

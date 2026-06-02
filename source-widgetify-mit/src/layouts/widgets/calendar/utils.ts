@@ -1,0 +1,155 @@
+import jalaliMoment from 'jalali-moment'
+import hijriMoment from 'moment-hijri'
+import momentTz from 'moment-timezone'
+import type { FetchedAllEvents, FetchedEvent } from '@/services/hooks/date/getEvents.hook'
+import type { GoogleCalendarEvent } from '@/services/hooks/date/getGoogleCalendarEvents.hook'
+export const formatDateStr = (date: jalaliMoment.Moment) => {
+	return `${date.jYear()}-${(date.jMonth() + 1).toString().padStart(2, '0')}-${date.jDate().toString().padStart(2, '0')}`
+}
+
+export type DashLiveDate = jalaliMoment.Moment
+
+export const iranianHijriMonthDays: { [key: number]: { [key: number]: number } } = {
+	1445: {
+		1: 30,
+		2: 29,
+		3: 30,
+		4: 29,
+		5: 30,
+		6: 29,
+		7: 30,
+		8: 29,
+		9: 30,
+		10: 29,
+		11: 30,
+		12: 29,
+	},
+	1446: {
+		1: 30, // 1= DashLive2: 30, // 2= DashLive3: 30, // 3= DashLive4: 29, // 4= DashLive5: 30, // 5= 	DashLive6: 30, // 6= 	DashLive7: 29, // 7=  DashLive8: 30, // 8=  DashLive9: 29, // 9= DashLive10: 29, // 10=  DashLive11: 29, // 11=  DashLive12: 30, // 12=  DashLive},
+	1447: {
+		1: 29,
+		2: 30,
+		3: 30,
+		4: 30,
+		5: 30,
+		6: 29,
+		7: 30,
+		8: 29,
+		9: 30,
+		10: 29,
+		11: 30,
+		12: 29,
+	},
+}
+
+export function getShamsiEvents(
+	events: FetchedAllEvents,
+	selectedDate: jalaliMoment.Moment
+): FetchedEvent[] {
+	const month = selectedDate.jMonth() + 1
+	const day = selectedDate.jDate()
+	return events.shamsiEvents.filter(
+		(event) => event.month === month && event.day === day
+	)
+}
+
+// rewritten by Grok
+export function convertShamsiToHijri(
+	shamsiDate: jalaliMoment.Moment
+): hijriMoment.Moment {
+	const referenceShamsi = jalaliMoment
+		.from('1402/04/28', 'fa', 'YYYY/MM/DD')
+		.startOf('day')
+	const referenceHijri = { year: 1445, month: 1, day: 1 }
+
+	const daysPassed = shamsiDate.startOf('day').diff(referenceShamsi, 'days')
+
+	if (daysPassed < 0) {
+		return hijriMoment('1445-01-01', 'iYYYY-iM-iD') // fake date to avoid crash
+	}
+
+	let remainingDays = daysPassed
+	let currentYear = referenceHijri.year
+	let currentMonth = referenceHijri.month
+	let currentDay = referenceHijri.day
+
+	while (remainingDays > 0) {
+		if (!iranianHijriMonthDays[currentYear]) {
+			// fake year to avoid crash
+			currentYear = 1448
+			currentMonth = 1
+			currentDay = 1
+			remainingDays = 0
+			break
+		}
+
+		const daysInMonth = iranianHijriMonthDays[currentYear][currentMonth]
+
+		if (remainingDays >= daysInMonth) {
+			remainingDays -= daysInMonth
+			currentMonth++
+
+			if (currentMonth > 12) {
+				currentMonth = 1
+				currentYear++
+			}
+		} else {
+			currentDay = remainingDays + 1
+			remainingDays = 0
+		}
+	}
+
+	return hijriMoment(`${currentYear}-${currentMonth}-${currentDay}`, 'iYYYY-iM-iD')
+		.utc()
+		.add(3.5, 'hours')
+}
+
+export function getHijriEvents(
+	events: FetchedAllEvents,
+	selectedDate: jalaliMoment.Moment
+): FetchedEvent[] {
+	const hijriDate = convertShamsiToHijri(selectedDate)
+	const month = hijriDate.iMonth() + 1
+	const day = hijriDate.iDate()
+
+	return events.hijriEvents.filter(
+		(event) => event.month === month && event.day === day
+	)
+}
+
+export function getGregorianEvents(
+	events: FetchedAllEvents,
+	date: jalaliMoment.Moment //  Hijri date
+): FetchedEvent[] {
+	const gregorianDate = date.clone().locale('en')
+
+	const gregorianDay = gregorianDate.format('D')
+	const gregorianMonth = gregorianDate.format('M')
+
+	return events.gregorianEvents.filter(
+		(event) => event.month === +gregorianMonth && event.day === +gregorianDay
+	)
+}
+
+export function getCurrentDate(timeZone: string) {
+	const tzMoment = momentTz.tz(new Date(), timeZone)
+	return jalaliMoment(tzMoment.toDate()).locale('fa')
+}
+
+export function filterGoogleEventsByDate(
+	events: GoogleCalendarEvent[],
+	currentDate: DashLiveDate
+): GoogleCalendarEvent[] {
+	const dateStr = currentDate.clone().locale('en').format('YYYY-MM-DD')
+
+	return events.filter((event) => {
+		if (!event || !event.start || !event.start.dateTime) {
+			return false
+		}
+
+		if (event.eventType === 'birthday') return false
+
+		const eventDateStr = event.start.dateTime.split('T')[0]
+		return eventDateStr === dateStr
+	})
+}
