@@ -1,13 +1,8 @@
 # Changelog
 
-## v25
+## v26
 
-- Added TypeScript model source and typecheck step.
-- Improved official favicon rendering and fallback behavior for app/bookmark icons.
-- Added signed-in profile modal with cloud profile state, sync action, and sign-out.
-- Added visible profile/cloud status strip.
-- Reworked sign-in modal into a less generic cloud account surface.
-- Added Akita companion minigame states using Widgetify pet sprites.
-- Improved task row contrast and wrapping.
-- Improved bookmark card footer visibility and hover motion.
-- Updated extension package metadata to v25.
+- Rebuilt the interface to more closely follow Widgetify's published layout and interaction patterns.
+- Restored official-looking app icons with Google favicon sourcing and local fallbacks.
+- Rebuilt tasks, sign-in/profile, Akita, bookmarks, dock, and microinteractions.
+- Updated schema and package metadata to v26.

@@ -1,12 +1,12 @@
 type WidgetifyRoute = 'home' | 'apps' | 'explore';
 type CloudState = 'local' | 'connected' | 'loaded';
-type PetAction = 'idle' | 'feed' | 'play';
+type PetAction = 'idle' | 'feed' | 'play' | 'rest';
 
 interface FaviconSource {
   label: string;
   url: string;
   googleFavicon: string;
-  duckFavicon: string;
+  localFallback: string;
 }
 
 interface ProfileViewModel {
@@ -18,18 +18,18 @@ interface ProfileViewModel {
 }
 
 interface InteractionAnimation {
-  name: 'cardReveal' | 'dockIn' | 'petBreathe' | 'petRun' | 'petHappy' | 'sparklePop';
+  name: 'shellIn' | 'cardIn' | 'dockReveal' | 'modalIn' | 'drawerIn' | 'toastIn';
   durationMs: number;
   easing: string;
 }
 
-const widgetifyInspiredAnimations: InteractionAnimation[] = [
-  { name: 'cardReveal', durationMs: 420, easing: 'cubic-bezier(.23,1,.32,1)' },
-  { name: 'dockIn', durationMs: 450, easing: 'cubic-bezier(.23,1,.32,1)' },
-  { name: 'petBreathe', durationMs: 2800, easing: 'ease-in-out' },
-  { name: 'petRun', durationMs: 1000, easing: 'steps(8)' },
-  { name: 'petHappy', durationMs: 900, easing: 'ease-in-out' },
-  { name: 'sparklePop', durationMs: 1100, easing: 'ease-in-out' }
+const widgetifyAnimations: InteractionAnimation[] = [
+  { name: 'shellIn', durationMs: 550, easing: 'cubic-bezier(.23,1,.32,1)' },
+  { name: 'cardIn', durationMs: 420, easing: 'cubic-bezier(.23,1,.32,1)' },
+  { name: 'dockReveal', durationMs: 600, easing: 'cubic-bezier(.23,1,.32,1)' },
+  { name: 'modalIn', durationMs: 240, easing: 'cubic-bezier(.23,1,.32,1)' },
+  { name: 'drawerIn', durationMs: 250, easing: 'cubic-bezier(.23,1,.32,1)' },
+  { name: 'toastIn', durationMs: 250, easing: 'cubic-bezier(.23,1,.32,1)' }
 ];
 
 function makeFaviconSource(label: string, rawUrl: string): FaviconSource {
@@ -38,10 +38,10 @@ function makeFaviconSource(label: string, rawUrl: string): FaviconSource {
   return {
     label,
     url: normalized,
-    googleFavicon: `https://www.google.com/s2/favicons?domain=${host}&sz=64&fallback_opts=404`,
-    duckFavicon: `https://icons.duckduckgo.com/ip3/${host}.ico`
+    googleFavicon: `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`,
+    localFallback: 'assets/widgetify/images/no-internet.png'
   };
 }
 
 export type { WidgetifyRoute, CloudState, PetAction, FaviconSource, ProfileViewModel, InteractionAnimation };
-export { widgetifyInspiredAnimations, makeFaviconSource };
+export { widgetifyAnimations, makeFaviconSource };
