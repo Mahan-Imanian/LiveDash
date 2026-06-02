@@ -1,5 +1,5 @@
 (function () {
-  const SCHEMA_VERSION = 150;
+  const SCHEMA_VERSION = 190;
 
   const nowIso = () => new Date().toISOString();
 
