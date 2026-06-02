@@ -1,5 +1,11 @@
 # Changelog
 
+## v17.1.0
+- Fixed Google sign-in by moving extension authentication to `chrome.identity.launchWebAuthFlow`.
+- Removed fragile direct website redirects into `chrome-extension://` pages.
+- Added the `identity` permission and kept website API host access restricted to `https://livedash.codersays.com/*`.
+- Added backend support for extension auth redirects through `https://<extension-id>.chromiumapp.org/google`.
+
 ## v17.0.0
 - Reworked the Widgetify-style UI composition for higher spacing quality and less generic chrome.
 - Added dock restore handle after hiding the dock.
