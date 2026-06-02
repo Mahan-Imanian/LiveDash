@@ -1,6 +1,6 @@
 {
-  "name": "livedash-v18-widgetify-extension",
-  "version": "18.0.0",
+  "name": "livedash-v19-widgetify-extension",
+  "version": "19.0.0",
   "private": true,
   "description": "LiveDash AAA personalized new tab dashboard Chrome extension.",
   "scripts": {
