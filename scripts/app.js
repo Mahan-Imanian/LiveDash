@@ -561,6 +561,40 @@
     return `<span class="ld-icon ld-icon-${size} ${className}" style="--icon-bg:${escapeHtml(bg)};--icon-fg:${escapeHtml(fg)}">${iconSvg(normalized, label)}</span>`;
   }
 
+  function renderFlatIcon(key, label = '', size = 'md', className = '') {
+    const normalized = ICON_ALIASES[normalizeIconKey(key)] || normalizeIconKey(key);
+    const [, fg] = iconPalette(normalized, label);
+    return `<span class="flat-icon flat-icon-${size} ${className}" style="--flat-icon-color:${escapeHtml(fg)}">${iconSvg(normalized, label)}</span>`;
+  }
+
+  function iconKeyForUrl(url, label = '') {
+    const host = safeHost(url).toLowerCase();
+    const labelKey = normalizeIconKey(label);
+    const map = {
+      'royalmail.com': 'royalmail',
+      'www.royalmail.com': 'royalmail',
+      'gov.uk': 'govuk',
+      'www.gov.uk': 'govuk',
+      'nhs.uk': 'nhs',
+      'www.nhs.uk': 'nhs',
+      'irs.gov': 'irs',
+      'www.irs.gov': 'irs',
+      'ups.com': 'ups',
+      'www.ups.com': 'ups',
+      'dhl.com': 'dhl',
+      'www.dhl.com': 'dhl',
+      'mail.google.com': 'gmail',
+      'calendar.google.com': 'calendar',
+      'drive.google.com': 'drive',
+      'youtube.com': 'youtube',
+      'www.youtube.com': 'youtube',
+      'notion.so': 'notion',
+      'www.notion.so': 'notion',
+      'chat.openai.com': 'chatgpt'
+    };
+    return map[host] || ICON_ALIASES[labelKey] || '';
+  }
+
   function normalizeUrlForIcon(url) {
     const clean = String(url || '').trim();
     if (!clean) return null;
@@ -571,7 +605,7 @@
     try {
       const parsed = normalizeUrlForIcon(url);
       if (!parsed) return '';
-      return `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=64&fallback_opts=404`;
+      return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(parsed.origin)}&sz=64`;
     } catch {
       return '';
     }
@@ -588,6 +622,8 @@
   }
 
   function renderFaviconIcon(url, label, size = 'md') {
+    const directKey = iconKeyForUrl(url, label);
+    if (directKey) return `<span class="favicon-icon favicon-icon-${size} favicon-direct">${renderFlatIcon(directKey, label, size === 'xs' ? 'xs' : 'app')}</span>`;
     const primary = getFaviconFromUrl(url);
     const backup = getDuckIcon(url);
     const initials = getInitials(label);
@@ -783,24 +819,23 @@
     const signed = Boolean(state?.profile?.signedIn);
     const pet = state.pet || { mood: 'Ready', energy: 72, hearts: 5, mode: 'idle', score: 0 };
     const sprite = pet.mode === 'play'
-      ? 'assets/animals/dog/akita_with_ball_8fps.gif'
+      ? 'assets/widgetify/animals/dog/akita_run_8fps.gif'
       : pet.mode === 'feed'
-        ? 'assets/animals/dog/akita_swipe_8fps.gif'
-        : 'assets/animals/dog/akita_idle_8fps.gif';
-    const moodCopy = pet.mode === 'play' ? 'Catch the ball for points' : pet.mode === 'feed' ? 'Snack time' : openTasks ? 'Ready for a quick win' : 'All calm right now';
+        ? 'assets/widgetify/animals/dog/akita_swipe_8fps.gif'
+        : 'assets/widgetify/animals/dog/akita_idle_8fps.gif';
+    const energy = Math.max(0, Math.min(100, Number(pet.energy || 0)));
     return `<section class="widget-card pet-card widget-container" aria-label="Akita companion">
       <div class="pet-card-head">
-        <div><div class="card-title">Akita</div><div class="card-subtitle">${escapeHtml(moodCopy)}</div></div>
-        <span class="mode-pill">${escapeHtml(pet.mood || 'Ready')}</span>
+        <div><div class="card-title">Akita</div><div class="card-subtitle">${escapeHtml(pet.mood || 'Ready')} · ${escapeHtml(String(pet.score || 0))} score</div></div>
+        <span class="mode-pill">${escapeHtml(signed ? 'Cloud saved' : 'Local')}</span>
       </div>
-      <button class="pet-stage pet-stage-game pet-${escapeHtml(pet.mode || 'idle')}" data-action="pet-play" type="button" aria-label="Play with Akita">
-        <span class="pet-sparkle one"></span><span class="pet-sparkle two"></span>
+      <div class="akita-stage pet-${escapeHtml(pet.mode || 'idle')}" aria-label="Akita status">
         <img src="${sprite}" alt="Akita companion" draggable="false">
-        <span class="pet-ball" aria-hidden="true"></span>
-      </button>
-      <div class="pet-stats"><span>♥ ${escapeHtml(String(pet.hearts || 5))}</span><span>Energy ${escapeHtml(String(pet.energy || 0))}%</span><span>Score ${escapeHtml(String(pet.score || 0))}</span></div>
-      <div class="pet-copy"><strong>${openTasks} open tasks</strong><span>${signed ? 'Cloud progress saved' : 'Sign in to save progress'}</span></div>
-      <div class="pet-actions"><button class="secondary-button" data-action="pet-feed" type="button">Feed</button><button class="primary-button" data-action="pet-play" type="button">Play game</button></div>
+        <div class="akita-speech"><strong>${openTasks ? 'Ready to help.' : 'All clear.'}</strong><span>${openTasks} open task${openTasks === 1 ? '' : 's'}</span></div>
+      </div>
+      <div class="akita-meter"><span style="width:${energy}%"></span></div>
+      <div class="pet-stats"><span>♥ ${escapeHtml(String(pet.hearts || 5))}</span><span>Energy ${escapeHtml(String(energy))}%</span><span>${escapeHtml(pet.mode === 'idle' ? 'Calm' : pet.mode)}</span></div>
+      <div class="pet-actions"><button class="secondary-button" data-action="pet-feed" type="button">Feed</button><button class="primary-button" data-action="pet-play" type="button">Play</button><button class="secondary-button" data-action="pet-rest" type="button">Rest</button></div>
     </section>`;
   }
 
@@ -822,21 +857,24 @@
   }
 
   function renderTasks() {
-    const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').slice(0, 5);
+    const openTasks = (state.tasks || []).filter((task) => task.status !== 'done').slice(0, 4);
     const high = openTasks.filter((task) => task.priority === 'high').length;
     return `<section class="widget-card compact task-card premium-card" aria-label="Tasks">
-      <div class="card-title-row task-head"><div><div class="card-title">${renderIcon('tasks', 'Tasks', 'xs')}Tasks</div><div class="card-subtitle">${openTasks.length} open · ${high} high priority</div></div><button class="secondary-button compact-action" data-action="add-task" type="button">Add</button></div>
+      <div class="task-panel-head">
+        <div><div class="card-title">${renderIcon('tasks', 'Tasks', 'xs')}Tasks</div><div class="card-subtitle">${openTasks.length} open · ${high} high priority</div></div>
+        <button class="task-new-button" data-action="add-task" type="button">New task</button>
+      </div>
       <div class="task-list readable-task-list">
         ${openTasks.length ? openTasks.map((task) => {
           const due = task.due ? new Date(task.due).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Today';
-          return `<article class="task-row readable-task priority-card priority-${escapeHtml(task.priority || 'medium')}">
-            <button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}">${task.status === 'done' ? '✓' : ''}</button>
+          return `<article class="readable-task priority-${escapeHtml(task.priority || 'medium')}">
+            <button class="task-check" data-action="complete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Complete ${escapeHtml(task.title)}"></button>
             <div class="task-copy"><div class="task-title">${escapeHtml(task.title)}</div><div class="task-meta"><span class="priority-pill priority-${escapeHtml(task.priority || 'medium')}">${escapeHtml(task.priority || 'medium')}</span><span>${escapeHtml(task.source || 'LiveDash')}</span><span>${escapeHtml(due)}</span></div></div>
-            <button class="mini-button row-action" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Delete task">${renderIcon('close', 'Delete', 'xs')}</button>
+            <button class="task-delete" data-action="delete-task" data-id="${escapeHtml(task.id)}" type="button" aria-label="Delete task">${renderFlatIcon('close', 'Delete', 'xs')}</button>
           </article>`;
         }).join('') : '<div class="empty-state task-empty"><strong>No open tasks.</strong><span>Add a task or capture the current page.</span></div>'}
       </div>
-      <div class="task-compose elevated-compose"><button class="play-button" data-action="add-task-input" type="button" aria-label="Add task">+</button><input id="taskInput" class="form-input" placeholder="Write a task and press Enter..." aria-label="Quick task"></div>
+      <div class="task-compose elevated-compose"><button class="task-add-round" data-action="add-task-input" type="button" aria-label="Add task">+</button><input id="taskInput" class="form-input" placeholder="Write a task and press Enter..." aria-label="Quick task"></div>
     </section>`;
   }
 
@@ -951,22 +989,22 @@
   }
 
   function renderSignInModal() {
-    return `<section class="modal-card auth-modal-card widgetify-auth-card v23-auth" role="dialog" aria-modal="true" aria-label="Sign in">
-      <div class="auth-shell">
-        <div class="auth-side">
-          <div class="auth-brand-mark">L</div>
-          <h2>Bring your LiveDash with you.</h2>
-          <p>Sync bookmarks, tasks, notes, Akita progress, themes, and shortcuts across Chrome profiles.</p>
-          <div class="cloud-feature-grid auth-feature-list">${renderCloudBenefits()}</div>
-        </div>
-        <div class="auth-main">
-          <div class="modal-head"><button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Sign in</div></div>
-          <button class="google-auth-button" data-action="google-sign-in" type="button"><span class="google-logo-real">G</span><span>Continue with Google</span><small>Recommended</small></button>
-          <div class="divider compact-divider">or</div>
-          <label class="clean-label"><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
-          <button class="secondary-button full-width" data-action="sign-in" type="button">Continue with email</button>
-          <p class="auth-footnote">Cloud sign-in is optional. LiveDash still works locally in this browser.</p>
-        </div>
+    const cloudReady = Boolean(backendConfig().enabled && backendConfig().apiBaseUrl);
+    return `<section class="modal-card auth-modal-card auth-polished-card" role="dialog" aria-modal="true" aria-label="Sign in">
+      <button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderFlatIcon('close', 'Close', 'xs')}</button>
+      <div class="auth-visual-panel">
+        <div class="auth-brand-orb"><span>L</span></div>
+        <h2>Sync your LiveDash workspace.</h2>
+        <p>Connect your cloud profile to restore bookmarks, tasks, notes, theme, and Akita progress.</p>
+        <div class="auth-status-row"><span class="cloud-dot ${cloudReady ? 'online' : ''}"></span>${cloudReady ? 'LiveDash Cloud endpoint ready' : 'Cloud endpoint not configured'}</div>
+      </div>
+      <div class="auth-action-panel">
+        <div class="auth-panel-title">Choose sign in</div>
+        <button class="google-auth-button google-auth-premium" data-action="google-sign-in" type="button"><span class="google-mark">G</span><span><strong>Continue with Google</strong><small>Secure cloud profile</small></span><i>↗</i></button>
+        <div class="divider compact-divider">or use email</div>
+        <label class="clean-label"><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
+        <button class="secondary-button full-width" data-action="sign-in" type="button">Continue with email</button>
+        <p class="auth-footnote">Local mode always works. Cloud adds restore and sync.</p>
       </div>
     </section>`;
   }
@@ -976,8 +1014,8 @@
     const email = state?.profile?.email || '';
     const avatar = state?.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`;
     const syncText = state.profile?.lastCloudSyncAt ? new Date(state.profile.lastCloudSyncAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Not synced yet';
-    return `<section class="modal-card profile-modal-card widgetify-auth-card v23-profile" role="dialog" aria-modal="true" aria-label="Profile">
-      <div class="modal-head"><button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Cloud profile</div></div>
+    return `<section class="modal-card profile-modal-card profile-polished-card" role="dialog" aria-modal="true" aria-label="Profile">
+      <button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderFlatIcon('close', 'Close', 'xs')}</button>
       <div class="profile-modal-hero signed-profile-hero">
         <div class="profile-modal-avatar signed">${avatar}</div>
         <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(email)}</p><span class="cloud-pill"><span class="cloud-dot online"></span>${escapeHtml(cloudStatusText())}</span></div>
@@ -988,7 +1026,6 @@
         <div><strong>${escapeHtml(String(state.pet?.score || 0))}</strong><span>Akita score</span></div>
         <div><strong>${escapeHtml(syncText)}</strong><span>Last sync</span></div>
       </div>
-      <div class="cloud-feature-grid">${renderCloudBenefits()}</div>
       <div class="profile-actions"><button class="primary-button" data-action="refresh-cloud" type="button">Sync now</button><button class="secondary-button" data-action="open-apps-category" data-category="daily" type="button">Open apps</button><button class="secondary-button danger-button" data-action="sign-out" type="button">Sign out</button></div>
     </section>`;
   }
@@ -1136,27 +1173,29 @@
 
   async function updatePet(mode) {
     const current = state.pet || {};
-    const playGain = mode === 'play' ? 12 : 4;
+    const nextMode = mode === 'idle' ? 'idle' : mode;
+    const energyDelta = nextMode === 'feed' ? 18 : nextMode === 'play' ? -10 : 8;
+    const scoreGain = nextMode === 'play' ? 10 : nextMode === 'feed' ? 4 : 1;
     state.pet = {
       name: 'Akita',
-      mood: mode === 'feed' ? 'Fed' : 'Playing',
-      energy: Math.min(100, Math.max(0, (current.energy || 60) + (mode === 'feed' ? 22 : -8))),
-      hearts: Math.min(5, Math.max(1, (current.hearts || 4) + (mode === 'feed' ? 1 : 0))),
-      mode,
-      score: (current.score || 0) + playGain,
+      mood: nextMode === 'feed' ? 'Fed' : nextMode === 'play' ? 'Playing' : 'Resting',
+      energy: Math.min(100, Math.max(0, (current.energy || 60) + energyDelta)),
+      hearts: Math.min(5, Math.max(1, (current.hearts || 4) + (nextMode === 'feed' ? 1 : 0))),
+      mode: nextMode,
+      score: (current.score || 0) + scoreGain,
       lastInteractionAt: new Date().toISOString()
     };
-    pushActivity(mode === 'feed' ? 'Akita fed' : 'Akita played', `Companion score ${state.pet.score}.`);
+    pushActivity(nextMode === 'feed' ? 'Akita fed' : nextMode === 'play' ? 'Akita played' : 'Akita rested', `Companion score ${state.pet.score}.`);
     if (state.pet.score && state.pet.score % 50 === 0) pushNotification('Akita leveled up', `Companion score reached ${state.pet.score}.`, 'success');
     await save();
     render();
     setTimeout(async () => {
-      if (!state || state.pet?.mode !== mode) return;
+      if (!state || state.pet?.mode !== nextMode) return;
       state.pet.mode = 'idle';
       state.pet.mood = 'Ready';
       await save();
       render();
-    }, 1800);
+    }, 1600);
   }
 
   async function addTask(title) {
@@ -1273,6 +1312,7 @@
       'sign-out': signOut,
       'pet-feed': async () => updatePet('feed'),
       'pet-play': async () => updatePet('play'),
+      'pet-rest': async () => updatePet('idle'),
       theme: async () => { state.settings.theme = button.dataset.theme; await save(); showToast('Theme updated'); render(); },
       engine: async () => { state.settings.searchEngine = button.dataset.engine; await save(); showToast('Search engine updated'); render(); },
       'add-task': async () => { await addTask(prompt('Task title') || 'New task'); },

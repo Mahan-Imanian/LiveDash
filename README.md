@@ -1,4 +1,4 @@
-# LiveDash v23
+# LiveDash v24
 
 LiveDash is a Manifest V3 Chrome new tab extension with a Widgetify-style personalized dashboard, cloud profile sync, bookmarks, widgets, tasks, notes, and a companion pet surface.
 
@@ -14,7 +14,7 @@ LiveDash is a Manifest V3 Chrome new tab extension with a Widgetify-style person
 
 The extension connects to `https://livedash.codersays.com` through the backend configured in `scripts/backend-config.js`. Google sign-in uses Chrome identity web auth flow.
 
-## v23 changes
+## v24 changes
 
 - Added TypeScript source model in `src/ts/livedash-model.ts` with `tsconfig.json` typechecking.
 - Improved cloud profile UI after sign-in.
