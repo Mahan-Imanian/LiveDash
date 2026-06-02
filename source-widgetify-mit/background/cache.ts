@@ -22,13 +22,13 @@ export function setupCaching() {
 	registerRoute(
 		({ url, request }) => {
 			if (request.method !== 'GET') return false
-			if (url.origin !== 'https://api.dashlive.ir') return false
+			if (url.origin !== 'https://api.widgetify.ir') return false
 
 			return allowedPaths.some((path) => url.pathname.startsWith(path))
 		},
 
 		new StaleWhileRevalidate({
-			cacheName: 'dashlive-public-api',
+			cacheName: 'widgetify-public-api',
 			plugins: [
 				new CacheableResponsePlugin({
 					statuses: [200],

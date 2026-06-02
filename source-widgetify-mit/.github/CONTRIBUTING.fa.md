@@ -1,15 +1,23 @@
-# DashLivein DashLiveDashDashLive‌DashLive‌DashLive‌DashLive## ToolsDashLivein DashLive‌DashLive:
+# راهنمای مشارکت
+
+از علاقه شما به مشارکت در پروژه ویجتی‌فای سپاسگزاریم! این سند راهنمایی‌هایی برای کمک به فرآیند مشارکت ارائه می‌دهد.
+
+ 
+## ابزارهای مورد نیاز
+برای مشارکت در پروژه، نیاز به نصب نرم‌افزارهای زیر دارید:
 - Bun.sh
 - Chrome Browser
 - Biomejs
 
-DashLiveAPI in DashLive[Api-doc.md](./Api-doc.fa.md) DashLive## Start Work
-DashLiveStartDashLivein DashLive:
+مستندات مربوط به API در فایل [Api-doc.md](./Api-doc.fa.md) قابل مشاهده است.
+
+## شروع کار
+برای شروع، ریپازیتوری را فورک کرده و کد را در سیستم خود کلون کنید:
 ```bash
-git clone https://github.com/dashlive-app/dashlive-extension.git
+git clone https://github.com/widgetify-app/widgetify-extension.git
 ```
 ```bash
-cd dashlive-extension
+cd widgetify-extension
 ```
 ```bash
 bun install
@@ -22,10 +30,27 @@ bun dev
 ```
 
 > [!TIP]
-> DashLive(DashLiveagoDashLive)
+> بعد از اجرای دستور آخر، یک تب جدید تو مرورگر باز کنید (تب پیشفرض ممکن هست صفحه سفید باشه)
 
-## DashLive### DashLiveinDashLive(Pull Request)
-1. DashLive: `git checkout -b feature/your-feature-name`
-2. DashLive: `git commit -m 'Add DashLive'`
-3. DashLiveyear DashLive: `git push origin feature/your-feature-name`
-4. DashLiveinDashLive## DashLiveWork DashLiveyear inDashLive‌DashLive‌DashLive## DashLivebiomejs DashLive‌DashLiveName‌DashLive## DashLive
+## نحوه مشارکت
+
+### فرآیند درخواست ادغام (Pull Request)
+1. یک شاخه جدید ایجاد کنید: `git checkout -b feature/your-feature-name`
+2. تغییرات خود را ثبت کنید: `git commit -m 'افزودن قابلیت جدید'`
+3. شاخه خود را به ریپازیتوری فورک شده ارسال کنید: `git push origin feature/your-feature-name`
+4. یک درخواست ادغام ایجاد کنید
+
+## گردش کار توسعه
+- برای هر قابلیت یا اصلاح، یک شاخه جدید ایجاد کنید
+- قبل از ارسال درخواست ادغام، با شاخه اصلی همگام‌سازی کنید
+- شاخه‌های خود را تمیز و با تمرکز بر یک موضوع نگه دارید
+
+## راهنمای نگارش کد
+- از biomejs برای فرمت‌دهی کد استفاده کنید
+- نام‌گذاری متغیرها و توابع باید واضح و توصیفی باشد
+
+
+
+## ارتباط با جامعه
+
+با تشکر از مشارکت شما!

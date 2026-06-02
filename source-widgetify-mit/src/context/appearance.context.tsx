@@ -129,7 +129,7 @@ export function AppearanceProvider({ children }: { children: React.ReactNode }) 
 		console.log('ui changed.', ui)
 		if (!isAuthenticated)
 			return showToast(
-				'DashLiveAccount DashLive',
+				'برای استفاده از این حالت، باید وارد حساب کاربری خود شوید!',
 				'error'
 			)
 

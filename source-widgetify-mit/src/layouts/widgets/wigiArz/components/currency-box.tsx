@@ -71,7 +71,7 @@ export const CurrencyBox = ({
 
 	function toggleCurrencyModal() {
 		if (currency?.url && currency?.isSponsored) {
-			showToast('🔗 inDashLive', 'success')
+			showToast('🔗 درحال انتقال به سایت اسپانسر...', 'success')
 			setTimeout(() => {
 				toast.dismiss()
 				Analytics.event('currency_sponsor', {

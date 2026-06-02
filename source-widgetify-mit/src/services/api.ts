@@ -26,7 +26,7 @@ export async function getMainClient(): Promise<AxiosInstance> {
 		baseURL: API_URL,
 		headers: {
 			Authorization: token ? `Bearer ${token}` : undefined,
-			client: 'dashlive-extension',
+			client: 'widgetify-extension',
 			version: browser.runtime.getManifest().version,
 		},
 	})

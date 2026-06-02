@@ -45,7 +45,7 @@ export const CurrencyConverter: React.FC = () => {
 	if (isLoadingSupported)
 		return (
 			<div className="flex items-center justify-center text-sm h-44 opacity-20">
-				Updating...
+				در حال بروزرسانی...
 			</div>
 		)
 
@@ -99,12 +99,12 @@ export const CurrencyConverter: React.FC = () => {
 
 			<div className="flex flex-col gap-2 px-1 mt-1">
 				<div className="flex justify-between items-center text-[11px] font-bold opacity-50">
-					<span>Value:</span>
+					<span>ارزش به تومان:</span>
 					<span className="text-[12px] font-black text-content">
 						{fromCurrencyData
 							? formatNumber(fromCurrencyData.rialPrice * amount)
 							: 0}{' '}
-						USD
+						تومان
 					</span>
 				</div>
 
@@ -132,7 +132,7 @@ export const CurrencyConverter: React.FC = () => {
 						</div>
 					</div>
 					<div className="flex items-center gap-1.5 text-[11px] font-black text-primary bg-background/50 px-2 py-1 rounded-lg">
-						<TbInfoCircle size={14} className="opacity-40" />1 ={' '}
+						<TbInfoCircle size={14} className="opacity-40" />۱ ={' '}
 						{fromCurrencyData && toCurrencyData
 							? formatNumber(
 									fromCurrencyData.rialPrice / toCurrencyData.rialPrice

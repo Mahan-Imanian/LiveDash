@@ -16,23 +16,23 @@ interface FontItem {
 const defaultFonts: FontItem[] = [
 	{
 		value: 'Vazir',
-		label: 'DashLive',
-		description: 'DashLive‌DashLive',
+		label: 'وزیر',
+		description: 'وقتی بچه بودم می‌خواستم بزرگ بشم!',
 	},
 	{
 		value: 'Samim',
-		label: 'DashLive',
-		description: 'DashLive‌DashLive',
+		label: 'صمیم',
+		description: 'وقتی بچه بودم می‌خواستم بزرگ بشم!',
 	},
 	{
 		value: 'Pofak',
-		label: 'DashLive',
-		description: 'DashLive‌DashLive',
+		label: 'پفـک',
+		description: 'وقتی بچه بودم می‌خواستم بزرگ بشم!',
 	},
 	{
 		value: 'rooyin',
-		label: 'DashLive',
-		description: 'DashLive‌DashLive',
+		label: 'رویین',
+		description: 'وقتی بچه بودم می‌خواستم بزرگ بشم!',
 	},
 ]
 
@@ -49,8 +49,8 @@ export function FontSelector({ fetched_fonts }: FontSelectorProps) {
 		if (fetched_fonts.length) {
 			const mapped: FontItem[] = fetched_fonts.map((item) => ({
 				value: item.value,
-				label: item.name ?? 'DashLiveName',
-				description: item?.description || 'DashLive',
+				label: item.name ?? 'بدون نام',
+				description: item?.description || 'فونت خریداری شده',
 			}))
 			setFonts([...defaultFonts, ...mapped])
 		}
@@ -63,13 +63,14 @@ export function FontSelector({ fetched_fonts }: FontSelectorProps) {
 
 	const renderFontPreview = ({ value }: FontItem) => (
 		<span className="text-lg truncate" style={{ fontFamily: value }}>
-			inDashLive‌DashLive</span>
+			دریاچه‌ای از آرامش
+		</span>
 	)
 	return (
-		<SectionPanel title="DashLive" delay={0.15} size="sm">
+		<SectionPanel title="فونت افزونه" delay={0.15} size="sm">
 			<div className="space-y-3">
 				<p className={'text-xs text-muted'}>
-					DashLivein DashLive‌DashLive:
+					فونت مورد نظر خود را برای نمایش در تمامی بخش‌های افزونه انتخاب کنید:
 				</p>
 				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
 					{fonts.map((font) => (
@@ -88,7 +89,7 @@ export function FontSelector({ fetched_fonts }: FontSelectorProps) {
 						onClick={() => handleMoreClick()}
 					>
 						<FiShoppingBag size={18} />
-						<span>DashLive</span>
+						<span>فروشگاه</span>
 					</div>
 				</div>
 			</div>

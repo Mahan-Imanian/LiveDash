@@ -31,7 +31,7 @@ export function MarketButton() {
 			<Modal
 				isOpen={showMarket}
 				onClose={() => setShowMarket(false)}
-				title="DashLive"
+				title="فروشگاه"
 				size="xl"
 				direction="rtl"
 				closeOnBackdropClick={true}

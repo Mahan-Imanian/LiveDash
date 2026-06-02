@@ -32,36 +32,36 @@ export function ShortcutsTab() {
 			id: 'open_bookmark_new_tab',
 			windowsKey: 'CTRL + Left-click',
 			macKey: '⌘ + Left-click',
-			description: 'DashLiveBookmark in DashLive',
-			category: 'Bookmark‌DashLive',
+			description: 'باز کردن بوکمارک در تب جدید',
+			category: 'بوکمارک‌ها',
 		},
 		{
 			id: 'open_bookmark_middle_click',
 			windowsKey: 'Middle-click',
 			macKey: 'Middle-click',
-			description: 'DashLiveBookmark in DashLiveMay DashLive',
-			category: 'Bookmark‌DashLive',
+			description: 'باز کردن بوکمارک در تب جدید با دکمه اسکرول',
+			category: 'بوکمارک‌ها',
 		},
 		{
 			id: 'open_all_bookmarks',
 			windowsKey: 'CTRL + Left-click',
 			macKey: '⌘ + Left-click',
-			description: 'DashLiveMay Bookmark‌DashLiveFolder',
-			category: 'Bookmark‌DashLive',
+			description: 'باز کردن همه بوکمارک‌های یک پوشه',
+			category: 'بوکمارک‌ها',
 		},
 		{
 			id: 'toggle_theme',
 			windowsKey: 'CTRL + ALT + T',
 			macKey: '⌘ + ALT + T',
-			description: 'DashLive',
-			category: 'AppearanceDashLive',
+			description: 'تغییر تم',
+			category: 'ظاهری',
 		},
 		{
 			id: 'toggle_theme',
 			windowsKey: 'CTRL + ALT + Y',
 			macKey: '⌘ + ALT + Y',
-			description: 'DashLiveWorkDashLive',
-			category: 'AppearanceDashLive',
+			description: 'تغییر رابط کاربری',
+			category: 'ظاهری',
 		},
 	]
 
@@ -77,10 +77,11 @@ export function ShortcutsTab() {
 	)
 	return (
 		<div className="w-full max-w-xl mx-auto" dir="rtl">
-			<SectionPanel title="DashLive" delay={0.1}>
+			<SectionPanel title="کلیدهای میانبر" delay={0.1}>
 				<div className="space-y-5">
 					<p className="text-muted">
-						DashLive‌DashLive‌DashLive</p>
+						کلیدهای میانبر افزونه ویجتیفای برای استفاده راحت‌تر و سریع‌تر
+					</p>
 
 					{Object.entries(categories).map(([category, categoryShortcuts]) => (
 						<div key={category} className="mb-6">

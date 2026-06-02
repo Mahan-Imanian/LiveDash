@@ -15,10 +15,10 @@ interface AuthRequiredModalProps {
 export function AuthRequiredModal({
 	isOpen,
 	onClose,
-	title = '🔐 Sign in DashLiveAccount',
-	message = 'DashLiveAccount DashLive',
-	loginButtonText = 'Sign in DashLive',
-	cancelButtonText = 'DashLive',
+	title = '🔐 ورود به حساب کاربری',
+	message = 'برای دسترسی به این بخش یا انجام این عملیات، ابتدا وارد حساب کاربری خود شوید.',
+	loginButtonText = 'ورود به حساب',
+	cancelButtonText = 'بعداً',
 }: AuthRequiredModalProps) {
 	function triggerAccountTabDisplay() {
 		onClose()
@@ -31,7 +31,7 @@ export function AuthRequiredModal({
 			isOpen={isOpen}
 			onClose={onClose}
 			direction="rtl"
-			title={'DashLiveSign in DashLiveAccount'}
+			title={'نیاز ورود به حساب کاربری'}
 			closeOnBackdropClick={true}
 		>
 			<div className="flex flex-col items-center justify-between w-full h-56 text-center">

@@ -44,7 +44,7 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 			if (isEmpty(phone))
 				return setError((prev) => ({
 					...prev,
-					email: 'DashLiveEmail/Phone number DashLive',
+					email: 'لطفاً ایمیل/شماره موبایل خود را وارد کنید.',
 				}))
 			const [err, _] = await safeAwait(requestChange(phone))
 			if (err) {
@@ -59,7 +59,7 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 			if (isEmpty(otpCode) || isLessThan(otpCode, 6))
 				return setError((prev) => ({
 					...prev,
-					otp: 'DashLiveyear DashLive',
+					otp: 'لطفا کد ارسال شده را وارد کنید.',
 				}))
 
 			const [err, _] = await safeAwait(
@@ -75,7 +75,7 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 					phone: null,
 				})
 			} else {
-				showToast('Phone number DashLive', 'success', {
+				showToast('شماره موبایل با موفقیت اضافه شد', 'success', {
 					alarmSound: true,
 				})
 				prop.onClose()
@@ -85,7 +85,7 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 
 	return (
 		<Modal
-			title="DashLivePhone number"
+			title="اضافه کردن شماره موبایل"
 			isOpen={prop.isOpen}
 			onClose={() => prop.onClose()}
 			direction="rtl"
@@ -93,7 +93,8 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 			<section>
 				<div>
 					<p className="text-xs text-muted mt-0.5">
-						DashLivePhone numberDashLive</p>
+						برای اینکه بتونی با شماره موبایلت هم وارد حسابت بشی!
+					</p>
 				</div>
 
 				<form
@@ -105,7 +106,7 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 							htmlFor="email"
 							className="block mb-1 md:mb-1.5 text-xs md:text-sm font-semibold text-content"
 						>
-							Phone number
+							شماره موبایل
 						</label>
 
 						<TextInput
@@ -114,7 +115,7 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 							name="email"
 							value={phone}
 							onChange={setPhone}
-							placeholder="Phone number DashLive"
+							placeholder="شماره موبایل رو وارد کنید..."
 							disabled={isPending || step === 'enter-otp'}
 							className="w-full py-2.5! md:py-3.5!"
 							autoComplete="on"
@@ -125,7 +126,7 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 					{step === 'enter-otp' && (
 						<div>
 							<label className="block mb-2 md:mb-2.5 text-xs md:text-sm font-semibold text-content ">
-								DashLiveConfirm
+								کد تایید
 							</label>
 
 							<OtpInput
@@ -145,7 +146,7 @@ export function AddPhoneModal(prop: AddPhoneProp) {
 						className="relative w-full py-2.5 md:py-3 text-sm md:text-base transition-all duration-200 shadow text-white group rounded-xl disabled:cursor-not-allowed disabled:text-base-content disabled:opacity-50"
 					>
 						<span className="transition-transform duration-200 group-hover:scale-105">
-							{step === 'enter-otp' ? 'Confirm' : 'Continue'}
+							{step === 'enter-otp' ? 'تایید' : 'ادامه'}
 						</span>
 					</Button>
 				</form>

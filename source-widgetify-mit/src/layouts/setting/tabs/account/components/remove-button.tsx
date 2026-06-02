@@ -10,7 +10,7 @@ type Props = {
 }
 export function RemoveFriendButton({ type, friend, onClick, disabled }: Props) {
 	return (
-		<Tooltip content={type === 'REMOVE' ? 'Delete DashLive' : 'DashLiveinDashLive'}>
+		<Tooltip content={type === 'REMOVE' ? 'حذف دوست' : 'رد درخواست دوستی'}>
 			<button
 				onClick={() => onClick(friend.id)}
 				disabled={disabled}

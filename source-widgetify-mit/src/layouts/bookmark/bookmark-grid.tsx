@@ -117,7 +117,7 @@ export function BookmarkGrid({
 
 	const handleDeleteBookmark = (bookmark: Bookmark) => {
 		if (!isAuthenticated) {
-			return showToast('DashLiveDelete Bookmark DashLiveAccount DashLive', 'error')
+			return showToast('برای حذف بوکمارک باید وارد حساب کاربری خود شوید.', 'error')
 		}
 
 		setBookmarkToDelete(bookmark)
@@ -208,8 +208,8 @@ export function BookmarkGrid({
 				<AuthRequiredModal
 					isOpen={true}
 					onClose={() => setShowEditBookmarkModal(false)}
-					message="DashLiveEdit Bookmark DashLiveAccount DashLive"
-					loginButtonText="Sign in DashLiveAccount"
+					message="برای ویرایش بوکمارک باید وارد حساب کاربری خود شوید."
+					loginButtonText="ورود به حساب کاربری"
 				/>
 			) : (
 				showEditBookmarkModal &&
@@ -229,22 +229,25 @@ export function BookmarkGrid({
 				isOpen={showDeleteConfirmationModal}
 				onClose={handleCancelDelete}
 				onConfirm={handleConfirmDelete}
-				title="Delete Bookmark"
+				title="حذف بوکمارک"
 				message={
 					bookmarkToDelete?.type === 'FOLDER' ? (
 						<div>
 							<p>
-								DashLiveDelete Folder "{bookmarkToDelete.title}" DashLive</p>
+								آیا از حذف پوشه "{bookmarkToDelete.title}" اطمینان دارید؟
+							</p>
 							<p className="mt-2 text-xs text-error">
-								DashLiveBookmark‌DashLiveFolder DashLiveDelete DashLive</p>
+								تمام بوکمارک‌های داخل این پوشه نیز حذف خواهند شد.
+							</p>
 						</div>
 					) : (
 						<p>
-							DashLiveDelete Bookmark "{bookmarkToDelete?.title}" DashLive</p>
+							آیا از حذف بوکمارک "{bookmarkToDelete?.title}" اطمینان دارید؟
+						</p>
 					)
 				}
-				confirmText={isRemoving ? 'in DashLiveDelete...' : 'Delete'}
-				cancelText="DashLive"
+				confirmText={isRemoving ? 'در حال حذف...' : 'حذف'}
+				cancelText="انصراف"
 				variant="danger"
 				isLoading={isRemoving}
 				direction="rtl"

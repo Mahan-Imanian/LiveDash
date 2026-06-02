@@ -12,7 +12,7 @@ function IsOwnedBadge() {
 	return (
 		<div className="absolute z-10 flex gap-0.5 px-1 rounded-full shadow-sm text-success bg-black/80 items-center top-2 right-2">
 			<FiShoppingBag size={10} />
-			<span className="!text-[10px] font-normal">DashLive</span>
+			<span className="!text-[10px] font-normal">باز شده</span>
 		</div>
 	)
 }
@@ -23,11 +23,11 @@ export function RenderPreview({ item, handlePreviewClick }: RenderPreviewProps) 
 			<div className="relative flex items-center flex-1 p-2 border bg-base-300 rounded-xl border-base-200">
 				<img
 					src={item.previewUrl}
-					alt={'DashLiveago‌DashLive'}
+					alt={'تصویر پیش‌نمایش'}
 					className="object-center w-full max-w-full rounded-lg max-h-20 min-h-20"
 					loading="lazy"
 				/>
-				<Tooltip content="DashLive" position="bottom" offset={-20}>
+				<Tooltip content="مشاهده تصویر کامل" position="bottom" offset={-20}>
 					<button
 						onClick={handlePreviewClick}
 						className="absolute top-1 left-1 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 backdrop-blur-sm cursor-pointer"
@@ -60,7 +60,7 @@ export function RenderPreview({ item, handlePreviewClick }: RenderPreviewProps) 
 						className={`text-xl leading-relaxed`}
 						style={{ fontFamily: item.itemValue }}
 					>
-						<span className="font-medium">DashLive</span>
+						<span className="font-medium">نمونه فونت</span>
 						<br />
 						<span></span>
 					</div>

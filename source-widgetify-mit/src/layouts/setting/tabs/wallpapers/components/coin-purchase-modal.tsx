@@ -61,20 +61,22 @@ export function CoinPurchaseModal({
 				<div className="space-y-3">
 					<div className="flex items-center justify-between">
 						<h3 className="text-lg font-semibold text-content">
-							{wallpaper.name || 'DashLive'}
+							{wallpaper.name || 'تصویر تصویر زمینه'}
 						</h3>
 						<UserCoin
 							coins={wallpaper.coin || 0}
-							title="DashLive"
+							title="قیمت این تصویر زمینه"
 						/>
 					</div>
 					<p className="text-sm text-muted">
-						DashLiveDash‌DashLive🎨
+						این تصویر زمینه زیبا را با ویج‌کوین باز کنید و برای همیشه استفاده
+						کنید! 🎨
 					</p>
 					<div className="flex items-center gap-2 p-3 border rounded-xl bg-primary/5 border-primary/20 backdrop-blur-sm">
 						<span className="text-sm">💡</span>
 						<p className="text-xs text-primary/80">
-							Dash‌DashLive‌DashLive‌DashLive</p>
+							ویج‌کوین با انجام فعالیت‌ها و دعوت دوستان کسب می‌شود
+						</p>
 					</div>
 				</div>
 
@@ -86,17 +88,18 @@ export function CoinPurchaseModal({
 								size="md"
 								className="flex-1 text-content border-muted hover:bg-muted/50 rounded-2xl"
 							>
-								Cancel
+								لغو
 							</Button>
 							<Button
 								onClick={onBuy}
 								size="md"
 								disabled={isBuying}
 								loading={isBuying}
-								loadingText="in DashLive"
+								loadingText="در حال باز کردن..."
 								className="flex-1 text-white transition-all duration-200 border-none shadow-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 rounded-2xl"
 							>
-								🔓 DashLive</Button>
+								🔓 باز کردن
+							</Button>
 						</>
 					) : (
 						<Button
@@ -104,7 +107,7 @@ export function CoinPurchaseModal({
 							onClick={onLogin}
 							className="flex-1 text-white transition-all duration-200 border-none shadow-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 rounded-2xl"
 						>
-							Sign in DashLiveAccount
+							ورود به حساب کاربری
 						</Button>
 					)}
 				</div>

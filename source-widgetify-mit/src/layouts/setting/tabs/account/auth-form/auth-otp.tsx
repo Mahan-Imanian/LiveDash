@@ -49,7 +49,7 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 			if (isEmpty(email))
 				return setError((prev) => ({
 					...prev,
-					email: 'DashLiveEmail/Phone number DashLive',
+					email: 'لطفاً ایمیل/شماره موبایل خود را وارد کنید.',
 				}))
 
 			onSendOtp()
@@ -57,7 +57,7 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 			if (isEmpty(otp) || isLessThan(otp, 6))
 				return setError((prev) => ({
 					...prev,
-					otp: 'DashLiveyear DashLive',
+					otp: 'لطفا کد ارسال شده را وارد کنید.',
 				}))
 
 			onVerifyOtp()
@@ -104,7 +104,7 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 				if (err.response?.data?.message === 'INVALID_OTP_CODE') {
 					setError({
 						email: null,
-						otp: 'DashLiveConfirm NameDashLive',
+						otp: 'کد تایید نامعتبر است. لطفاً دوباره تلاش کنید.',
 						api: null,
 					})
 				} else setError({ email: null, otp: null, api: content })
@@ -113,7 +113,7 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 					setError({
 						email: null,
 						otp: null,
-						api: 'DashLiveConfirm NameDashLive',
+						api: 'کد تایید نامعتبر است. لطفاً دوباره تلاش کنید.',
 					})
 					return
 				}
@@ -140,10 +140,11 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 					</div>
 					<div>
 						<h3 className="text-base font-semibold md:text-lg text-content">
-							Sign in DashLiveCreate account
+							ورود یا ثبت نام
 						</h3>
 						<p className="text-xs md:text-sm text-muted mt-0.5">
-							Email DashLivePhone numberDashLive</p>
+							ایمیل یا شماره موبایلتان را وارد کنید
+						</p>
 					</div>
 				</div>
 
@@ -163,7 +164,7 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 							htmlFor="email"
 							className="block mb-1  md:mb-1.5 text-xs md:text-sm font-semibold text-content"
 						>
-							Phone number DashLiveEmail
+							شماره موبایل یا ایمیل
 						</label>
 
 						<TextInput
@@ -172,7 +173,7 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 							name="email"
 							value={email}
 							onChange={setEmail}
-							placeholder="DashLive/ Email DashLive"
+							placeholder="شماره / ایمیل رو وارد کنید..."
 							disabled={isPending}
 							className="w-full py-2.5! md:py-3.5!"
 							autoComplete="on"
@@ -189,7 +190,7 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 						className="relative w-full py-2.5 md:py-3 text-sm md:text-base transition-all duration-200 shadow text-white group rounded-xl disabled:cursor-not-allowed disabled:text-base-content disabled:opacity-50"
 					>
 						<span className="transition-transform duration-200 group-hover:scale-105">
-							{isPending ? 'inDashLiveyear...' : 'DashLive'}
+							{isPending ? 'درحال ارسال...' : 'بزن بریم'}
 						</span>
 					</Button>
 				</form>
@@ -208,17 +209,17 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 
 				<div className="flex-1 min-w-0">
 					<h4 className="text-base font-semibold md:text-lg text-content">
-						Confirm DashLiveSign in
+						تایید کد ورود
 					</h4>
 					<p className="text-muted text-xs md:text-sm flex flex-wrap items-center gap-1 md:gap-1.5 leading-relaxed mt-0.5">
-						<span>DashLiveConfirm DashLive</span>
+						<span>کد تایید به</span>
 						<span
 							className="font-semibold underline truncate text-content max-w-50"
 							title={email}
 						>
 							{email}
 						</span>
-						<span>DashLiveyear DashLive</span>
+						<span>ارسال شد.</span>
 					</p>
 				</div>
 			</header>
@@ -226,7 +227,7 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 			<form onSubmit={validateInputs} className="mt-4 md:mt-5">
 				<div>
 					<label className="block mb-2 md:mb-2.5 text-xs md:text-sm font-semibold text-content text-center">
-						DashLiveConfirm
+						کد تایید
 					</label>
 
 					<OtpInput
@@ -238,11 +239,12 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 				</div>{' '}
 				<button
 					type="button"
-					aria-label="DashLiveyear DashLiveConfirm"
+					aria-label="ارسال دوباره کد تایید"
 					className="flex items-center mx-auto hover:text-primary gap-1 md:gap-1.5 text-xs md:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-muted group mt-2 mb-3 md:mb-4 duration-200 active:scale-95"
 				>
 					<span className="transition-all duration-200 group-hover:scale-105">
-						DashLiveyear DashLive</span>
+						ارسال دوباره کد؟
+					</span>
 					<FiRefreshCw className="w-3.5 h-3.5 md:w-4 md:h-4 transition-all duration-200 group-hover:rotate-180 group-hover:scale-110" />
 					{/* TODO: add timer component for resending */}
 				</button>
@@ -254,7 +256,8 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 					disabled={otp.length !== 6}
 				>
 					<span className="transition-transform duration-200 group-hover:scale-105">
-						Confirm DashLive</span>
+						تایید کد
+					</span>
 				</Button>
 			</form>
 
@@ -265,12 +268,13 @@ const AuthOtp: React.FC<AuthOtpProps> = ({ step, setStep }) => {
 					setOtp('')
 					resetErrors()
 				}}
-				aria-label="DashLiveEmail"
+				aria-label="بازگشت به صفحه ایمیل"
 				className="flex items-center mx-auto gap-1 md:gap-1.5 my-2.5 md:my-3 text-xs md:text-sm font-medium cursor-pointer group text-muted hover:text-primary hover:bg-base-200 px-3 py-1.5 rounded-lg duration-200 active:scale-95"
 			>
 				<FiArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 transition-all duration-200 group-hover:translate-x-1 group-hover:scale-110" />
 				<span className="transition-all duration-200 group-hover:scale-105">
-					DashLive</span>
+					بازگشت
+				</span>
 			</button>
 		</section>
 	)

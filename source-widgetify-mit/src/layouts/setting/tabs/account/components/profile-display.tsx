@@ -25,13 +25,13 @@ import { AddEmailModal } from './modals/add-email.modal'
 import { ChangeUsernameModal } from './modals/edit-username'
 
 const getGenderInfo = (gender: 'MALE' | 'FEMALE' | 'OTHER' | null | undefined) => {
-	if (gender === 'MALE') return { label: 'DashLive' }
-	if (gender === 'FEMALE') return { label: 'DashLive' }
-	return { label: 'DashLive' }
+	if (gender === 'MALE') return { label: 'آقا هستم' }
+	if (gender === 'FEMALE') return { label: 'خانم هستم' }
+	return { label: 'بماند' }
 }
 
 const formatJalaliDate = (dateString: string | null | undefined): string => {
-	if (!dateString) return 'DashLive'
+	if (!dateString) return 'تنظیم نشده'
 	try {
 		const jalaliDate = moment(dateString, 'jYYYY-jMM-jDD')
 		return jalaliDate.isValid()
@@ -79,7 +79,7 @@ export const ProfileDisplay = () => {
 						<div className="rounded-full shadow-lg">
 							<AvatarComponent
 								url={user?.avatar || ''}
-								placeholder={user?.name || 'WorkDashLive'}
+								placeholder={user?.name || 'کاربر'}
 								size="xl"
 								onClick={() => onClick()}
 								className="transition-all cursor-pointer ring-4 ring-primary/20"
@@ -95,7 +95,7 @@ export const ProfileDisplay = () => {
 					</div>
 					<div className="flex flex-col gap-2 mr-2">
 						<h2 className="text-xl font-bold text-content">
-							{user?.name || 'WorkDashLive'}
+							{user?.name || 'کاربر'}
 						</h2>
 						<p className="text-sm opacity-60" dir="ltr">
 							@{user?.username || '-'}
@@ -108,7 +108,7 @@ export const ProfileDisplay = () => {
 					</div>
 					<div className="text-xs font-medium opacity-70 mb-0.5">
 						<span>
-							StartDashLive{' '}
+							شروعِ ماجرا از{' '}
 							{moment(user?.joinedAt).locale('fa').format('jMMMM jYYYY')}
 						</span>
 					</div>
@@ -118,7 +118,7 @@ export const ProfileDisplay = () => {
 			<div className="overflow-hidden border border-base-300/50 rounded-2xl bg-base-100/30">
 				<DisplayRow
 					icon={<FiUser className="text-primary" />}
-					label="Name DashLive Name DashLive"
+					label="نام و نام خانوادگی"
 					value={user?.name}
 					editable
 					EditModal={ChangeNameModal}
@@ -128,7 +128,7 @@ export const ProfileDisplay = () => {
 
 				<DisplayRow
 					icon={<LuAtSign className="text-primary/60" />}
-					label="Username (DashLive)"
+					label="نام کاربری (یوزرنیم)"
 					value={user?.username}
 					editable
 					showBadge={showEditBadge('username')}
@@ -139,7 +139,7 @@ export const ProfileDisplay = () => {
 
 				<DisplayRow
 					icon={<FiMail className="text-secondary" />}
-					label="Email"
+					label="ایمیل"
 					value={user?.email}
 					isLtr
 					showBadge={showEditBadge('email')}
@@ -150,7 +150,7 @@ export const ProfileDisplay = () => {
 
 				<DisplayRow
 					icon={<FiPhone className="text-secondary" />}
-					label="Phone number"
+					label="شماره موبایل"
 					value={
 						user?.phone ? (
 							user.phone
@@ -162,7 +162,7 @@ export const ProfileDisplay = () => {
 							>
 								<div className="flex items-center gap-1">
 									<IoMdAddCircle />
-									Add Phone number
+									افزودن شماره موبایل
 								</div>
 							</Button>
 						)
@@ -177,7 +177,7 @@ export const ProfileDisplay = () => {
 							<BsGenderAmbiguous />
 						</div>
 					}
-					label="DashLive"
+					label="جنسیت"
 					value={genderInfo.label}
 					editable
 					EditModal={ChangeGenderModal}
@@ -188,7 +188,7 @@ export const ProfileDisplay = () => {
 
 				<DisplayRow
 					icon={<FiCalendar className="text-warning" />}
-					label="DashLive"
+					label="تاریخ تولد"
 					value={formatJalaliDate(user?.birthDate)}
 					showBadge={showEditBadge('birthDate')}
 					modalValue={user?.birthDate}
@@ -199,7 +199,7 @@ export const ProfileDisplay = () => {
 
 				<DisplayRow
 					icon={<LuBriefcase className="text-info" />}
-					label="DashLive"
+					label="شغل"
 					value={user?.occupation?.label}
 					showBadge={showEditBadge('occupation')}
 					EditModal={ChangeOccupationModal}
@@ -210,7 +210,7 @@ export const ProfileDisplay = () => {
 
 				<DisplayRow
 					icon={<LuHeart className="text-error" />}
-					label="DashLive"
+					label="علایق"
 					editable
 					value={
 						<div className="flex flex-wrap self-end justify-end flex-1 gap-1">
@@ -234,7 +234,7 @@ export const ProfileDisplay = () => {
 
 				<DisplayRow
 					icon={<FaTreeCity className="text-primary/50" />}
-					label="DashLive"
+					label="شهر"
 					value={user?.city?.name || '-'}
 					showBadge={showEditBadge('city')}
 					editable

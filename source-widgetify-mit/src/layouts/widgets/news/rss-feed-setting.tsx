@@ -14,16 +14,16 @@ import type { WigiNewsSetting } from './rss.interface'
 
 const SUGGESTED_FEEDS = [
 	{
-		name: 'DashLive',
-		url: 'https://feeds.bbci.co.uk/news/technology/rss.xml',
+		name: 'زومیت',
+		url: 'https://www.zoomit.ir/feed/',
 	},
 	{
-		name: '⚽ DashLive3',
-		url: 'https://www.espn.com/espn/rss/news',
+		name: '⚽ ورزش 3',
+		url: 'https://www.varzesh3.com/rss/all',
 	},
 	{
-		name: 'DashLive',
-		url: 'https://feeds.bbci.co.uk/news/world/rss.xml',
+		name: 'خبر فارسی',
+		url: 'https://khabarfarsi.com/rss/top',
 	},
 ]
 
@@ -47,7 +47,7 @@ export const RssFeedSetting = () => {
 
 	const addNewFeed = () => {
 		if (!newFeed.name.trim() || !newFeed.url.trim()) {
-			setError('Name DashLive Address DashLive')
+			setError('نام و آدرس فید الزامی است')
 			return
 		}
 
@@ -55,7 +55,7 @@ export const RssFeedSetting = () => {
 		try {
 			new URL(newFeed.url)
 		} catch {
-			setError('Address DashLive')
+			setError('آدرس فید معتبر نیست')
 			return
 		}
 
@@ -86,7 +86,7 @@ export const RssFeedSetting = () => {
 		)
 
 		if (feedExists) {
-			setError(`DashLive"${suggestedFeed.name}" DashLive`)
+			setError(`فید "${suggestedFeed.name}" قبلاً اضافه شده است`)
 			return
 		}
 
@@ -116,7 +116,7 @@ export const RssFeedSetting = () => {
 			new URL(url)
 			setError(null)
 		} catch (_e) {
-			setError('Address DashLive')
+			setError('آدرس فید معتبر نیست')
 		}
 	}
 
@@ -192,26 +192,26 @@ export const RssFeedSetting = () => {
 					{error}
 				</div>
 			)}
-			<SectionPanel title="Settings DashLive" size="sm">
+			<SectionPanel title="تنظیمات کلی" size="sm">
 				<CheckBoxWithDescription
 					isEnabled={rssState.useDefaultNews}
 					onToggle={toggleDefaultNews}
-					title="DashLiveago‌DashLive"
-					description="DashLiveNews DashLiveago‌DashLive‌DashLive"
+					title="استفاده از منابع خبری پیش‌فرض"
+					description="با فعال کردن این گزینه، اخبار از منابع پیش‌فرض نمایش داده می‌شوند"
 				/>
 			</SectionPanel>
 
-			<SectionPanel title="Add DashLiveRSS DashLive" size="sm">
+			<SectionPanel title="افزودن فید RSS جدید" size="sm">
 				<div className="flex flex-col gap-3">
 					<TextInput
 						type="text"
-						placeholder="Name DashLive(DashLive: DashLive)"
+						placeholder="نام فید (مثال: دیجیاتو)"
 						value={newFeed.name}
 						onChange={(value) => setNewFeed({ ...newFeed, name: value })}
 					/>
 					<TextInput
 						type="url"
-						placeholder="Address RSS (DashLive: https://www.theverge.com/rss/index.xml)"
+						placeholder="آدرس RSS (مثال: https://digiato.com/feed)"
 						value={newFeed.url}
 						onChange={(value) => {
 							setNewFeed({ ...newFeed, url: value })
@@ -225,13 +225,13 @@ export const RssFeedSetting = () => {
 						onClick={addNewFeed}
 					>
 						<VscAdd size={16} />
-						<span>Add DashLive</span>
+						<span>افزودن فید جدید</span>
 					</Button>
 				</div>
 			</SectionPanel>
 
 			{/* Suggested Feeds Section */}
-			<SectionPanel title="DashLiveagoDashLive" size="sm">
+			<SectionPanel title="فیدهای پیشنهادی" size="sm">
 				<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
 					{SUGGESTED_FEEDS.filter((feed) => !isFeedAlreadyAdded(feed.url)).map(
 						(feed) => (
@@ -251,7 +251,7 @@ export const RssFeedSetting = () => {
 				</div>
 			</SectionPanel>
 
-			<SectionPanel title={`DashLive(${rssState.customFeeds.length})`} size="sm">
+			<SectionPanel title={`فیدهای شما (${rssState.customFeeds.length})`} size="sm">
 				<FeedsList
 					feeds={rssState.customFeeds}
 					onToggleFeed={(id) => onToggleFeed(id)}
@@ -285,9 +285,11 @@ const FeedsList = ({ feeds, onToggleFeed, onRemoveFeed }: FeedsListProps) => {
 				>
 					<BiRss className={'mb-3 opacity-50 text-content'} size={32} />
 					<p className={'mb-1 text-sm font-medium opacity-70 text-content'}>
-						DashLiveRSS DashLive</p>
+						هیچ فید RSS اضافه نشده است
+					</p>
 					<p className={'text-xs opacity-50'}>
-						DashLiveAdd DashLive</p>
+						از فرم بالا برای افزودن فید استفاده کنید
+					</p>
 				</div>
 			) : (
 				<div className="space-y-2">

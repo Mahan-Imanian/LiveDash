@@ -7,24 +7,24 @@ import { callEvent } from '@/common/utils/call-event'
 import Analytics from '@/analytics'
 
 const DAILY_ZIKRS = [
-	{ day: 'Saturday', zikr: 'DashLive', meaning: 'DashLive' },
+	{ day: 'شنبه', zikr: 'یا رَبَّ الْعَالَمِینَ', meaning: 'ای پروردگار جهانیان' },
 	{
-		day: 'Sunday',
-		zikr: 'DashLive',
-		meaning: 'DashLive',
+		day: 'یک‌شنبه',
+		zikr: 'یا ذَالْجَلَالِ وَالْإِکْرَامِ',
+		meaning: 'ای صاحب جلال و بزرگواری',
 	},
-	{ day: 'Monday', zikr: 'DashLive', meaning: 'DashLive' },
-	{ day: 'Tuesday', zikr: 'DashLive', meaning: 'DashLiveMayDashLive‌DashLiveMayDashLive' },
-	{ day: 'Wednesday', zikr: 'DashLive', meaning: 'DashLive' },
+	{ day: 'دوشنبه', zikr: 'یا قاضی الحاجات', meaning: 'ای برآورنده حاجات' },
+	{ day: 'سه‌شنبه', zikr: 'یا أَرْحَمَ الرَّاحِمِینَ', meaning: 'ای مهربان‌ترین مهربانان' },
+	{ day: 'چهارشنبه', zikr: 'یا حَیُّ یا قَیُّومُ', meaning: 'ای زنده پاینده' },
 	{
-		day: 'Thursday',
-		zikr: 'DashLive',
-		meaning: 'DashLive',
+		day: 'پنج‌شنبه',
+		zikr: 'لا إِلَهَ إِلَّا اللَّهُ الْمَلِکُ الْحَقُّ الْمُبِینُ',
+		meaning: 'نیست معبودی جز خدای یکتا',
 	},
 	{
-		day: 'Friday',
-		zikr: 'DashLive',
-		meaning: 'DashLiveinDashLive',
+		day: 'جمعه',
+		zikr: 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَ آلِ مُحَمَّدٍ',
+		meaning: 'خدایا بر محمد و آل محمد درود فرست',
 	},
 ]
 
@@ -57,12 +57,12 @@ export function ReligiousTime({ currentDate }: { currentDate: any }) {
 	const dailyZikr = DAILY_ZIKRS.find((item) => item.day === weekDay)
 
 	const prayerTimeBoxes = [
-		{ title: 'DashLive', value: religiousTimeData?.azan_sobh, icon: FiClock },
-		{ title: 'DashLive', value: religiousTimeData?.tolu_aftab, icon: FiSunrise },
-		{ title: 'DashLive', value: religiousTimeData?.azan_zohr, icon: FiSun },
-		{ title: 'DashLive', value: religiousTimeData?.ghorub_aftab, icon: FiSunset },
-		{ title: 'DashLive', value: religiousTimeData?.azan_maghreb, icon: FiClock },
-		{ title: 'DashLiveMay DashLive', value: religiousTimeData?.nimeshab, icon: FiMoon },
+		{ title: 'اذان صبح', value: religiousTimeData?.azan_sobh, icon: FiClock },
+		{ title: 'طلوع', value: religiousTimeData?.tolu_aftab, icon: FiSunrise },
+		{ title: 'اذان ظهر', value: religiousTimeData?.azan_zohr, icon: FiSun },
+		{ title: 'غروب', value: religiousTimeData?.ghorub_aftab, icon: FiSunset },
+		{ title: 'اذان مغرب', value: religiousTimeData?.azan_maghreb, icon: FiClock },
+		{ title: 'نیمه شب', value: religiousTimeData?.nimeshab, icon: FiMoon },
 	]
 
 	return (
@@ -102,7 +102,7 @@ export function ReligiousTime({ currentDate }: { currentDate: any }) {
 							<div className="flex items-center gap-1.5 mb-0.5">
 								<div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
 								<span className="text-[9px] font-black text-primary-content">
-									DashLiveday {weekDay}
+									ذکر روز {weekDay}
 								</span>
 							</div>
 							<div className="text-[14px] font-black text-content text-center leading-tight">

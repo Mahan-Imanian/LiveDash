@@ -7,7 +7,7 @@ export const formatDateStr = (date: jalaliMoment.Moment) => {
 	return `${date.jYear()}-${(date.jMonth() + 1).toString().padStart(2, '0')}-${date.jDate().toString().padStart(2, '0')}`
 }
 
-export type DashLiveDate = jalaliMoment.Moment
+export type WidgetifyDate = jalaliMoment.Moment
 
 export const iranianHijriMonthDays: { [key: number]: { [key: number]: number } } = {
 	1445: {
@@ -25,7 +25,19 @@ export const iranianHijriMonthDays: { [key: number]: { [key: number]: number } }
 		12: 29,
 	},
 	1446: {
-		1: 30, // 1= DashLive2: 30, // 2= DashLive3: 30, // 3= DashLive4: 29, // 4= DashLive5: 30, // 5= 	DashLive6: 30, // 6= 	DashLive7: 29, // 7=  DashLive8: 30, // 8=  DashLive9: 29, // 9= DashLive10: 29, // 10=  DashLive11: 29, // 11=  DashLive12: 30, // 12=  DashLive},
+		1: 30, // 1= محرم
+		2: 30, // 2= صفر
+		3: 30, // 3= ربیع الاول
+		4: 29, // 4= ربیع الثانی
+		5: 30, // 5= 	جمادی الاول
+		6: 30, // 6= 	جمادی الثانی
+		7: 29, // 7=  رجب
+		8: 30, // 8=  شعبان
+		9: 29, // 9= رمضان
+		10: 29, // 10=  شوال
+		11: 29, // 11=  ذوالقعده
+		12: 30, // 12=  ذوالحجه
+	},
 	1447: {
 		1: 29,
 		2: 30,
@@ -138,7 +150,7 @@ export function getCurrentDate(timeZone: string) {
 
 export function filterGoogleEventsByDate(
 	events: GoogleCalendarEvent[],
-	currentDate: DashLiveDate
+	currentDate: WidgetifyDate
 ): GoogleCalendarEvent[] {
 	const dateStr = currentDate.clone().locale('en').format('YYYY-MM-DD')
 

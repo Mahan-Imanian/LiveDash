@@ -13,13 +13,13 @@ export function useWallpaperUpload({ onWallpaperChange }: UseWallpaperUploadProp
 		const isVideo = file.type.startsWith('video/')
 
 		if (!isImage && !isVideo) {
-			alert('DashLive')
+			alert('لطفا یک فایل تصویری یا ویدیویی انتخاب کنید')
 			return
 		}
 
 		if (file.size > MAX_FILE_SIZE) {
 			alert(
-				`DashLive6 DashLive: ${(file.size / (1024 * 1024)).toFixed(1)} DashLive`
+				`حجم فایل نباید بیشتر از 6 مگابایت باشد. حجم فعلی: ${(file.size / (1024 * 1024)).toFixed(1)} مگابایت`
 			)
 			return
 		}
@@ -31,7 +31,7 @@ export function useWallpaperUpload({ onWallpaperChange }: UseWallpaperUploadProp
 				type: isImage ? 'IMAGE' : 'VIDEO',
 				previewSrc: '',
 				src: reader.result as string,
-				name: isImage ? 'DashLive' : 'DashLive',
+				name: isImage ? 'تصویر سیستم' : 'ویدیو سیستم',
 				isCustom: true,
 			}
 

@@ -45,7 +45,7 @@ export function AddEmailModal(prop: AddPhoneProp) {
 			if (isEmpty(email))
 				return setError((prev) => ({
 					...prev,
-					email: 'DashLiveEmail DashLive',
+					email: 'لطفاً ایمیل خود را وارد کنید.',
 				}))
 			const [err, _] = await safeAwait(requestChange(email))
 			if (err) {
@@ -60,7 +60,7 @@ export function AddEmailModal(prop: AddPhoneProp) {
 			if (isEmpty(otpCode) || isLessThan(otpCode, 6))
 				return setError((prev) => ({
 					...prev,
-					otp: 'DashLiveyear DashLive',
+					otp: 'لطفا کد ارسال شده را وارد کنید.',
 				}))
 
 			const [err, _] = await safeAwait(
@@ -76,7 +76,7 @@ export function AddEmailModal(prop: AddPhoneProp) {
 					phone: null,
 				})
 			} else {
-				showToast('Email DashLive', 'success', {
+				showToast('ایمیل با موفقیت اضافه شد', 'success', {
 					alarmSound: true,
 				})
 				prop.onClose('success')
@@ -86,7 +86,7 @@ export function AddEmailModal(prop: AddPhoneProp) {
 
 	return (
 		<Modal
-			title="DashLiveEmail"
+			title="اضافه کردن ایمیل"
 			isOpen={prop.show}
 			onClose={() => prop.onClose('cancel')}
 			direction="rtl"
@@ -94,7 +94,9 @@ export function AddEmailModal(prop: AddPhoneProp) {
 			<section>
 				<div>
 					<p className="text-xs text-muted mt-0.5">
-						DashLiveEmailDashLive‌DashLive‌DashLive</p>
+						با اضافه کردن ایمیل، می‌تونی وقتی پسوردت رو فراموش کردی یا می‌خوای
+						امنیت حسابت رو بالا ببری، ازش استفاده کنی.
+					</p>
 				</div>
 
 				<form
@@ -106,7 +108,7 @@ export function AddEmailModal(prop: AddPhoneProp) {
 							htmlFor="email"
 							className="block mb-1 md:mb-1.5 text-xs md:text-sm font-semibold text-content"
 						>
-							Email
+							ایمیل
 						</label>
 
 						<TextInput
@@ -126,7 +128,7 @@ export function AddEmailModal(prop: AddPhoneProp) {
 					{step === 'enter-code' && (
 						<div>
 							<label className="block mb-2 md:mb-2.5 text-xs md:text-sm font-semibold text-content ">
-								DashLiveConfirm
+								کد تایید
 							</label>
 
 							<OtpInput
@@ -146,7 +148,7 @@ export function AddEmailModal(prop: AddPhoneProp) {
 						className="relative w-full py-2.5 md:py-3 text-sm md:text-base transition-all duration-200 shadow text-white group rounded-xl disabled:cursor-not-allowed disabled:text-base-content disabled:opacity-50"
 					>
 						<span className="transition-transform duration-200 group-hover:scale-105">
-							{step === 'enter-code' ? 'Confirm' : 'Continue'}
+							{step === 'enter-code' ? 'تایید' : 'ادامه'}
 						</span>
 					</Button>
 				</form>

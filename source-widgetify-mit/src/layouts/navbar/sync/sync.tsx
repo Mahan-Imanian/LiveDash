@@ -165,9 +165,9 @@ export function SyncButton() {
 		if (showAlert.type === 'BOOKMARKS') {
 			const result = await SyncBookmark('POST')
 			if (result) {
-				showToast('Bookmark‌DashLive‌DashLive', 'success')
+				showToast('بوکمارک‌ها با موفقیت همگام‌سازی شدند.', 'success')
 			} else {
-				showToast('Error in DashLive‌DashLiveBookmark‌DashLive', 'error')
+				showToast('خطا در همگام‌سازی بوکمارک‌ها.', 'error')
 			}
 
 			setSyncState(result ? SyncState.Success : SyncState.Error)
@@ -177,11 +177,11 @@ export function SyncButton() {
 		if (showAlert.type === 'TODOS') {
 			const result = await SyncTodo('POST')
 			if (result) {
-				showToast('Tasks DashLive‌DashLive', 'success', {
+				showToast('وظایف با موفقیت همگام‌سازی شدند.', 'success', {
 					alarmSound: true,
 				})
 			} else {
-				showToast('Error in DashLive‌DashLiveTasks.', 'error')
+				showToast('خطا در همگام‌سازی وظایف.', 'error')
 			}
 
 			setSyncState(result ? SyncState.Success : SyncState.Error)
@@ -196,7 +196,7 @@ export function SyncButton() {
 
 	return (
 		<>
-			<Tooltip content="Error in DashLive‌DashLive‌DashLive">
+			<Tooltip content="خطا در همگام‌سازی داده‌ها">
 				<div
 					className="relative p-2 transition-all cursor-pointer text-white/40 hover:text-white active:scale-90"
 					id="profile-and-friends-list"
@@ -424,7 +424,7 @@ async function processBrowserTitle(
 				document.title = browserTitle.value
 				await setToStorage('browserTitle', {
 					id: browserTitle.id,
-					name: browserTitle.name || 'DashLiveName',
+					name: browserTitle.name || 'بدون نام',
 					template: browserTitle.value,
 				})
 			}
@@ -432,7 +432,7 @@ async function processBrowserTitle(
 			document.title = browserTitle.value
 			await setToStorage('browserTitle', {
 				id: browserTitle.id,
-				name: browserTitle.name || 'DashLiveName',
+				name: browserTitle.name || 'بدون نام',
 				template: browserTitle.value,
 			})
 		}

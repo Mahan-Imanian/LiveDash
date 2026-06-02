@@ -24,12 +24,12 @@ const getTaskIcon = (iconName: string) => {
 
 export function RewardTasks({ tasks, isLoading }: Prop) {
 	return (
-		<SectionPanel title={'DashLive‌DashLive'} size="xs">
+		<SectionPanel title={'ماموریت‌ها'} size="xs">
 			<div className="flex flex-col gap-2 py-2">
 				{isLoading ? (
 					<div className="py-12 text-center">
 						<div className="w-8 h-8 mx-auto border-4 rounded-full border-primary/30 border-t-primary animate-spin"></div>
-						<p className="mt-4 text-sm text-muted">in DashLive</p>
+						<p className="mt-4 text-sm text-muted">در حال بارگذاری...</p>
 					</div>
 				) : tasks.length > 0 ? (
 					tasks.map((taskItem, index) => {
@@ -106,7 +106,7 @@ export function RewardTasks({ tasks, isLoading }: Prop) {
 										</span>
 										<img
 											src={ConfigKey.WIG_COIN_ICON}
-											alt="Dash‌DashLive"
+											alt="ویج‌کوین"
 											className="w-6 h-6"
 										/>
 									</div>
@@ -121,9 +121,11 @@ export function RewardTasks({ tasks, isLoading }: Prop) {
 							<div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent to-white/5"></div>
 						</div>
 						<p className="text-sm font-medium text-muted">
-							DashLive</p>
+							هیچ ماموریتی یافت نشد
+						</p>
 						<p className="mt-1 text-xs text-muted/60">
-							DashLive‌DashLive‌DashLive</p>
+							ماموریت‌های جدید به زودی اضافه می‌شوند
+						</p>
 					</div>
 				)}
 			</div>

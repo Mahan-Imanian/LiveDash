@@ -39,7 +39,7 @@ export function Button(prop: ButtonProps) {
 				? prop.loadingText || (
 						<div className="flex items-center gap-1">
 							<FaSpinner className="animate-spin" />
-							<span className="text-xs">Please wait...</span>
+							<span className="text-xs">صبر کنید...</span>
 						</div>
 					)
 				: prop.children}

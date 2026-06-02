@@ -26,7 +26,7 @@ export function BookmarkListItem({ item, onClick }: Props) {
 			)}
 
 			<span className="flex-1 text-xs font-medium truncate transition-colors text-base-content/80 group-hover:text-base-content">
-				{item.title || (isFolder ? 'Folder DashLiveName' : 'DashLiveTitle')}
+				{item.title || (isFolder ? 'پوشه بدون نام' : 'بدون عنوان')}
 			</span>
 
 			{isFolder ? (

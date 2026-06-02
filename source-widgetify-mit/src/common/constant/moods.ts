@@ -2,7 +2,7 @@ export const moodOptions = [
 	{
 		value: 'sad',
 		emoji: '😔',
-		label: 'DashLive',
+		label: 'ناراحتم',
 		colorClass: 'error',
 		borderClass: 'border-error/50',
 	},
@@ -16,21 +16,21 @@ export const moodOptions = [
 	{
 		value: 'tired',
 		emoji: '😴',
-		label: 'DashLive',
+		label: 'خستم',
 		colorClass: 'warning',
 		borderClass: 'border-yellow-400/50',
 	},
 	{
 		value: 'happy',
 		emoji: '🙂',
-		label: 'DashLive‌DashLive',
+		label: 'اوکی‌ام',
 		colorClass: 'secondary',
 		borderClass: 'border-secondary/50',
 	},
 	{
 		value: 'excited',
 		emoji: '😄',
-		label: 'DashLive',
+		label: 'سرحالم',
 		colorClass: 'success',
 		borderClass: 'border-green-400/50',
 	},

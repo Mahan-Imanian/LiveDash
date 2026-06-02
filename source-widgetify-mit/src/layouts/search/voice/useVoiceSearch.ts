@@ -29,7 +29,7 @@ export function useVoiceSearch(
 		const SpeechRecognition =
 			window.SpeechRecognition || window.webkitSpeechRecognition
 		if (!SpeechRecognition) {
-			showToast('DashLiveSearchDashLive‌DashLive', 'error')
+			showToast('مرورگر شما از جستجوی صوتی پشتیبانی نمی‌کند.', 'error')
 			return null
 		}
 

@@ -53,7 +53,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.calendar,
 		emoji: '📅',
-		label: 'Calendar',
+		label: 'تقویم',
 		order: 0,
 		node: <CalendarLayout />,
 		canToggle: true,
@@ -62,7 +62,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.yadKar,
 		emoji: '📒',
-		label: 'Tasks and Notes (Tasks DashLive Notes)',
+		label: 'یادکار (وظایف و یادداشت)',
 		order: 0,
 		node: (
 			<TodoProvider>
@@ -75,7 +75,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.tools,
 		emoji: '🧰',
-		label: 'Tools',
+		label: 'ابزارها',
 		order: 1,
 		node: <ToolsLayout />,
 		canToggle: true,
@@ -84,7 +84,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.weather,
 		emoji: '🌤️',
-		label: 'Weather',
+		label: 'آب و هوا',
 		order: 3,
 		node: <WeatherLayout />,
 		canToggle: true,
@@ -92,7 +92,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.comboWidget,
 		emoji: '🔗',
-		label: 'DashDashLive(DashLiveNews)',
+		label: 'ویجت ترکیبی (ارز و اخبار)',
 		order: 4,
 		node: (
 			<CurrencyProvider>
@@ -105,7 +105,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.arzLive,
 		emoji: '💰',
-		label: 'Dash DashLive',
+		label: 'ویجی ارز',
 		order: 5,
 		node: (
 			<CurrencyProvider>
@@ -117,7 +117,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.news,
 		emoji: '📰',
-		label: 'Dash DashLive',
+		label: 'ویجی نیوز',
 		order: 6,
 		node: <NewsLayout inComboWidget={false} />,
 		canToggle: true,
@@ -126,7 +126,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.network,
 		emoji: '🌐',
-		label: 'Network',
+		label: 'شبکه',
 		order: 9,
 		node: <NetworkLayout inComboWidget={false} enableBackground={true} />,
 		canToggle: true,
@@ -135,7 +135,7 @@ export const widgetItems: WidgetItem[] = [
 	{
 		id: WidgetKeys.youtube,
 		emoji: '📺',
-		label: 'YouTube stats',
+		label: 'آمار یوتیوب',
 		order: 8,
 		node: <YouTubeLayout />,
 		canToggle: false,
@@ -243,7 +243,7 @@ export function WidgetVisibilityProvider({ children }: { children: ReactNode }) 
 			if (!isCurrentlyVisible) {
 				if (!isAuthenticated && prev.length >= MAX_VISIBLE_WIDGETS) {
 					showToast(
-						`WorkDashLiveMayDashLive‌DashLive${MAX_VISIBLE_WIDGETS} DashDashLiveDashDashLive‌DashLiveAccount DashLive`,
+						`کاربران مهمان تنها می‌توانند حداکثر ${MAX_VISIBLE_WIDGETS} ویجت فعال کنند. برای فعال کردن ویجت‌های بیشتر، وارد حساب کاربری خود شوید.`,
 						'error'
 					)
 					return prev

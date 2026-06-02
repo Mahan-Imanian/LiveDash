@@ -41,7 +41,7 @@ export function UploadArea({ customWallpaper, onWallpaperChange }: UploadAreaPro
 				>
 					<FiUploadCloud size={18} className={'text-content'} />
 					<p className={'text-sm font-medium text-content'}>
-						DashLiveClick
+						برای آپلود از سیستم کلیک کنید
 					</p>
 				</button>
 				<input
@@ -67,21 +67,21 @@ export function UploadArea({ customWallpaper, onWallpaperChange }: UploadAreaPro
 					<div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/30"></div>
 
 					<div className="absolute top-1 right-1 px-1.5 py-0.5 text-[10px] font-medium text-white rounded-sm backdrop-blur-md bg-blue-500/80">
-						{customWallpaper.type === 'IMAGE' ? 'DashLive' : 'DashLive'}
+						{customWallpaper.type === 'IMAGE' ? 'تصویر' : 'ویدیو'}
 					</div>
 				</div>
 
 				<div className="flex-1 mx-3">
-					<p className={'text-sm font-medium text-content'}>DashLive</p>
+					<p className={'text-sm font-medium text-content'}>تصویر زمینه فعال</p>
 					<p className={'text-xs text-muted truncate max-w-[200px]'}>
-						{customWallpaper.name || 'DashLiveName'}
+						{customWallpaper.name || 'بدون نام'}
 					</p>
 				</div>
 
 				<div className="flex gap-2">
 					<Button onClick={() => handleFileSelect()} size="sm">
 						<FiEdit size={14} />
-						<span>DashLive</span>
+						<span>تغییر</span>
 					</Button>
 				</div>
 			</div>

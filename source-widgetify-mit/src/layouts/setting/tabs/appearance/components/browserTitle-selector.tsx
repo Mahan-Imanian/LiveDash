@@ -21,7 +21,7 @@ interface BrowserTitle {
 const defaultBrowserTitles: BrowserTitle[] = [
 	{
 		id: 'default',
-		name: 'agoDashLive',
+		name: 'پیشفرض',
 		template: '✨ New Tab',
 	},
 ]
@@ -70,7 +70,7 @@ export function BrowserTitleSelector({ fetched_browserTitles, isAuthenticated }:
 	useEffect(() => {
 		const updateAndCheck = async () => {
 			const mapped: BrowserTitle[] = fetched_browserTitles.map((item) => ({
-				name: item.name || 'DashLiveName',
+				name: item.name || 'بدون نام',
 				id: item.id,
 				template: item.value,
 			}))
@@ -95,10 +95,12 @@ export function BrowserTitleSelector({ fetched_browserTitles, isAuthenticated }:
 	}
 
 	return (
-		<SectionPanel title="Title DashLive" size="sm">
+		<SectionPanel title="عنوان مرورگر" size="sm">
 			<div className="space-y-3">
 				<p className={'text-xs text-muted'}>
-					Title DashLive‌DashLive‌DashLive</p>
+					عنوان تب مرورگر خود را همین‌جا تغییر دهید تا هر وقت روی تب بودید،
+					راحت‌تر پیدایش کنید.
+				</p>
 				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
 					{browserTitles?.map((item) => (
 						<ItemSelector
@@ -115,7 +117,7 @@ export function BrowserTitleSelector({ fetched_browserTitles, isAuthenticated }:
 						onClick={() => handleMoreClick()}
 					>
 						<FiShoppingBag size={18} />
-						<span>DashLive</span>
+						<span>فروشگاه</span>
 					</div>
 				</div>
 			</div>

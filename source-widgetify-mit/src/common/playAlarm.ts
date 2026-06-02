@@ -1,8 +1,8 @@
 type infoAlarmType = 'success' | 'done_todo'
 let alarms: Record<infoAlarmType, string> = {
-	success: 'https://cdn.dashlive.ir/effects/alarm-success.mp3',
+	success: 'https://cdn.widgetify.ir/effects/alarm-success.mp3',
 	done_todo:
-		'https://dashlive-ir.storage.c2.liara.space/effects/alarm_success_todo.mp3',
+		'https://widgetify-ir.storage.c2.liara.space/effects/alarm_success_todo.mp3',
 }
 let audioCache: Partial<Record<infoAlarmType, HTMLAudioElement>> = {}
 

@@ -20,7 +20,7 @@ export const UserAccountModal = ({
 				isOpen={isOpen}
 				onClose={onClose}
 				size="md"
-				title="Sign in DashLiveAccount"
+				title="ورود به حساب کاربری"
 				direction="rtl"
 			>
 				<AuthForm />

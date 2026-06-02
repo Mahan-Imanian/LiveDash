@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
-      - VITE_API=https://api.dashlive.ir
+      - VITE_API=https://api.widgetify.ir
     volumes:
       - ./local_output:/app/.output
     command: /bin/bash -c "NODE_ENV=production && npm run zip && npm run build:firefox && NODE_ENV=production npm run zip:firefox:clean"

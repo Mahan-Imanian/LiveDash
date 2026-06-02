@@ -48,7 +48,7 @@ export const FriendsList = ({
 	}
 
 	if (isLoading || loading) {
-		return <div className="p-4 text-center">in DashLive</div>
+		return <div className="p-4 text-center">در حال بارگذاری...</div>
 	}
 
 	if (friends.length === 0) {
@@ -101,7 +101,7 @@ export const FriendsList = ({
 						/>
 					</Button>
 					<span className="mx-2">
-						DashLive{currentPage} DashLive{totalPages}
+						صفحه {currentPage} از {totalPages}
 					</span>
 					<Button
 						onClick={() => goToNextPage()}

@@ -48,7 +48,7 @@ export function showToast(
 						<button
 							onClick={() => toast.dismiss(t.id)}
 							className="flex-shrink-0 transition-opacity opacity-60 hover:opacity-100"
-							aria-label="Close"
+							aria-label="بستن"
 						>
 							<svg
 								className="w-4 h-4"
@@ -96,7 +96,7 @@ export function showToast(
 						<button
 							onClick={() => toast.dismiss(t.id)}
 							className="flex-shrink-0 transition-opacity cursor-pointer opacity-60 hover:opacity-100"
-							aria-label="Close"
+							aria-label="بستن"
 						>
 							<svg
 								className="w-4 h-4"
@@ -143,7 +143,7 @@ export function showToast(
 						<button
 							onClick={() => toast.dismiss(t.id)}
 							className="flex-shrink-0 transition-opacity opacity-60 hover:opacity-100"
-							aria-label="Close"
+							aria-label="بستن"
 						>
 							<svg
 								className="w-4 h-4"

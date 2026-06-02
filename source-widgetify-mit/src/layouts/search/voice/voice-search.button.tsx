@@ -7,7 +7,7 @@ export function VoiceSearchButton({ onClick }: { onClick: () => void }) {
 		onClick()
 	}
 	return (
-		<Tooltip content="SearchDashLive">
+		<Tooltip content="جستجوی گفتاری">
 			<div
 				onClick={() => onClickHandle()}
 				className="flex items-center justify-center transition-all duration-300 rounded-full cursor-pointer h-9 w-9 shrink-0 hover:bg-base-300 group"

@@ -169,7 +169,7 @@ export function NotificationCenter() {
 								)
 							}}
 						>
-							<Tooltip content="Sign in DashLive">
+							<Tooltip content="ورود به جلسه گوگل میت">
 								<img
 									src={GoogleMeet}
 									alt="Gmail"

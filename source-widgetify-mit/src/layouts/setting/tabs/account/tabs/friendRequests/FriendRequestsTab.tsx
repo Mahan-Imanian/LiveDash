@@ -27,7 +27,7 @@ export const FriendRequestsTab = () => {
 	const handleSendRequest = () => {
 		if (!user?.username) {
 			showToast(
-				'DashLiveyear inDashLiveUsername DashLivein DashLive',
+				'برای ارسال درخواست دوستی، ابتدا باید نام کاربری خود را در بخش پروفایل تنظیم کنید.',
 				'error'
 			)
 			return
@@ -41,7 +41,7 @@ export const FriendRequestsTab = () => {
 			{
 				onSuccess: () => {
 					setUsername('')
-					showToast('inDashLiveyear DashLive', 'success')
+					showToast('درخواست دوستی با موفقیت ارسال شد', 'success')
 					setTranslatedError(null)
 				},
 				onError: (err) => {
@@ -81,7 +81,7 @@ export const FriendRequestsTab = () => {
 		<div className="flex space-x-2">
 			{!friend.sendByMe ? (
 				<>
-					<Tooltip content="DashLive">
+					<Tooltip content="پذیرفتن دوستی">
 						<button
 							onClick={() => acceptFriend(friend.id)}
 							disabled={isProcessing}
@@ -98,26 +98,26 @@ export const FriendRequestsTab = () => {
 					/>
 				</>
 			) : (
-				<p className={'text-sm text-content opacity-70'}>DashLiveyear DashLive</p>
+				<p className={'text-sm text-content opacity-70'}>ارسال شده</p>
 			)}
 		</div>
 	)
 
 	return (
 		<div className="space-y-6">
-			<SectionPanel title="DashLiveinDashLive" size="sm">
+			<SectionPanel title="مدیریت درخواست ها" size="sm">
 				<div className="space-y-2">
 					<label className={'block text-sm font-medium text-content'}>
-						Username
+						نام کاربری
 					</label>
 					<div className="flex gap-2">
 						<TextInput
 							type="text"
 							value={username}
 							onChange={handleUsernameChange}
-							placeholder="Username DashLive"
+							placeholder="نام کاربری دوست خود را وارد کنید"
 							className="flex-grow min-w-0"
-							aria-label="Username DashLive"
+							aria-label="نام کاربری دوست"
 						/>
 						<Button
 							type="submit"
@@ -127,7 +127,7 @@ export const FriendRequestsTab = () => {
 							className="rounded-md whitespace-nowrap"
 							onClick={handleSendRequest}
 						>
-							{isSending ? 'in DashLiveyear...' : 'DashLiveyear inDashLive'}
+							{isSending ? 'در حال ارسال...' : 'ارسال درخواست'}
 						</Button>
 					</div>
 					{translatedError && (
@@ -140,15 +140,16 @@ export const FriendRequestsTab = () => {
 							}
 						>
 							<p className={'text-sm text-content'}>
-								DashLiveyear inDashLiveUsername DashLivein
-								DashLive</p>
+								برای ارسال درخواست دوستی، ابتدا باید نام کاربری خود را در
+								بخش پروفایل تنظیم کنید.
+							</p>
 						</div>
 					)}
 				</div>
 				<FriendsList
 					status="PENDING"
 					renderFriendActions={renderFriendActions}
-					emptyMessage="inDashLive"
+					emptyMessage="درخواست دوستی جدیدی ندارید"
 				/>
 			</SectionPanel>
 		</div>

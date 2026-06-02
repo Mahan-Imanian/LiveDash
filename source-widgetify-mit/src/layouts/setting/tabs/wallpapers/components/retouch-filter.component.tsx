@@ -10,8 +10,8 @@ export function RetouchFilter({ isEnabled, onToggle }: RetouchFilterProps) {
 		<CheckBoxWithDescription
 			isEnabled={isEnabled}
 			onToggle={onToggle}
-			title="DashLive"
-			description="DashLive‌DashLive"
+			title="فیلتر تصویر"
+			description="با فعال کردن این گزینه تصویر زمینه شما تاریک‌تر خواهد شد"
 		/>
 	)
 }

@@ -5,8 +5,8 @@ import GoogleCalendar from '@/assets/google-calendar.png'
 export const PLATFORM_CONFIGS: Omit<Platform, 'connected' | 'isLoading'>[] = [
 	{
 		id: 'google',
-		name: 'DashLivein',
-		description: 'DashLiveGoogle Services DashLiveCalendar DashLive',
+		name: 'گوگل کلندر',
+		description: 'اتصال به خدمات گوگل برای دسترسی به تقویم و جلسات گوگل میت',
 		bgColor: '',
 		isActive: true,
 		icon: (
@@ -17,16 +17,16 @@ export const PLATFORM_CONFIGS: Omit<Platform, 'connected' | 'isLoading'>[] = [
 			/>
 		),
 		features: [
-			'DashLiveCalendar DashLive',
-			'DashLive',
+			'دسترسی مستقیم به تقویم گوگل',
+			'نمایش و یادآوری هوشمند رویدادها و جلسات آینده',
 		],
-		permissions: ['DashLiveCalendar (DashLivein)'],
+		permissions: ['مشاهده تقویم (سرویس گوگل کلندر)'],
 		isOptionalPermissions: true,
 	},
 	{
 		id: 'github',
-		name: 'DashLive‌DashLive',
-		description: 'DashLive‌DashLive‌DashLive‌DashLive',
+		name: 'گیت‌هاب',
+		description: 'اتصال به گیت‌هاب برای مشاهده مخازن، کامیت‌ها و فعالیت‌های پروژه',
 		bgColor: 'bg-gray-800',
 		isActive: false,
 		icon: <FaGithub size={20} className="text-white" />,

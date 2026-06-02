@@ -4,10 +4,10 @@ import { useAuth } from '@/context/auth.context'
 import { useGetUserMoodStatus } from '@/services/hooks/user/userService.hook'
 
 export const moodOptions = [
-	{ value: 'sad', emoji: '😔', label: 'DashLive', colorClass: 'bg-error/20' },
-	{ value: 'tired', emoji: '😴', label: 'DashLive', colorClass: 'bg-warning/20' },
-	{ value: 'happy', emoji: '🙂', label: 'DashLive‌DashLive', colorClass: 'bg-secondary/20' },
-	{ value: 'excited', emoji: '😄', label: 'DashLive', colorClass: 'bg-success/20' },
+	{ value: 'sad', emoji: '😔', label: 'ناراحتم', colorClass: 'bg-error/20' },
+	{ value: 'tired', emoji: '😴', label: 'خستم', colorClass: 'bg-warning/20' },
+	{ value: 'happy', emoji: '🙂', label: 'اوکی‌ام', colorClass: 'bg-secondary/20' },
+	{ value: 'excited', emoji: '😄', label: 'سرحالم', colorClass: 'bg-success/20' },
 ]
 
 const getMoodOption = (value: string | null) => {
@@ -65,7 +65,8 @@ export function CompactMoodWidget() {
 				<div className="font-semibold text-[12px]">
 					{month} / {year}{' '}
 					<span className="mr-1 text-white badge badge-primary badge-xs outline-2 outline-primary/20">
-						DashLive</span>
+						آزمایشی
+					</span>
 				</div>
 				<span>{streak} 🔥 </span>
 			</div>
@@ -75,11 +76,11 @@ export function CompactMoodWidget() {
 					const moodOpt = getMoodOption(day.mood)
 					return (
 						<Tooltip
-							content={moodOpt?.label || 'DashLive'}
+							content={moodOpt?.label || 'ثبت نشده'}
 							key={`user-mood-${i}`}
 						>
 							<div
-								title={`${day.date} - ${moodOpt?.label ?? 'DashLive'}`}
+								title={`${day.date} - ${moodOpt?.label ?? 'ثبت نشده'}`}
 								className={`
                 h-5 w-5 rounded-lg flex items-center justify-center text-[10px]
                 ${moodOpt ? `${moodOpt.colorClass}` : 'bg-base-content/5'}

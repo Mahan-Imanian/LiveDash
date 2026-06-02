@@ -21,33 +21,33 @@ interface ThemeItem {
 const defaultThemes: ThemeItem[] = [
 	{
 		id: 'glass',
-		name: 'DashLive‌DashLive',
+		name: 'شیشه‌ای',
 		icon: <MdOutlineBlurOn size={14} />,
-		description: 'DashLive‌DashLive',
+		description: 'تم شفاف با افکت شیشه‌ای',
 	},
 	{
 		id: 'icy',
-		name: 'DashLive',
+		name: 'یخی',
 		icon: <MdOutlineBlurOn size={14} />,
-		description: 'DashLive',
+		description: 'تم سفید شفاف با حالت یخی',
 	},
 	{
 		id: 'light',
-		name: 'DashLive',
+		name: 'روشن',
 		icon: <IoMdSunny size={14} />,
-		description: 'DashLive',
+		description: 'تم کلاسیک روشن',
 	},
 	{
 		id: 'dark',
-		name: 'DashLive',
+		name: 'تیره',
 		icon: <IoMdMoon size={14} />,
-		description: 'DashLive',
+		description: 'تم کلاسیک تیره',
 	},
 	{
 		id: 'zarna',
-		name: 'DashLive',
+		name: 'زرنا',
 		icon: <IoMdStar size={14} />,
-		description: 'DashLive‌DashLive',
+		description: 'تم زرنا با رنگ‌های گرم',
 	},
 ]
 
@@ -77,9 +77,9 @@ export function ThemeSelector({ fetched_themes }: Props) {
 		if (fetched_themes.length) {
 			const mapped: ThemeItem[] = fetched_themes.map((item) => ({
 				id: item.value,
-				name: item.name ?? 'DashLiveName',
+				name: item.name ?? 'بدون نام',
 				icon: <IoMdStar size={14} />,
-				description: item?.description || 'DashLive',
+				description: item?.description || 'تم خریداری شده',
 			}))
 			setThemes([...defaultThemes, ...mapped])
 		}
@@ -105,9 +105,9 @@ export function ThemeSelector({ fetched_themes }: Props) {
 	)
 
 	return (
-		<SectionPanel title="DashLive" delay={0.2} size="sm">
+		<SectionPanel title="انتخاب تم" delay={0.2} size="sm">
 			<div className="space-y-3">
-				<p className="text-sm text-muted">DashLiveAppearanceDashLive</p>
+				<p className="text-sm text-muted">تم ظاهری ویجتیفای را انتخاب کنید.</p>
 
 				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
 					{themes.map((item) => (
@@ -125,7 +125,7 @@ export function ThemeSelector({ fetched_themes }: Props) {
 						onClick={() => handleMoreClick()}
 					>
 						<FiShoppingBag size={18} />
-						<span>DashLive</span>
+						<span>فروشگاه</span>
 					</div>
 				</div>
 			</div>

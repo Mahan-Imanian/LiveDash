@@ -11,7 +11,7 @@ export function ChangeEmailModal({ show, onClose }: Prop) {
 	}
 
 	return (
-		<Modal isOpen={show} onClose={onCloseHandler} title="Add Email">
+		<Modal isOpen={show} onClose={onCloseHandler} title="افزودن ایمیل">
 			<div></div>
 		</Modal>
 	)

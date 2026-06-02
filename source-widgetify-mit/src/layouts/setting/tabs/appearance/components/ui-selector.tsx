@@ -13,9 +13,10 @@ export function UISelector() {
 		<SectionPanel
 			title={
 				<div className="flex items-center">
-					<p>DashLiveWorkDashLive</p>
+					<p>رابط کاربری</p>
 					<span className="mr-1 text-white badge badge-error badge-xs outline-2 outline-error/20">
-						DashLive</span>
+						جدید
+					</span>
 				</div>
 			}
 			size="sm"
@@ -23,7 +24,8 @@ export function UISelector() {
 			<div className="space-y-4">
 				<div className="flex flex-col gap-1">
 					<p className="text-xs text-muted">
-						Appearance DashLive‌DashLive</p>
+						ظاهر محیط افزونه خود را بر اساس نیازتان شخصی‌سازی کنید.
+					</p>
 				</div>
 
 				<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -33,10 +35,10 @@ export function UISelector() {
 						label={
 							<div className="flex items-center gap-2">
 								<LuLayers size={16} className="text-primary/80" />
-								<span> agoDashLive</span>
+								<span> پیشفرض</span>
 							</div>
 						}
-						description="DashLiveMay‌DashLiveToolsDashLive DashDashLive‌DashLive"
+						description="همه‌چیز جلوی چشمته؛ ابزارها، ویجت‌ها و آزادی کامل برای چیدمان."
 					/>
 					<ItemSelector
 						isActive={ui === 'SIMPLE'}
@@ -44,10 +46,10 @@ export function UISelector() {
 						label={
 							<div className="flex items-center gap-2">
 								<LuLayoutTemplate size={16} className="text-primary/80" />
-								<span>DashLive</span>
+								<span>ساده و خلوت</span>
 							</div>
 						}
-						description="DashLive‌DashLiveMayMay."
+						description="خلوت، سریع و چشم‌نواز؛ برای وقتی که تمرکز مهمه."
 					/>
 				</div>
 			</div>

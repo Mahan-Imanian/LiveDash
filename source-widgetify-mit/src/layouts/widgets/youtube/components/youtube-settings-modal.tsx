@@ -57,13 +57,13 @@ export function YouTubeSettingsModal({ isOpen, onClose }: YouTubeSettingsModalPr
 	const subscriptionStyleOptions = [
 		{
 			value: 'short' as const,
-			label: 'DashLive',
-			description: '1.2M - DashLive',
+			label: 'کوتاه',
+			description: '1.2M - نمایش کوتاه تعداد مشترکین',
 		},
 		{
 			value: 'long' as const,
-			label: 'DashLive',
-			description: '1,234,567 - DashLive',
+			label: 'بلند',
+			description: '1,234,567 - نمایش کامل تعداد مشترکین',
 		},
 	]
 
@@ -71,26 +71,26 @@ export function YouTubeSettingsModal({ isOpen, onClose }: YouTubeSettingsModalPr
 		<Modal
 			isOpen={isOpen}
 			onClose={() => onClose(null)}
-			title="Settings DashLive"
+			title="تنظیمات یوتیوب"
 			size="sm"
 			direction="rtl"
 		>
 			<div className="space-y-1">
-				<SectionPanel title="Username DashLive" size="xs">
+				<SectionPanel title="نام کاربری یوتیوب" size="xs">
 					<TextInput
 						type="text"
 						value={settings.username || ''}
 						onChange={(value) => handleUsernameChange(value)}
-						placeholder="@username DashLiveusername"
+						placeholder="@username یا username"
 						className={'mt-2 w-full px-3 py-2 '}
 					/>
 					<p className={'text-xs mt-1 px-1 text-content opacity-70'}>
-						Username DashLive(DashLive@)
+						نام کاربری کانال یوتیوب خود را وارد کنید (با یا بدون @)
 					</p>
 				</SectionPanel>
-				<SectionPanel title="DashLive" size="xs">
+				<SectionPanel title="تعداد مشترکین" size="xs">
 					<p className={'text-sm text-muted'}>
-						DashLive:
+						نحوه نمایش تعداد مشترکین را انتخاب کنید:
 					</p>
 					<div className="mt-2 flex flex-wrap gap-2">
 						{subscriptionStyleOptions.map((option) => (
@@ -113,7 +113,8 @@ export function YouTubeSettingsModal({ isOpen, onClose }: YouTubeSettingsModalPr
 						className="flex-1 px-4 py-2 text-sm font-medium transition-colors border rounded-lg border-content text-content"
 						size="md"
 					>
-						DashLive</Button>
+						انصراف
+					</Button>
 					<Button
 						type="submit"
 						disabled={loading}
@@ -122,7 +123,7 @@ export function YouTubeSettingsModal({ isOpen, onClose }: YouTubeSettingsModalPr
 						onClick={() => handleSave()}
 						className="flex-1 px-4 py-2 text-sm font-medium text-secondary transition-colors rounded-lg"
 					>
-						Save
+						ذخیره
 					</Button>
 				</div>
 			</div>

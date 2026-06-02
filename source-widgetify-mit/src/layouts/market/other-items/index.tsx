@@ -34,7 +34,7 @@ export function MarketOtherItems() {
 	const handlePurchaseClick = (item: MarketItem) => {
 		if (!isAuthenticated) {
 			Analytics.event('market_item_purchase_unauthenticated')
-			showToast('DashLiveAccount DashLive', 'error')
+			showToast('برای خرید آیتم باید وارد حساب کاربری خود شوید.', 'error')
 			return
 		}
 
@@ -79,8 +79,9 @@ export function MarketOtherItems() {
 			<div className="flex flex-col items-center justify-center h-64 text-center">
 				<FiShoppingBag size={48} className="mb-4 text-muted" />
 				<p className="text-lg font-medium text-content">
-					Error in DashLive‌DashLive</p>
-				<p className="text-sm text-muted">DashLive</p>
+					خطا در بارگذاری آیتم‌های مارکت
+				</p>
+				<p className="text-sm text-muted">لطفاً دوباره تلاش کنید</p>
 			</div>
 		)
 	}
@@ -117,8 +118,9 @@ export function MarketOtherItems() {
 				<div className="flex flex-col items-center justify-center h-64 text-center">
 					<FiShoppingBag size={48} className="mb-4 text-muted" />
 					<p className="text-lg font-medium text-content">
-						DashLive</p>
-					<p className="text-sm text-muted">DashLive</p>
+						آیتمی برای نمایش وجود ندارد
+					</p>
+					<p className="text-sm text-muted">بعداً دوباره بررسی کنید</p>
 				</div>
 			)}
 

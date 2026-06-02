@@ -16,10 +16,10 @@ export function validateLanguageCode(
 
 export function getLanguageDisplayName(code: string): string {
 	const languageNames: Record<string, string> = {
-		auto: 'DashLiveWork',
+		auto: 'خودکار',
 		en: 'English',
-		fa: 'DashLive',
-		ar: 'DashLive',
+		fa: 'فارسی',
+		ar: 'عربی',
 		fr: 'Français',
 		de: 'Deutsch',
 		es: 'Español',
@@ -30,7 +30,7 @@ export function getLanguageDisplayName(code: string): string {
 		ja: '日本語',
 		ko: '한국어',
 		hi: 'हिन्दी',
-		ur: 'DashLive',
+		ur: 'اردو',
 	}
 
 	return languageNames[code] || code.toUpperCase()

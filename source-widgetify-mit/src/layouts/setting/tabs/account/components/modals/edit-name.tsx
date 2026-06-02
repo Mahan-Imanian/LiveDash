@@ -39,10 +39,10 @@ export function ChangeNameModal({ show, onClose, currentValue }: Prop) {
 			showCloseButton={false}
 		>
 			<div className="flex flex-col justify-between h-40 gap-4">
-				<SectionPanel title={'Name DashLive'} size="xs">
+				<SectionPanel title={'نام کامل'} size="xs">
 					<TextInput
 						value={value}
-						placeholder="DashLive: DashLive"
+						placeholder="مثلا: ایلان رضایی"
 						className="mt-2"
 						onChange={(val) => setValue(val)}
 					/>
@@ -57,7 +57,7 @@ export function ChangeNameModal({ show, onClose, currentValue }: Prop) {
 						onClick={() => onClickSave()}
 						className="text-sm shadow-xs flex-2 rounded-xl shadow-primary/20"
 					>
-						{updateProfileMutation.isPending ? 'in DashLiveSave...' : 'Save'}
+						{updateProfileMutation.isPending ? 'در حال ذخیره...' : 'ذخیره'}
 					</Button>
 					<Button
 						size="sm"
@@ -65,7 +65,8 @@ export function ChangeNameModal({ show, onClose, currentValue }: Prop) {
 						onClick={onCancel}
 						className="flex-1 text-sm font-medium border-none rounded-2xl bg-content"
 					>
-						DashLive</Button>
+						انصراف
+					</Button>
 				</div>
 			</div>
 		</Modal>
