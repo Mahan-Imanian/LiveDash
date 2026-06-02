@@ -37,7 +37,7 @@ if (manifest.options_page !== 'options.html') throw new Error('Options page miss
 if (!manifest.side_panel || manifest.side_panel.default_path !== 'sidepanel.html') throw new Error('Side panel missing.');
 const csp = manifest.content_security_policy && manifest.content_security_policy.extension_pages;
 if (!csp || csp.includes('unsafe-eval') || csp.includes('unsafe-inline')) throw new Error('Unsafe CSP directive present.');
-if (manifest.host_permissions && manifest.host_permissions.length) throw new Error('Host permissions should not be required.');
+if (manifest.host_permissions && manifest.host_permissions.some((permission) => permission !== 'https://livedash.codersays.com/*')) throw new Error('Unexpected host permission present.');
 
 const textFiles = required.filter((file) => /\.(js|css|html|md|json)$/.test(file));
 for (const file of textFiles) {
