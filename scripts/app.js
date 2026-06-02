@@ -81,6 +81,26 @@
     return true;
   }
 
+  function extensionRedirectUrl() {
+    if (typeof chrome !== 'undefined' && chrome.identity && typeof chrome.identity.getRedirectURL === 'function') {
+      return chrome.identity.getRedirectURL('google');
+    }
+    return '';
+  }
+
+  function launchExtensionAuth(url) {
+    return new Promise((resolve, reject) => {
+      chrome.identity.launchWebAuthFlow({ url, interactive: true }, (callbackUrl) => {
+        const error = chrome.runtime.lastError;
+        if (error) {
+          reject(new Error(error.message || 'Google sign-in was cancelled.'));
+          return;
+        }
+        resolve(callbackUrl || '');
+      });
+    });
+  }
+
   async function startGoogleAuth() {
     const config = backendConfig();
     if (!config.enabled || !config.apiBaseUrl) {
@@ -89,9 +109,40 @@
       await save();
       return;
     }
-    const returnUrl = encodeURIComponent(location.href);
-    const url = `${backendUrl(config.googleOAuthStartPath || '/auth/google/start')}?returnUrl=${returnUrl}`;
-    location.href = url;
+
+    if (typeof chrome === 'undefined' || !chrome.identity || typeof chrome.identity.launchWebAuthFlow !== 'function') {
+      showToast('Chrome identity permission is required. Reload the extension after updating manifest.json.');
+      return;
+    }
+
+    const redirectUri = extensionRedirectUrl();
+    const startUrl = `${backendUrl(config.googleOAuthStartPath || '/auth/google/start.php')}?mode=extension&extension_redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+    try {
+      const callbackUrl = await launchExtensionAuth(startUrl);
+      if (!callbackUrl) throw new Error('Google sign-in did not return a callback URL.');
+      const parsed = new URL(callbackUrl);
+      const token = parsed.searchParams.get('livedash_token');
+      const email = parsed.searchParams.get('email');
+      const error = parsed.searchParams.get('livedash_error');
+      if (error) throw new Error(error.replace(/_/g, ' '));
+      if (!token) throw new Error('Missing LiveDash token from Google sign-in.');
+      state.profile.authToken = token;
+      state.profile.email = email || state.profile.email || '';
+      state.profile.signedIn = true;
+      state.profile.backendConnected = true;
+      state.profile.lastCloudSyncAt = new Date().toISOString();
+      loginOpen = false;
+      pushActivity('Cloud connected', state.profile.email || 'LiveDash account connected.');
+      await save();
+      showToast('LiveDash cloud connected');
+      render();
+      scheduleBackendSync('google-sign-in');
+    } catch (error) {
+      showToast(error.message || 'Google sign-in failed');
+      pushActivity('Google sign-in failed', error.message || 'Authentication did not complete.');
+      await save();
+    }
   }
 
   async function submitEmailAuth(email, password = '') {
