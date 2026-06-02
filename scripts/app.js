@@ -561,12 +561,17 @@
     return `<span class="ld-icon ld-icon-${size} ${className}" style="--icon-bg:${escapeHtml(bg)};--icon-fg:${escapeHtml(fg)}">${iconSvg(normalized, label)}</span>`;
   }
 
+  function normalizeUrlForIcon(url) {
+    const clean = String(url || '').trim();
+    if (!clean) return null;
+    return new URL(/^https?:\/\//i.test(clean) ? clean : `https://${clean}`);
+  }
+
   function getFaviconFromUrl(url) {
     try {
-      const clean = String(url || '').trim();
-      if (!clean) return '';
-      const parsed = new URL(/^https?:\/\//i.test(clean) ? clean : `https://${clean}`);
-      return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(parsed.origin)}&sz=128`;
+      const parsed = normalizeUrlForIcon(url);
+      if (!parsed) return '';
+      return `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=64&fallback_opts=404`;
     } catch {
       return '';
     }
@@ -574,7 +579,8 @@
 
   function getDuckIcon(url) {
     try {
-      const parsed = new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`);
+      const parsed = normalizeUrlForIcon(url);
+      if (!parsed) return '';
       return `https://icons.duckduckgo.com/ip3/${parsed.hostname}.ico`;
     } catch {
       return '';
@@ -593,7 +599,7 @@
     document.querySelectorAll('.favicon-icon img').forEach((img) => {
       if (img.dataset.boundIconFallback) return;
       img.dataset.boundIconFallback = 'true';
-      img.addEventListener('error', () => {
+      const fallback = () => {
         const holder = img.closest('.favicon-icon');
         const backup = holder?.dataset?.fallback || '';
         if (backup && img.src !== backup) {
@@ -602,6 +608,10 @@
         }
         img.style.display = 'none';
         holder?.classList.add('favicon-fallback');
+      };
+      img.addEventListener('error', fallback);
+      img.addEventListener('load', () => {
+        if ((img.naturalWidth && img.naturalWidth < 16) || (img.naturalHeight && img.naturalHeight < 16)) fallback();
       });
     });
   }
@@ -617,6 +627,15 @@
   function profileInitials() {
     const name = state?.profile?.name || state?.profile?.email || 'LD';
     return getInitials(name).slice(0, 2);
+  }
+
+
+  function renderAccountAvatar(size = 'dock') {
+    const signed = Boolean(state?.profile?.signedIn);
+    const avatar = state?.profile?.avatarUrl
+      ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">`
+      : `<span>${escapeHtml(profileInitials())}</span>`;
+    return `<span class="account-avatar account-avatar-${escapeHtml(size)} ${signed ? 'signed' : 'local'}">${avatar}<i></i></span>`;
   }
 
   function cloudStatusText() {
@@ -735,6 +754,7 @@
         ${chipApps.map((app) => `<button class="search-chip" data-action="open-url" data-url="${escapeHtml(app.url)}" type="button">${renderAppIcon(app, 'xs')}<span>${escapeHtml(app.name.replace('Google ', ''))}</span></button>`).join('')}
         <button class="search-chip" data-action="add-note" type="button">${renderIcon('notes', 'Quick note', 'xs')}<span>Quick note</span></button>
         <button class="search-chip" data-action="add-task" type="button">${renderIcon('tasks', 'Quick task', 'xs')}<span>Quick task</span></button>
+        ${state.profile?.signedIn ? `<button class="search-chip cloud-chip" data-action="login" type="button">${renderAccountAvatar('chip')}<span>${escapeHtml(cloudStatusText())}</span></button>` : `<button class="search-chip cloud-chip" data-action="login" type="button">${renderIcon('user', 'Profile', 'xs')}<span>Sign in to sync</span></button>`}
       </div>
     </section>`;
   }
@@ -763,23 +783,24 @@
     const signed = Boolean(state?.profile?.signedIn);
     const pet = state.pet || { mood: 'Ready', energy: 72, hearts: 5, mode: 'idle', score: 0 };
     const sprite = pet.mode === 'play'
-      ? 'assets/widgetify/animals/dog/akita_with_ball_8fps.gif'
+      ? 'assets/widgetify/animals/dog/akita_run_8fps.gif'
       : pet.mode === 'feed'
         ? 'assets/widgetify/animals/dog/akita_swipe_8fps.gif'
         : pet.energy < 30
           ? 'assets/widgetify/animals/dog/akita_lie_8fps.gif'
           : 'assets/widgetify/animals/dog/akita_idle_8fps.gif';
-    return `<section class="widget-card pet-card widget-container" aria-label="LiveDash companion">
+    return `<section class="widget-card pet-card widget-container" aria-label="Akita companion">
       <div class="pet-card-head">
         <div><div class="card-title">Akita</div><div class="card-subtitle">${signed ? 'Cloud companion active' : 'Local companion'}</div></div>
         <span class="mode-pill">${escapeHtml(pet.mood || 'Ready')}</span>
       </div>
-      <button class="pet-stage pet-stage-game" data-action="pet-play" type="button" aria-label="Play with Akita">
+      <button class="pet-stage pet-stage-game pet-${escapeHtml(pet.mode || 'idle')}" data-action="pet-play" type="button" aria-label="Play with Akita">
+        <span class="pet-sparkle one"></span><span class="pet-sparkle two"></span>
         <img src="${sprite}" alt="Akita companion">
         <span class="pet-ball" aria-hidden="true"></span>
       </button>
-      <div class="pet-stats"><span>♥ ${escapeHtml(String(pet.hearts || 5))}</span><span>⚡ ${escapeHtml(String(pet.energy || 0))}%</span><span>★ ${escapeHtml(String(pet.score || 0))}</span></div>
-      <div class="pet-copy"><strong>${openTasks} tasks open</strong><span>${cloudStatusText()}</span></div>
+      <div class="pet-stats"><span>♥ ${escapeHtml(String(pet.hearts || 5))}</span><span>Energy ${escapeHtml(String(pet.energy || 0))}%</span><span>Score ${escapeHtml(String(pet.score || 0))}</span></div>
+      <div class="pet-copy"><strong>${openTasks} tasks open</strong><span>${signed ? 'Cloud progress saved' : 'Sign in to save progress'}</span></div>
       <div class="pet-actions"><button class="secondary-button" data-action="pet-feed" type="button">Feed</button><button class="primary-button" data-action="pet-play" type="button">Play</button></div>
     </section>`;
   }
@@ -907,7 +928,7 @@
     return `<nav class="bottom-dock widgetify-dock" aria-label="LiveDash navigation">
       <button class="dock-button dock-hide" data-action="toggle-dock" type="button" aria-label="Hide dock">${renderIcon('close', 'Hide', 'xs')}</button>
       <span class="dock-divider"></span>
-      <button class="dock-button" data-action="login" type="button" aria-label="Account">${renderIcon('user', 'Account', 'xs')}</button>
+      <button class="dock-button account-dock-button ${state.profile?.signedIn ? 'signed' : ''}" data-action="login" type="button" aria-label="Account">${renderAccountAvatar('dock')}</button>
       <button class="dock-button" data-action="refresh-cloud" type="button" aria-label="Sync">${renderIcon('refresh', 'Sync', 'xs')}</button>
       <button class="dock-button" data-action="settings" type="button" aria-label="Settings">${renderIcon('settings', 'Settings', 'xs')}</button>
       <span class="dock-divider"></span>
@@ -928,18 +949,18 @@
 
   function renderSignInModal() {
     return `<section class="modal-card auth-modal-card widgetify-auth-card" role="dialog" aria-modal="true" aria-label="Sign in">
-      <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Sign in to LiveDash</div></div>
-      <div class="auth-hero">
+      <div class="modal-head"><button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">LiveDash Account</div></div>
+      <div class="auth-visual">
         <div class="auth-orbit"><span>${renderIcon('home', 'LiveDash', 'sm')}</span><i></i><i></i><i></i></div>
-        <div><h2>Keep your new tab synced</h2><p>Connect your LiveDash profile to restore bookmarks, tasks, notes, companion progress, and preferences.</p></div>
+        <div><h2>Sync your dashboard</h2><p>Connect once to restore bookmarks, tasks, notes, Akita progress, and preferences across Chrome profiles.</p></div>
       </div>
       <div class="cloud-feature-grid">${renderCloudBenefits()}</div>
       <div class="auth-card clean-auth-form">
+        <button class="primary-button google-primary" data-action="google-sign-in" type="button">${renderIcon('google', 'Google', 'xs')} Continue with Google</button>
+        <div class="divider compact-divider">or use email</div>
         <label><strong>Email address</strong><input id="authEmail" class="form-input" type="email" placeholder="you@example.com" aria-label="Email address"></label>
-        <button class="primary-button" data-action="sign-in" type="button">Continue</button>
+        <button class="secondary-button full-width" data-action="sign-in" type="button">Continue with email</button>
       </div>
-      <div class="divider">or</div>
-      <div class="auth-actions"><button class="secondary-button google-auth-button" data-action="google-sign-in" type="button">${renderIcon('google', 'Google', 'xs')} Continue with Google</button><button class="secondary-button" data-action="password-sign-in" type="button">${renderIcon('user', 'Password', 'xs')} Use password</button></div>
     </section>`;
   }
 
@@ -948,10 +969,15 @@
     const email = state?.profile?.email || '';
     const avatar = state?.profile?.avatarUrl ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">` : `<span>${escapeHtml(profileInitials())}</span>`;
     return `<section class="modal-card profile-modal-card widgetify-auth-card" role="dialog" aria-modal="true" aria-label="Profile">
-      <div class="modal-head"><button class="icon-button" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">LiveDash Profile</div></div>
-      <div class="profile-modal-hero">
-        <div class="profile-modal-avatar">${avatar}</div>
+      <div class="modal-head"><button class="icon-button floating-close" data-action="close-modal" type="button" aria-label="Close">${renderIcon('close', 'Close', 'xs')}</button><div class="modal-title">Profile</div></div>
+      <div class="profile-modal-hero signed-profile-hero">
+        <div class="profile-modal-avatar signed">${avatar}</div>
         <div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(email)}</p><span class="cloud-pill"><span class="cloud-dot online"></span>${escapeHtml(cloudStatusText())}</span></div>
+      </div>
+      <div class="profile-stat-grid">
+        <div><strong>${escapeHtml(String((state.bookmarkSlots || []).filter((slot) => slot.url).length))}</strong><span>Saved sites</span></div>
+        <div><strong>${escapeHtml(String((state.tasks || []).filter((task) => task.status !== 'done').length))}</strong><span>Open tasks</span></div>
+        <div><strong>${escapeHtml(String(state.pet?.score || 0))}</strong><span>Akita score</span></div>
       </div>
       <div class="cloud-feature-grid">${renderCloudBenefits()}</div>
       <div class="profile-actions"><button class="primary-button" data-action="refresh-cloud" type="button">Sync now</button><button class="secondary-button" data-action="open-apps-category" data-category="daily" type="button">Open apps</button><button class="secondary-button danger-button" data-action="sign-out" type="button">Sign out</button></div>
@@ -1009,6 +1035,7 @@
     setBodyTheme();
     const route = state.settings.route || 'home';
     root.innerHTML = `<div class="widgetify-shell route-${escapeHtml(route)}">
+      ${renderProfileHeader()}
       ${renderTopTabs()}
       <div class="page-grid">
         ${route === 'home' ? renderHomePage() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
@@ -1019,6 +1046,7 @@
     ${renderDrawer()}
     ${renderCommandPalette()}`;
     bindTransientInputs();
+    attachIconFallbacks();
   }
 
   function bindTransientInputs() {
@@ -1098,16 +1126,19 @@
   }
 
   async function updatePet(mode) {
+    const current = state.pet || {};
+    const playGain = mode === 'play' ? 12 : 4;
     state.pet = {
       name: 'Akita',
       mood: mode === 'feed' ? 'Fed' : 'Playing',
-      energy: Math.min(100, Math.max(0, (state.pet?.energy || 60) + (mode === 'feed' ? 18 : -6))),
-      hearts: Math.min(5, Math.max(1, (state.pet?.hearts || 4) + (mode === 'feed' ? 1 : 0))),
+      energy: Math.min(100, Math.max(0, (current.energy || 60) + (mode === 'feed' ? 22 : -8))),
+      hearts: Math.min(5, Math.max(1, (current.hearts || 4) + (mode === 'feed' ? 1 : 0))),
       mode,
-      score: (state.pet?.score || 0) + (mode === 'play' ? 10 : 4),
+      score: (current.score || 0) + playGain,
       lastInteractionAt: new Date().toISOString()
     };
     pushActivity(mode === 'feed' ? 'Akita fed' : 'Akita played', `Companion score ${state.pet.score}.`);
+    if (state.pet.score && state.pet.score % 50 === 0) pushNotification('Akita leveled up', `Companion score reached ${state.pet.score}.`, 'success');
     await save();
     render();
     setTimeout(async () => {
@@ -1116,7 +1147,7 @@
       state.pet.mood = 'Ready';
       await save();
       render();
-    }, 3200);
+    }, 1800);
   }
 
   async function addTask(title) {
