@@ -67,6 +67,49 @@
     }
   }
 
+  function safeMergeCloudState(localState, cloudState) {
+    if (!cloudState || typeof cloudState !== 'object') return localState;
+    const protectedProfile = { ...(localState.profile || {}) };
+    const merged = { ...localState, ...cloudState, profile: { ...(cloudState.profile || {}), ...protectedProfile } };
+    merged.profile = { ...merged.profile, ...protectedProfile };
+    return merged;
+  }
+
+  async function hydrateCloudProfile(reason = 'refresh') {
+    const config = backendConfig();
+    if (!config.enabled || !config.apiBaseUrl || !state?.profile?.authToken) return false;
+    try {
+      const response = await fetch(backendUrl(config.mePath || '/api/me.php'), {
+        method: 'GET',
+        headers: backendHeaders()
+      });
+      if (!response.ok) throw new Error('Cloud profile unavailable');
+      const payload = await response.json();
+      if (!payload.ok) throw new Error(payload.error || 'Cloud profile failed');
+      if (payload.state && payload.state !== null) {
+        state = safeMergeCloudState(state, payload.state);
+      }
+      state.profile = {
+        ...(state.profile || {}),
+        signedIn: true,
+        backendConnected: true,
+        cloudLoaded: true,
+        email: payload.user?.email || state.profile?.email || '',
+        name: payload.user?.displayName || state.profile?.name || payload.user?.email?.split('@')[0] || 'LiveDash user',
+        avatarUrl: payload.user?.avatarUrl || state.profile?.avatarUrl || '',
+        lastCloudSyncAt: payload.stateUpdatedAt || new Date().toISOString(),
+        lastCloudHydratedAt: new Date().toISOString(),
+        lastCloudReason: reason
+      };
+      await window.LiveDashStore.setState(state);
+      return true;
+    } catch (error) {
+      state.profile.lastCloudSyncError = error.message || 'Cloud load failed';
+      await window.LiveDashStore.setState(state);
+      return false;
+    }
+  }
+
   function consumeAuthReturn() {
     const params = new URLSearchParams(location.search);
     const token = params.get('livedash_token');
@@ -134,6 +177,7 @@
       state.profile.lastCloudSyncAt = new Date().toISOString();
       loginOpen = false;
       pushActivity('Cloud connected', state.profile.email || 'LiveDash account connected.');
+      await hydrateCloudProfile('google-sign-in');
       await save();
       showToast('LiveDash cloud connected');
       render();
@@ -525,6 +569,41 @@
     return escapeHtml(app.url || '#');
   }
 
+  function profileInitials() {
+    const name = state?.profile?.name || state?.profile?.email || 'LD';
+    return getInitials(name).slice(0, 2);
+  }
+
+  function cloudStatusText() {
+    if (!state?.profile?.signedIn) return 'Local only';
+    if (state.profile.cloudLoaded) return 'Cloud profile loaded';
+    if (state.profile.backendConnected) return 'Cloud connected';
+    return 'Profile connected';
+  }
+
+  function renderProfileHeader() {
+    const signed = Boolean(state?.profile?.signedIn);
+    const name = state?.profile?.name || (state?.profile?.email ? state.profile.email.split('@')[0] : 'Welcome');
+    const email = state?.profile?.email || 'Sign in to sync your dashboard';
+    const avatar = state?.profile?.avatarUrl
+      ? `<img src="${escapeHtml(state.profile.avatarUrl)}" alt="">`
+      : `<span>${escapeHtml(profileInitials())}</span>`;
+    return `<header class="profile-strip premium-card" aria-label="Profile and cloud status">
+      <div class="profile-left">
+        <button class="profile-avatar ${signed ? 'signed' : ''}" data-action="login" type="button" aria-label="Open account">${avatar}</button>
+        <div class="profile-copy">
+          <div class="profile-greeting">${signed ? `Hi, ${escapeHtml(name)}` : 'Personalize LiveDash'}</div>
+          <div class="profile-email">${escapeHtml(email)}</div>
+        </div>
+      </div>
+      <div class="profile-cloud">
+        <span class="cloud-dot ${signed ? 'online' : ''}"></span>
+        <span>${escapeHtml(cloudStatusText())}</span>
+        ${signed ? `<button class="micro-button" data-action="refresh-cloud" type="button">Sync now</button>` : `<button class="micro-button" data-action="login" type="button">Sign in</button>`}
+      </div>
+    </header>`;
+  }
+
   function renderTopTabs() {
     return `<nav class="top-tabs widget-nav" aria-label="App categories">
       ${state.categories.map((category) => `<button class="top-tab ${state.settings.appCategory === category.id ? 'active' : ''}" data-action="category" data-category="${escapeHtml(category.id)}" type="button">
@@ -599,16 +678,24 @@
     </section>`;
   }
 
+  function safeHost(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ''); } catch (error) { return 'Custom link'; }
+  }
+
   function renderBookmarkSlots() {
-    return `<section class="bookmark-grid" aria-label="Bookmark slots">
+    return `<section class="bookmark-grid" aria-label="Pinned sites">
       ${state.bookmarkSlots.map((slot) => {
         const filled = Boolean(slot.url);
         const color = slot.color || appColor(slot.label || slot.id);
-        const icon = filled ? renderAppIcon(slot, 'md') : renderIcon('add', 'Add site', 'xl', 'bookmark-add-icon');
-        return `<button class="bookmark-slot ${filled ? 'filled' : 'empty'}" style="--slot-color:${escapeHtml(color)}" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
-          <span class="bookmark-icon">${icon}</span>
-          <span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span>
-        </button>`;
+        const icon = filled ? renderAppIcon(slot, 'lg') : renderIcon('add', 'Add site', 'lg', 'bookmark-add-icon');
+        const host = filled ? safeHost(slot.url) : 'Empty slot';
+        return `<article class="bookmark-slot ${filled ? 'filled' : 'empty'}" style="--slot-color:${escapeHtml(color)}">
+          <button class="bookmark-main" data-action="${filled ? 'open-bookmark' : 'edit-bookmark'}" data-id="${escapeHtml(slot.id)}" type="button" aria-label="${filled ? `Open ${slot.label}` : 'Add bookmark'}">
+            <span class="bookmark-icon">${icon}</span>
+            <span class="bookmark-text"><span class="bookmark-label">${escapeHtml(filled ? slot.label : 'Add site')}</span><span class="bookmark-host">${escapeHtml(host)}</span></span>
+          </button>
+          <button class="bookmark-edit" data-action="edit-bookmark" data-id="${escapeHtml(slot.id)}" type="button" aria-label="Edit ${escapeHtml(slot.label || 'bookmark')}">${renderIcon('settings', 'Edit', 'xs')}</button>
+        </article>`;
       }).join('')}
     </section>`;
   }
@@ -844,6 +931,7 @@
     setBodyTheme();
     const route = state.settings.route || 'home';
     root.innerHTML = `<div class="widgetify-shell route-${escapeHtml(route)}">
+      ${renderProfileHeader()}
       <div class="page-grid">
         ${route === 'home' ? renderHomePage() : route === 'apps' ? renderAppsPage() : renderExplorePage()}
       </div>
@@ -1025,6 +1113,7 @@
       'open-command': () => { commandOpen = true; render(); },
       'close-command': () => { commandOpen = false; render(); },
       'toggle-dock': async () => { state.settings.showDock = !state.settings.showDock; await save(); render(); },
+      'refresh-cloud': async () => { const ok = await hydrateCloudProfile('manual-refresh'); await save(); showToast(ok ? 'Cloud profile loaded' : 'Cloud profile unavailable'); render(); },
       theme: async () => { state.settings.theme = button.dataset.theme; await save(); showToast('Theme updated'); render(); },
       engine: async () => { state.settings.searchEngine = button.dataset.engine; await save(); showToast('Search engine updated'); render(); },
       'add-task': async () => { await addTask(prompt('Task title') || 'New task'); },
@@ -1099,9 +1188,16 @@
 
   async function boot() {
     state = await window.LiveDashStore.getState();
-    consumeAuthReturn();
+    const returnedFromAuth = consumeAuthReturn();
     state.settings.route = state.settings.route || 'home';
     state.settings.showDock = state.settings.showDock !== false;
+    if (returnedFromAuth) {
+      await hydrateCloudProfile('auth-return');
+      await save();
+      showToast('LiveDash cloud connected');
+    } else if (state.profile?.authToken) {
+      await hydrateCloudProfile('startup');
+    }
     render();
     startTimer();
     setInterval(() => {
