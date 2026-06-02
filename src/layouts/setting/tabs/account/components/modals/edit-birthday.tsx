@@ -1,0 +1,79 @@
+import { Button } from '@/components/button/button'
+import Modal from '@/components/modal'
+import { useUpdateUserProfile } from '@/services/hooks/auth/authService.hook'
+import { useEffect, useState } from 'react'
+import GregorianDatePicker from '../profile-date-picker'
+import { SectionPanel } from '@/components/section-panel'
+
+interface Prop {
+	show: boolean
+	onClose: (type: 'success' | 'cancel') => void
+	currentValue?: string
+}
+export function ChangeBirthdayModal({ show, onClose, currentValue }: Prop) {
+	const [value, setValue] = useState('')
+	const updateProfileMutation = useUpdateUserProfile()
+
+	const onCloseHandler = () => {
+		onClose('cancel')
+	}
+
+	const onClickSave = async () => {
+		if (!value) return
+
+		const data = new FormData()
+		data.append('birthdate', value)
+
+		await updateProfileMutation.mutateAsync(data)
+		onClose('success')
+	}
+
+	const onCancel = () => {
+		onClose('cancel')
+	}
+
+	useEffect(() => {
+		if (currentValue) setValue(currentValue)
+		console.log(currentValue)
+	}, [])
+
+	return (
+		<Modal
+			isOpen={show}
+			onClose={onCloseHandler}
+			direction="ltr"
+			showCloseButton={false}
+		>
+			<div className="flex flex-col justify-between h-40 gap-4">
+				<SectionPanel title="Your birth date?">
+					<GregorianDatePicker
+						value={value}
+						enable={!updateProfileMutation.isPending}
+						onChange={(val) => setValue(val)}
+					/>
+				</SectionPanel>
+
+				<div className="flex gap-2">
+					<Button
+						size="sm"
+						type="submit"
+						disabled={updateProfileMutation.isPending}
+						isPrimary={true}
+						onClick={() => onClickSave()}
+						className="text-sm shadow-xs flex-2 rounded-xl shadow-primary/20"
+					>
+						{updateProfileMutation.isPending ? 'Saving...' : 'Save'}
+					</Button>
+					<Button
+						size="sm"
+						type="button"
+						onClick={onCancel}
+						className="flex-1 text-sm font-medium border-none rounded-2xl bg-content"
+					>
+						Cancel
+					</Button>
+				</div>
+			</div>
+		</Modal>
+	)
+}
