@@ -90,7 +90,7 @@ export const UpdateReleaseNotesModal = ({
 					<div className="relative w-full overflow-hidden border-2 shadow-inner rounded-2xl bg-base-300/20 border-base-300">
 						<video
 							ref={videoRef}
-							src={'https://cdn.livedash.eu/extension/new_ui_update.mp4'}
+							src={'/live-assets/how-to-disable-footer.svg'}
 							autoPlay
 							muted
 							loop

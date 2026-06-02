@@ -85,7 +85,7 @@ export const SettingsDropdown = ({ setShowSettings }: SettingsProps) => {
 		<>
 			<div
 				ref={triggerRef}
-				className="relative p-2 transition-all cursor-pointer nav-btn text-white/40 hover:text-white active:scale-90"
+				className="relative p-2 transition-all cursor-pointer nav-btn text-white/70 hover:text-white active:scale-90"
 				id="settings-button"
 			>
 				<HiCog size={20} />

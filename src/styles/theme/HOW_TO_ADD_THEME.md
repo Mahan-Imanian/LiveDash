@@ -66,7 +66,7 @@ In `src/layouts/setting/tabs/appearance/components/theme-selector.tsx`, add a ne
 ```typescript
 {
     id: 'newtheme',
-    name: 'New theme name',  // Persian name for the theme
+    name: 'New theme name',
     icon: <YourIcon size={18} />,  // Import and use an appropriate icon
     buttonClass: 'your-button-styles',  // CSS classes for the theme button
     activeClass: 'ring-2 ring-blue-500',

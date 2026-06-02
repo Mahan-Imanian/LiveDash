@@ -12,7 +12,7 @@ export function ItemPrice({
 	return (
 		<div className={`flex items-center gap-1 text-sm font-medium ${className}`}>
 			<img
-				src="https://cdn.livedash.eu/extension/wig-icon.png"
+				src="/live-assets/livecoin.svg"
 				alt="LiveCoin"
 				className="w-4 h-4"
 			/>

@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
-      - VITE_API=https://api.livedash.eu
+      - VITE_API=https://livedash.codersays.com
     volumes:
       - ./local_output:/app/.output
     command: /bin/bash -c "NODE_ENV=production && npm run zip && npm run build:firefox && NODE_ENV=production npm run zip:firefox:clean"

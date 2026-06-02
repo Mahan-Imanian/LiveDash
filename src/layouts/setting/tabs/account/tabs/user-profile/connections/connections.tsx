@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import Analytics from '@/analytics'
 import { getMainClient } from '@/services/api'
 import { useGetUserProfile } from '@/services/hooks/user/userService.hook'
@@ -9,6 +10,7 @@ import { showToast } from '@/common/toast'
 
 export function Connections() {
 	const { data: profile } = useGetUserProfile()
+	const queryClient = useQueryClient()
 
 	const [platforms, setPlatforms] = useState<Platform[]>([])
 	const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
@@ -55,10 +57,76 @@ export function Connections() {
 		)
 	}
 
+	const setPlatformLoading = (platformId: string, isLoading: boolean) => {
+		setPlatforms((prev) =>
+			prev.map((p) => (p.id === platformId ? { ...p, isLoading } : p))
+		)
+		setSelectedPlatform((prev) =>
+			prev?.id === platformId ? { ...prev, isLoading } : prev
+		)
+	}
+
+	const requestIdentityPermission = async () => {
+		const hasIdentityPermission = await browser.permissions.contains({
+			permissions: ['identity'],
+		})
+
+		if (hasIdentityPermission) return true
+
+		return browser.permissions.request({
+			permissions: ['identity'],
+		})
+	}
+
+	const connectGoogle = async () => {
+		const granted = await requestIdentityPermission()
+		if (!granted) {
+			showToast('Google Calendar connection needs browser identity permission.', 'error')
+			return false
+		}
+
+		const api = await getMainClient()
+		const redirectUri = browser.identity.getRedirectURL('google-connect')
+		const { data } = await api.post('/google/connect', { redirectUri })
+
+		if (!data?.url) {
+			showToast('Google Calendar connection URL was not returned.', 'error')
+			return false
+		}
+
+		const redirectUrl = await browser.identity.launchWebAuthFlow({
+			url: data.url,
+			interactive: true,
+		})
+
+		if (!redirectUrl) {
+			showToast('Google Calendar connection was cancelled.', 'error')
+			return false
+		}
+
+		const parsedUrl = new URL(redirectUrl)
+		const hashParams = new URLSearchParams(parsedUrl.hash.replace(/^#/, ''))
+		const queryParams = new URLSearchParams(parsedUrl.search)
+		const connected = hashParams.get('connected') || queryParams.get('connected')
+		const error = hashParams.get('error') || queryParams.get('error')
+
+		if (error) {
+			showToast(decodeURIComponent(error), 'error')
+			return false
+		}
+
+		if (connected !== '1') {
+			showToast('Google Calendar did not confirm the connection.', 'error')
+			return false
+		}
+
+		return true
+	}
+
 	const handleConnectionConfirm = async () => {
 		if (!selectedPlatform) return
 
-		setSelectedPlatform((prev) => (prev ? { ...prev, isLoading: true } : prev))
+		setPlatformLoading(selectedPlatform.id, true)
 
 		try {
 			if (selectedPlatform.connected) {
@@ -73,19 +141,32 @@ export function Connections() {
 					)
 				)
 
+				await queryClient.invalidateQueries({ queryKey: ['userProfile'] })
 				showToast(`Connection to ${selectedPlatform.name} was disconnected.`, 'success')
 			} else {
-				const api = await getMainClient()
-				const response = await api.post(`/${selectedPlatform.id}/connect`)
+				const connected =
+					selectedPlatform.id === 'google'
+						? await connectGoogle()
+						: false
 
-				window.location.href = response.data.url
+				if (!connected) {
+					setPlatformLoading(selectedPlatform.id, false)
+					return
+				}
+
+				setPlatforms((prev) =>
+					prev.map((p) =>
+						p.id === selectedPlatform.id
+							? { ...p, connected: true, isLoading: false }
+							: p
+					)
+				)
+
+				await queryClient.invalidateQueries({ queryKey: ['userProfile'] })
+				showToast(`Connection to ${selectedPlatform.name} was completed.`, 'success')
 			}
 		} catch {
-			setPlatforms((prev) =>
-				prev.map((p) =>
-					p.id === selectedPlatform.id ? { ...p, isLoading: false } : p
-				)
-			)
+			setPlatformLoading(selectedPlatform.id, false)
 
 			showToast(
 				`Connection error with ${selectedPlatform.name}. Try again.`,
@@ -114,8 +195,8 @@ export function Connections() {
 						}
 						className={`group relative p-2.5 rounded-2xl border transition-all duration-200 bg-base-200 border-base-300
                 ${
-					platform.connected ? '' : ' hover:bg-base-200/40'
-				} ${!platform.isActive && !platform.connected ? 'opacity-50' : 'cursor-pointer active:scale-95'}`}
+							platform.connected ? '' : ' hover:bg-base-200/40'
+						} ${!platform.isActive && !platform.connected ? 'opacity-50' : 'cursor-pointer active:scale-95'}`}
 					>
 						<div className="flex items-center justify-between gap-3">
 							<div className="flex items-center gap-2.5 overflow-hidden">
@@ -139,10 +220,10 @@ export function Connections() {
 							<div
 								className={`h-7 px-3 flex items-center justify-center rounded-lg text-[10px] font-black shrink-0 transition-all
                     ${
-						platform.connected
-							? 'bg-error/10 text-error'
-							: 'bg-primary text-white'
-					} ${!platform.isActive && !platform.connected ? 'bg-base-300! text-muted' : ''}`}
+									platform.connected
+										? 'bg-error/10 text-error'
+										: 'bg-primary text-white'
+								} ${!platform.isActive && !platform.connected ? 'bg-base-300! text-muted' : ''}`}
 							>
 								{platform.isLoading ? (
 									<div className="w-3 h-3 border-2 border-current rounded-full animate-spin border-t-transparent" />

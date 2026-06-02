@@ -56,7 +56,7 @@ export function PetSettings() {
 			petType: value,
 		})
 	}
-	const persianType: Record<string, string> = {
+	const petTypeLabels: Record<string, string> = {
 		dog: 'Dog',
 		chicken: 'Chicken',
 		crab: 'Crab',
@@ -64,7 +64,7 @@ export function PetSettings() {
 	const availablePets = Object.entries(BASE_PET_OPTIONS.petOptions).map(
 		([key, value]) => ({
 			value: key as PetTypes,
-			label: `${value.emoji} ${persianType[value.type] || ''} - ${value.name}`,
+			label: `${value.emoji} ${petTypeLabels[value.type] || ''} - ${value.name}`,
 		})
 	)
 
