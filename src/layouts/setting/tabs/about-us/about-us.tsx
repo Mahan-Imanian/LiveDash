@@ -66,7 +66,7 @@ export function AboutUsTab() {
 			<SectionPanel title="Contact links" size="sm">
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
 					<a
-						href="https://livedash.eu/donate"
+						href="https://livedash.codersays.com/donate"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`flex flex-col items-center justify-center p-4 transition-all duration-200 border rounded-xl backdrop-blur-sm hover:-translate-y-1 ${getDonateCardStyle()}`}
@@ -100,7 +100,7 @@ export function AboutUsTab() {
 					</a>
 
 					<a
-						href="https://feedback.livedash.eu"
+						href="https://livedash.codersays.com/feedback"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`flex flex-col items-center justify-center p-4 transition-all duration-200 border rounded-xl backdrop-blur-sm hover:-translate-y-1 ${getFeedbackCardStyle()}`}
@@ -117,7 +117,7 @@ export function AboutUsTab() {
 					</a>
 
 					<a
-						href="https://livedash.eu"
+						href="https://livedash.codersays.com"
 						target="_blank"
 						rel="noopener noreferrer"
 						className={`flex flex-col items-center justify-center p-4 transition-all duration-200 border rounded-xl backdrop-blur-sm hover:-translate-y-1 ${getWebsiteCardStyle()}`}

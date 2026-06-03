@@ -57,7 +57,16 @@ export function CompactMoodWidget() {
 			</div>
 		)
 
-	const { month, year, streak, days } = data
+		const today = new Date()
+	const safeDays = Array.isArray((data as any)?.days)
+		? (data as any).days
+		: Array.from({ length: new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() }, (_, i) => ({
+				date: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`,
+				mood: null,
+			}))
+	const month = (data as any)?.month || today.toLocaleString('en-US', { month: 'long' })
+	const year = (data as any)?.year || today.getFullYear()
+	const streak = Number.isFinite(Number((data as any)?.streak)) ? Number((data as any)?.streak) : 0
 
 	return (
 		<div className="flex flex-col h-full gap-1 p-2">
@@ -72,7 +81,7 @@ export function CompactMoodWidget() {
 			</div>
 
 			<div className="grid grid-cols-7 gap-[2px] mt-2">
-				{days.map((day: any, i: number) => {
+				{safeDays.map((day: any, i: number) => {
 					const moodOpt = getMoodOption(day.mood)
 					return (
 						<Tooltip
