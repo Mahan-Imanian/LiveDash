@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Analytics from '@/analytics'
 import { getFromStorage } from '@/common/storage'
+import { defaultCryptoCurrencies, localSupportedCryptos } from '@/services/local/cryptoRates'
 import { callEvent } from '@/common/utils/call-event'
 import { AuthRequiredModal } from '@/components/auth/AuthRequiredModal'
 import { ItemSelector } from '@/components/item-selector'
@@ -19,7 +20,7 @@ export function WigiArzSetting() {
 	const [currencyColorMode, setCurrencyColorMode] = useState<CurrencyColorMode>(
 		CurrencyColorMode.NORMAL
 	)
-	const [currencyType, setCurrencyType] = useState<string>('all')
+	const [currencyType, setCurrencyType] = useState<string>(CurrenciesType.CRYPTO)
 	const [searchQuery, setSearchQuery] = useState('')
 	const { isAuthenticated } = useAuth()
 	const [showAuthRequired, setShowAuthRequired] = useState(false)
@@ -85,9 +86,10 @@ export function WigiArzSetting() {
 			if (color) {
 				setCurrencyColorMode(color)
 			}
-			if (currencies) {
-				setSelectedCurrencies(currencies)
-			}
+			const cleanCurrencies = Array.isArray(currencies)
+				? currencies.filter((code) => localSupportedCryptos.some((crypto) => crypto.key === code))
+				: []
+			setSelectedCurrencies(cleanCurrencies.length ? cleanCurrencies : defaultCryptoCurrencies)
 		}
 
 		load()
@@ -125,10 +127,7 @@ export function WigiArzSetting() {
 						/>
 						<SelectBox
 							options={[
-								{ value: 'all', label: 'All Currencies' },
 								{ value: CurrenciesType.CRYPTO, label: 'Cryptocurrencies' },
-								{ value: CurrenciesType.CURRENCY, label: 'Currencies' },
-								{ value: CurrenciesType.COIN, label: 'Gold and coins' },
 							]}
 							value={currencyType as any}
 							onChange={(value) => setCurrencyType(value)}
@@ -213,36 +212,13 @@ function getCurrencyOptions(supported: SupportedCurrencies): Option[] {
 		.map((key) => Number(key))
 		.filter((index) => supported[index].type === 'crypto')
 
-	const isCurrency = keys
-		.map((key) => Number(key))
-		.filter((index) => supported[index].type === 'currency')
-
-	const supportedCoins = keys
-		.map((key) => Number(key))
-		.filter((index) => supported[index].type === 'coin')
-
 	return [
 		{
-			label: '🪙 Cryptocurrencies',
+			label: '🪙 Popular cryptocurrencies',
 			options: isCrypto.map((index) => ({
 				value: supported[index].key,
-				label: supported[index].label.fa,
+				label: supported[index].label.en || supported[index].label.fa,
 				labelEn: supported[index].key,
-			})),
-		},
-		{
-			label: '💵 Currencies',
-			options: isCurrency.map((index) => ({
-				value: supported[index].key,
-				label: supported[index].label.fa,
-				labelEn: supported[index].key,
-			})),
-		},
-		{
-			label: '🥇 Gold and coins',
-			options: supportedCoins.map((index) => ({
-				value: supported[index].key,
-				label: supported[index].label.fa,
 			})),
 		},
 	]

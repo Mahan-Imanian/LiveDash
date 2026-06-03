@@ -9,6 +9,7 @@ export const useGetUserInventory = (enabled: boolean, params?: MarketQueryParams
 		queryFn: async () => getUserInventory(params),
 		retry: 0,
 		enabled,
+		initialData: localUserInventory,
 	})
 }
 

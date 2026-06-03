@@ -1,3 +1,9 @@
+# LiveDash
+
+LiveDash is a new-tab dashboard for people who work across search, notes, bookmarks, calendars, market data, weather, focus tools, and daily web workflows. It keeps the speed and visual character of the original project while replacing the legacy regional defaults with an English, LTR, Europe-ready product surface.
+
+Repository: https://github.com/Mahan-Imanian/LiveDash
+
 ## What LiveDash includes
 
 - Smart new-tab dashboard with animated widgets and glass-style panels
@@ -82,6 +88,7 @@ Extension-side public variables live in `.env.example`:
 
 ```text
 VITE_API=https://livedash.codersays.com
+VITE_GOOGLE_OAUTH_CLIENT_ID=<public Google OAuth client id>
 ```
 
 Only public client-side values belong in extension env files. Database credentials, app secrets, and Google client secrets belong only in the backend environment.
