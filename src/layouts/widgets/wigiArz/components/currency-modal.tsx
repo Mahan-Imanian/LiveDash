@@ -90,14 +90,12 @@ export const CurrencyModalComponent = ({
 					isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
 				}`}
 			>
-				<div className="relative transition-transform duration-200 ease-out">
-					<img
-						src={currency?.icon}
-						alt={currency?.name?.en}
-						className="z-50 object-cover rounded-full shadow w-14 h-14"
-					/>
+				<div className="relative flex items-center justify-center w-14 h-14 rounded-full shadow bg-gradient-to-br from-primary to-secondary">
+					<span className="z-50 text-sm font-black tracking-tight text-white">
+						{code.slice(0, 3).toUpperCase()}
+					</span>
 					<div
-						className="absolute top-0 z-10 w-14 h-14 blur-xl opacity-30"
+						className="absolute top-0 z-10 w-14 h-14 blur-xl opacity-30 rounded-full"
 						style={{ backgroundColor: imgMainColor }}
 					/>
 				</div>

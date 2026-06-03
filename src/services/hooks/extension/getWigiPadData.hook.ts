@@ -53,15 +53,24 @@ export interface WigiPadDataResponse {
 
 async function fetchWigiPadData(timezone: string): Promise<WigiPadDataResponse> {
 	const client = await getMainClient()
-	const { data } = await client.get<{
-		data: WigiPadDataResponse
-	}>('/extension/wigi-pad-data', {
-		params: {
-			timezone,
-		},
-	})
+	try {
+		const { data } = await client.get<{
+			data: WigiPadDataResponse
+		}>('/extension/wigi-pad-data', {
+			params: {
+				timezone,
+			},
+		})
 
-	return data.data
+		return data.data
+	} catch {
+		return {
+			birthdays: [],
+			notifications: [],
+			upcomingCalendarEvents: [],
+			livedashCardNotifications: [],
+		}
+	}
 }
 
 export function useGetWigiPadData(options: {
