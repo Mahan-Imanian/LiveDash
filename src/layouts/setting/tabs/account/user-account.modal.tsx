@@ -31,7 +31,7 @@ export const UserAccountModal = ({
 		<SettingModal
 			isOpen={isOpen}
 			onClose={onClose}
-			selectedTab={selectedTab as any}
+			selectedTab={(selectedTab || 'profile') as any}
 		/>
 	)
 }

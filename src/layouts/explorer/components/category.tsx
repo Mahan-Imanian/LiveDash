@@ -12,8 +12,11 @@ interface Prop {
 	contentLength: number
 	activeCategory: string
 }
-
-export function ExplorerCategory({ category, categoryRefs, activeCategory }: Prop) {
+export function ExplorerCategory({
+	category,
+	categoryRefs,
+	activeCategory,
+}: Prop) {
 	const childLength = !category.links?.length
 	return (
 		<div
@@ -27,35 +30,47 @@ export function ExplorerCategory({ category, categoryRefs, activeCategory }: Pro
 					? ({ '--banner-url': `url(${category.banner})` } as React.CSSProperties)
 					: undefined
 			}
-			className={`${childLength && 'invisible'} relative overflow-hidden border scroll-mt-4 bg-base-100/75 backdrop-blur-xl border-base-300/70 rounded-3xl shadow-sm transition-all duration-300 ${
-				category.id === activeCategory
-					? 'outline outline-1 outline-offset-2 outline-primary/80 scale-[1.01]'
-					: ''
-			} ${category.banner ? 'before:absolute before:inset-x-0 before:top-0 before:h-12 before:bg-cover before:bg-center before:bg-no-repeat before:brightness-75 before:contrast-110 before:pointer-events-none' : ''}`}
+			className={`${childLength && 'hidden'} relative overflow-hidden border scroll-mt-4 bg-content bg-glass border-base-300/70 rounded-3xl transition-all duration-300 min-h-[255px]
+			${category.id === activeCategory ? 'outline-2 outline-offset-2 outline-primary/70 shadow-xl shadow-primary/10' : 'shadow-sm'}
+			${category.banner ? 'before:absolute before:inset-x-0 before:top-0 before:h-14 before:bg-cover before:bg-center before:bg-no-repeat before:brightness-75 before:contrast-110 before:pointer-events-none' : ''}
+			`}
 		>
 			{category.banner && (
 				<style>
-					{`#${category.id}::before { content: ""; background-image: var(--banner-url); mask-image: linear-gradient(to bottom, black 0%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%); }`}
+					{`#${category.id}::before {
+						content: "";
+						background-image: var(--banner-url);
+						mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+						-webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+					}`}
 				</style>
 			)}
-			<div className="relative z-10 p-4">
+			<div className="relative z-10 flex h-full flex-col p-4">
 				{!category.hideName && (
 					<div className="flex items-center justify-between gap-4 mb-4">
-						<div className="flex items-center gap-3 min-w-0">
+						<div className="flex items-center min-w-0 gap-2.5">
 							{category.icon ? (
-								<img src={category.icon} className="object-contain w-7 h-7 rounded shrink-0 drop-shadow-sm" alt="" />
+								<div className="flex items-center justify-center w-8 h-8 rounded-2xl bg-base-100/80 ring-1 ring-base-300/80 shadow-sm shrink-0">
+									<img
+										src={category.icon}
+										className="object-contain w-5 h-5 opacity-90"
+										alt=""
+									/>
+								</div>
 							) : (
 								<div className="w-1 h-5 rounded-full bg-primary" />
 							)}
-							<h3 className="text-xs font-black tracking-[0.12em] uppercase truncate text-base-content/75">
+							<h3
+								className={`text-xs font-black tracking-[0.16em] uppercase truncate ${category.banner ? 'text-base-content/90' : 'text-base-content/75'}`}
+							>
 								{category.category}
 							</h3>
 						</div>
 
 						{category.badges?.length ? (
 							<div className="flex flex-row gap-1 shrink-0">
-								{category.badges?.map((f, i) => (
-									<CategoryBadge badge={f} key={`badge-${i}`} />
+								{category.badges?.map((badge, i) => (
+									<CategoryBadge badge={badge} key={`badge-${i}`} />
 								))}
 							</div>
 						) : (
@@ -70,9 +85,13 @@ export function ExplorerCategory({ category, categoryRefs, activeCategory }: Pro
 	)
 }
 
-function HandleCatalogs({ category }: { category: CategoryItem }) {
+interface HandleCatalogsProp {
+	category: CategoryItem
+}
+
+function HandleCatalogs({ category }: HandleCatalogsProp) {
 	return (
-		<div className="grid grid-cols-4 gap-x-2 gap-y-5">
+		<div className="grid flex-1 grid-cols-4 gap-x-3 gap-y-5 content-start">
 			{category.links?.map((link) =>
 				link.type === 'REMOTE_IFRAME' ? (
 					<RenderContentIframe key={link.url} link={link} />
@@ -85,13 +104,18 @@ function HandleCatalogs({ category }: { category: CategoryItem }) {
 		</div>
 	)
 }
-
-function CategoryBadge({ badge }: { badge: ExplorerCategoryBadge }) {
+interface BadgeProp {
+	badge: ExplorerCategoryBadge
+}
+function CategoryBadge({ badge }: BadgeProp) {
 	const render = (
 		<div
-			className="flex h-5 gap-1 px-2 py-0.5 items-center rounded-full w-fit text-[9px] font-black"
+			className="flex h-5 gap-1 px-1.5 py-0.5 items-center rounded-lg w-fit text-[10px] font-black"
 			key={badge.label}
-			style={{ background: badge.bgColor, color: badge.textColor || '#fff' }}
+			style={{
+				background: badge.bgColor,
+				color: badge.textColor || '#fff',
+			}}
 		>
 			{badge.label}
 			{badge.iconSrc && <img src={badge.iconSrc} className="w-4 h-4" />}
@@ -100,7 +124,12 @@ function CategoryBadge({ badge }: { badge: ExplorerCategoryBadge }) {
 
 	if (badge.url) {
 		return (
-			<a className="hover:scale-95" target="_blank" rel="noopener noreferrer" href={badge.url}>
+			<a
+				className="hover:scale-95"
+				target="_blank"
+				rel="noopener noreferrer"
+				href={badge.url}
+			>
 				{render}
 			</a>
 		)

@@ -25,14 +25,23 @@ interface GeneralSettingContextType extends GeneralData {
 	setBrowserTabsEnabled: (value: boolean, event?: React.MouseEvent) => void
 }
 
+function getLocalTimezone(): FetchedTimezone {
+	const value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+	const label = value.includes('/')
+		? value.replace(/_/g, ' ').replace('/', ' / ')
+		: value
+	const offsetMinutes = -new Date().getTimezoneOffset()
+	const sign = offsetMinutes >= 0 ? '+' : '-'
+	const abs = Math.abs(offsetMinutes)
+	const hours = Math.floor(abs / 60).toString().padStart(2, '0')
+	const minutes = (abs % 60).toString().padStart(2, '0')
+	return { label, value, offset: `${sign}${hours}:${minutes}` }
+}
+
 const DEFAULT_SETTINGS: GeneralData = {
 	blurMode: false,
 	analyticsEnabled: import.meta.env.FIREFOX ? false : true,
-	selected_timezone: {
-		label: 'Europe / Berlin',
-		value: 'Europe/Berlin',
-		offset: '+01:00',
-	},
+	selected_timezone: getLocalTimezone(),
 	browserBookmarksEnabled: false,
 	browserTabsEnabled: false,
 }
@@ -65,6 +74,10 @@ export function GeneralSettingProvider({ children }: { children: React.ReactNode
 						browserBookmarksEnabled: browserBookmarksEnabled,
 						browserTabsEnabled: browserTabsEnabled,
 					})
+				} else {
+					const detectedSettings = { ...DEFAULT_SETTINGS, selected_timezone: getLocalTimezone(), browserBookmarksEnabled, browserTabsEnabled }
+					setSettings(detectedSettings)
+					setToStorage('generalSettings', detectedSettings)
 				}
 			} finally {
 				setIsInitialized(true)

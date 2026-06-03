@@ -18,20 +18,12 @@ export interface FetchedAllEvents {
 
 async function getEvents(): Promise<FetchedAllEvents> {
 	const client = await getMainClient()
-	try {
-		const { data } = await client.get<FetchedAllEvents>('/date/events')
+	const { data } = await client.get<FetchedAllEvents>('/date/events')
 
-		return {
-			regionalEvents: data?.regionalEvents ?? [],
-			gregorianEvents: data?.gregorianEvents ?? [],
-			hijriEvents: data?.hijriEvents ?? [],
-		}
-	} catch {
-		return {
-			regionalEvents: [],
-			gregorianEvents: [],
-			hijriEvents: [],
-		}
+	return {
+		regionalEvents: data?.regionalEvents ?? [],
+		gregorianEvents: data?.gregorianEvents ?? [],
+		hijriEvents: data?.hijriEvents ?? [],
 	}
 }
 

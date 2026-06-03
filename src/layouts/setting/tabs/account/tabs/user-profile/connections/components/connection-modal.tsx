@@ -1,4 +1,5 @@
 import { Button } from '@/components/button/button'
+import { IconLoading } from '@/components/loading/icon-loading'
 import Modal from '@/components/modal'
 import type { Platform } from './platform-config.js'
 
@@ -112,7 +113,7 @@ export function ConnectionModal({
 						loading={isLoading}
 						loadingText={
 							<span className="flex items-center justify-center gap-2">
-								<div className="w-4 h-4 border-2 rounded-full border-white/30 border-t-white animate-spin" />
+								<IconLoading className="!m-0 !text-white" />
 								Processing
 							</span>
 						}

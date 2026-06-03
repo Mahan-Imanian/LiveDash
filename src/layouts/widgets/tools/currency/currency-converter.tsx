@@ -3,23 +3,25 @@ import type React from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { TbArrowsUpDown, TbInfoCircle, TbTrendingUp } from 'react-icons/tb'
 import { SelectBox } from '@/components/selectbox/selectbox'
-import { TextInput } from '@/components/text-input'
 import { useGetCurrencyByCode } from '@/services/hooks/currency/getCurrencyByCode.hook'
 import { useGetSupportCurrencies } from '@/services/hooks/currency/getSupportCurrencies.hook'
 
 function formatCryptoValue(value: number) {
 	if (!Number.isFinite(value)) return '0'
+	if (value === 0) return '0'
 	const abs = Math.abs(value)
-	if (abs >= 1_000_000_000) {
+	if (abs >= 1_000_000) {
 		return new Intl.NumberFormat('en-US', {
 			notation: 'compact',
 			maximumFractionDigits: 4,
 		}).format(value)
 	}
-	return new Intl.NumberFormat('en-US', {
-		maximumSignificantDigits: abs >= 1 ? 12 : 10,
-		maximumFractionDigits: abs >= 100 ? 4 : abs >= 1 ? 8 : 10,
-	}).format(value)
+	if (abs >= 1) {
+		return new Intl.NumberFormat('en-US', {
+			maximumFractionDigits: abs >= 1000 ? 2 : 6,
+		}).format(value)
+	}
+	return Number(value.toPrecision(8)).toString()
 }
 
 function formatUsd(value: number) {
@@ -27,60 +29,78 @@ function formatUsd(value: number) {
 	return new Intl.NumberFormat('en-US', {
 		style: 'currency',
 		currency: 'USD',
+		minimumFractionDigits: value >= 1 ? 2 : 4,
 		maximumFractionDigits: value >= 100 ? 2 : value >= 1 ? 4 : 6,
 	}).format(value)
 }
 
-const cryptoTone: Record<string, string> = {
-	BTC: 'from-orange-400 to-amber-700',
-	ETH: 'from-indigo-300 to-blue-700',
-	USDT: 'from-emerald-300 to-teal-700',
-	BNB: 'from-yellow-300 to-amber-700',
-	SOL: 'from-fuchsia-400 to-emerald-400',
-	XRP: 'from-slate-300 to-slate-700',
-	USDC: 'from-sky-300 to-blue-700',
-	DOGE: 'from-yellow-300 to-yellow-700',
-	ADA: 'from-blue-400 to-blue-900',
-	TRX: 'from-red-400 to-rose-800',
-	AVAX: 'from-red-300 to-red-700',
-	LINK: 'from-blue-300 to-blue-800',
-}
-
-function CryptoIcon({ code }: { code: string }) {
-	const tone = cryptoTone[code] || 'from-primary to-secondary'
-	const label = code.length > 3 ? code.slice(0, 3) : code
-	return (
-		<div className={`flex items-center justify-center w-8 h-8 overflow-hidden rounded-full bg-gradient-to-br ${tone} shadow-sm ring-1 ring-white/25 shrink-0`}>
-			<span className="text-[10px] font-black tracking-tight text-white drop-shadow-sm">
-				{label}
-			</span>
+function CryptoIcon({ code, icon }: { code: string; icon?: string }) {
+	return icon ? (
+		<img
+			src={icon}
+			alt=""
+			className="object-contain w-8 h-8 shrink-0"
+			loading="lazy"
+		/>
+	) : (
+		<div className="flex items-center justify-center w-8 h-8 text-[10px] font-black text-white rounded-full bg-primary shrink-0">
+			{code.slice(0, 2)}
 		</div>
 	)
 }
 
-function CryptoChip({ code, name }: { code: string; icon?: string; name?: string }) {
+function CurrencyRow({
+	label,
+	code,
+	name,
+	icon,
+	options,
+	onChange,
+	children,
+}: {
+	label: string
+	code: string
+	name?: string
+	icon?: string
+	options: Array<{ label: string; value: string }>
+	onChange: (value: string) => void
+	children: React.ReactNode
+}) {
 	return (
-		<div className="flex items-center gap-2 min-w-0">
-			<CryptoIcon code={code} />
-			<div className="min-w-0">
-				<div className="text-xs font-black leading-tight text-content">{code}</div>
-				{name && <div className="text-[9px] leading-tight truncate text-muted max-w-20">{name}</div>}
+		<div className="min-w-0 rounded-3xl border border-base-300/70 bg-base-100/90 p-3 shadow-sm">
+			<div className="mb-2 flex min-w-0 items-center justify-between gap-3">
+				<div className="flex min-w-0 items-center gap-2.5">
+					<CryptoIcon code={code} icon={icon} />
+					<div className="min-w-0 leading-none">
+						<div className="text-[9px] font-black uppercase tracking-[0.18em] text-muted/70">
+							{label}
+						</div>
+						<div className="mt-1 flex min-w-0 items-baseline gap-1.5">
+							<span className="text-sm font-black text-content">{code}</span>
+							{name && (
+								<span className="max-w-28 truncate text-[10px] font-bold text-muted">
+									{name}
+								</span>
+							)}
+						</div>
+					</div>
+				</div>
+				<SelectBox
+					options={options}
+					value={code}
+					onChange={onChange}
+					className="!h-10 !w-[6.2rem] !rounded-2xl !bg-base-200/95 !text-xs !font-black text-content border border-base-300/80"
+				/>
 			</div>
+			{children}
 		</div>
 	)
-}
-
-function getOutputSize(label: string) {
-	if (label.length > 22) return 'text-[1.05rem] md:text-[1.4rem]'
-	if (label.length > 16) return 'text-[1.25rem] md:text-[1.9rem]'
-	if (label.length > 11) return 'text-[1.55rem] md:text-[2.35rem]'
-	return 'text-[2rem] md:text-[3rem]'
 }
 
 export const CurrencyConverter: React.FC = () => {
 	const [fromCurrency, setFromCurrency] = useState<string>('BTC')
 	const [toCurrency, setToCurrency] = useState<string>('ETH')
-	const [amount, setAmount] = useState<number>(1)
+	const [amountText, setAmountText] = useState<string>('1')
 	const [convertedAmount, setConvertedAmount] = useState<number>(0)
 	const [isSwapping, setIsSwapping] = useState<boolean>(false)
 
@@ -95,17 +115,20 @@ export const CurrencyConverter: React.FC = () => {
 
 	const options = useMemo(
 		() =>
-			(supportedCurrencies || []).map((c) => ({
-				label: `${c.key} · ${c.label.en}`,
-				value: c.key,
+			(supportedCurrencies || []).map((currency) => ({
+				label: currency.key,
+				value: currency.key,
 			})),
 		[supportedCurrencies]
 	)
 
+	const amount = Number(amountText || 0)
+
 	useEffect(() => {
-		if (fromCurrencyData && toCurrencyData && amount >= 0) {
+		if (fromCurrencyData && toCurrencyData && Number.isFinite(amount) && amount >= 0) {
 			const converted =
-				(amount * fromCurrencyData.price) / Math.max(toCurrencyData.price, 0.00000001)
+				(amount * fromCurrencyData.price) /
+				Math.max(toCurrencyData.price, 0.00000001)
 			setConvertedAmount(converted)
 		}
 	}, [fromCurrencyData, toCurrencyData, amount])
@@ -121,86 +144,91 @@ export const CurrencyConverter: React.FC = () => {
 		fromCurrencyData && toCurrencyData
 			? fromCurrencyData.price / Math.max(toCurrencyData.price, 0.00000001)
 			: 0
-	const convertedLabel = formatCryptoValue(convertedAmount)
 
 	if (isLoadingSupported)
 		return (
-			<div className="flex items-center justify-center text-sm h-44 opacity-40">
+			<div className="flex h-44 items-center justify-center text-sm opacity-40">
 				Updating crypto rates...
 			</div>
 		)
 
 	return (
-		<div className="flex flex-col w-full gap-3 p-1 select-none">
-			<div className="relative flex flex-col gap-5 p-4 overflow-hidden border shadow-sm bg-base-100/80 border-base-300/60 rounded-3xl">
-				<div className="absolute inset-x-0 top-0 h-24 pointer-events-none bg-linear-to-b from-primary/10 to-transparent" />
+		<div className="flex w-full min-w-0 flex-col gap-3 p-1 select-none" dir="ltr">
+			<div className="relative flex min-w-0 flex-col gap-2 overflow-hidden rounded-[1.7rem] border border-base-300/70 bg-content/80 p-2 shadow-sm">
+				<div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-linear-to-b from-primary/12 to-transparent" />
 
-				<div className="relative flex items-center justify-between gap-3">
-					<div className="flex flex-col flex-1 min-w-0 gap-2">
-						<CryptoChip code={fromCurrency} name={fromCurrencyData?.name.en} />
-						<TextInput
-							type="number"
-							value={amount.toString()}
-							onChange={(value) => setAmount(Math.max(Number(value || 0), 0))}
-							className="w-full text-3xl md:text-4xl font-black !bg-transparent border-none !p-0 focus:ring-0 text-content tracking-tight"
-						/>
-					</div>
-					<SelectBox
-						options={options}
-						value={fromCurrency}
-						onChange={setFromCurrency}
-						className="!w-36 !h-12 !rounded-2xl !bg-base-200/80 border border-base-300 shadow-sm font-bold text-xs"
+				<CurrencyRow
+					label="From"
+					code={fromCurrency}
+					icon={fromCurrencyData?.icon}
+					name={fromCurrencyData?.name.en}
+					options={options}
+					onChange={setFromCurrency}
+				>
+					<input
+						type="number"
+						min="0"
+						value={amountText}
+						onChange={(event) => setAmountText(event.target.value)}
+						className="h-11 w-full min-w-0 bg-transparent px-0 text-[clamp(1.6rem,7vw,2.6rem)] font-black leading-none tracking-tight text-content outline-none tabular-nums placeholder:text-muted/40"
+						placeholder="0"
 					/>
-				</div>
+				</CurrencyRow>
 
-				<div className="relative flex items-center justify-center h-3">
-					<div className="absolute inset-x-3 h-px bg-base-300/70" />
+				<div className="relative flex h-8 items-center justify-center">
+					<div className="absolute inset-x-5 h-px bg-base-300/80" />
 					<button
 						onClick={handleSwap}
-						className="relative z-10 flex items-center justify-center transition-all border rounded-full shadow-lg cursor-pointer bg-base-100 w-11 h-11 border-primary/20 text-content hover:text-primary active:scale-90 hover:scale-105"
+						className="relative z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-primary/25 bg-base-100 text-content shadow-lg transition-all hover:scale-105 hover:text-primary active:scale-90"
 					>
 						<motion.div animate={{ rotate: isSwapping ? 180 : 0 }}>
-							<TbArrowsUpDown size={20} />
+							<TbArrowsUpDown size={19} />
 						</motion.div>
 					</button>
 				</div>
 
-				<div className="relative flex items-start justify-between gap-3">
-					<div className="flex flex-col flex-1 min-w-0 gap-2">
-						<CryptoChip code={toCurrency} name={toCurrencyData?.name.en} />
-						<div className={`w-full max-w-full overflow-hidden whitespace-nowrap font-black leading-none text-primary tabular-nums ${getOutputSize(convertedLabel)}`} title={convertedLabel}>
-							{convertedLabel}
+				<CurrencyRow
+					label="To"
+					code={toCurrency}
+					icon={toCurrencyData?.icon}
+					name={toCurrencyData?.name.en}
+					options={options}
+					onChange={setToCurrency}
+				>
+					<div className="flex h-11 w-full min-w-0 items-center overflow-hidden">
+						<div className="w-full min-w-0 truncate text-[clamp(1.25rem,6vw,2.35rem)] font-black leading-none tracking-tight text-primary tabular-nums">
+							{formatCryptoValue(convertedAmount)}
 						</div>
 					</div>
-					<SelectBox
-						options={options}
-						value={toCurrency}
-						onChange={setToCurrency}
-						className="!w-36 !h-12 !rounded-2xl !bg-base-200/80 border border-primary/20 shadow-sm font-bold text-xs"
-					/>
-				</div>
+				</CurrencyRow>
 			</div>
 
-			<div className="grid grid-cols-1 gap-2 px-1 mt-1 sm:grid-cols-2">
-				<div className="flex items-center justify-between p-3 border bg-content rounded-2xl border-content">
-					<div>
-						<div className="text-[9px] font-black uppercase tracking-wider opacity-40">Reference</div>
-						<div className="text-xs font-black text-content">1 {fromCurrency}</div>
+			<div className="grid grid-cols-1 gap-2 px-0.5 sm:grid-cols-2">
+				<div className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-content bg-content p-3">
+					<div className="min-w-0">
+						<div className="text-[9px] font-black uppercase tracking-wider opacity-40">
+							Reference
+						</div>
+						<div className="truncate text-xs font-black text-content">1 {fromCurrency}</div>
 					</div>
-					<div className="text-sm font-black text-right text-primary tabular-nums">
+					<div className="min-w-0 truncate text-right text-sm font-black text-primary tabular-nums">
 						{formatCryptoValue(pairRate)} {toCurrency}
 					</div>
 				</div>
 
-				<div className="flex items-center justify-between p-3 border bg-content rounded-2xl border-content">
-					<div className="flex items-center gap-2">
-						<TbTrendingUp size={16} className="text-primary" />
-						<div>
-							<div className="text-[9px] font-black uppercase tracking-wider opacity-40">USD price</div>
-							<div className="text-xs font-black text-content">{fromCurrency} / {toCurrency}</div>
+				<div className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-content bg-content p-3">
+					<div className="flex min-w-0 items-center gap-2">
+						<TbTrendingUp size={16} className="shrink-0 text-primary" />
+						<div className="min-w-0">
+							<div className="text-[9px] font-black uppercase tracking-wider opacity-40">
+								USD price
+							</div>
+							<div className="truncate text-xs font-black text-content">
+								{fromCurrency} / {toCurrency}
+							</div>
 						</div>
 					</div>
-					<div className="text-[11px] font-black text-right text-content tabular-nums">
+					<div className="shrink-0 text-right text-[11px] font-black text-content tabular-nums">
 						<div>{fromCurrencyData ? formatUsd(fromCurrencyData.price) : '$0'}</div>
 						<div className="opacity-50">{toCurrencyData ? formatUsd(toCurrencyData.price) : '$0'}</div>
 					</div>
@@ -209,7 +237,7 @@ export const CurrencyConverter: React.FC = () => {
 
 			<div className="flex items-start gap-1.5 px-2 text-[10px] font-semibold text-muted/80">
 				<TbInfoCircle size={14} className="mt-px shrink-0" />
-				<span>Live rates use the LiveDash backend when available and a bundled crypto fallback when offline.</span>
+				<span>Rates use LiveDash Cloud when available and bundled crypto rates offline.</span>
 			</div>
 		</div>
 	)
