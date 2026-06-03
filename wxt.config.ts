@@ -6,7 +6,7 @@ export default defineConfig({
 		({
 			plugins: [tailwindcss()],
 			build: {
-				minify: 'terser',
+				minify: false,
 				terserOptions: {
 					compress: {
 						drop_console: true,
@@ -52,8 +52,8 @@ export default defineConfig({
 		name: 'LiveDash',
 		description:
 			'Transform your new tab into a smart dashboard with LiveDash! Get currency rates, crypto prices, weather & more.',
-		permissions: ['storage', 'search'],
-		optional_permissions: ['tabs', 'tabGroups', 'bookmarks', 'identity'],
+		permissions: ['storage', 'search', 'identity'],
+		optional_permissions: ['tabs', 'tabGroups', 'bookmarks'],
 		browser_specific_settings: {
 			gecko: {
 				id: 'livedash@livedash-app.github.io',

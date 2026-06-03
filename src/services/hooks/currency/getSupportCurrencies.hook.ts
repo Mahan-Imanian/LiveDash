@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { getMainClient } from '@/services/api'
+import { localSupportedCryptos } from '@/services/local/cryptoRates'
 
 export type SupportedCurrencies = {
 	key: string
@@ -17,12 +18,16 @@ export const useGetSupportCurrencies = () => {
 		queryKey: ['supportedCurrencies'],
 		queryFn: async () => getSupportCurrencies(),
 		retry: 0,
-		initialData: [],
+		initialData: localSupportedCryptos,
 	})
 }
 
 async function getSupportCurrencies(): Promise<SupportedCurrencies> {
-	const client = await getMainClient()
-	const { data } = await client.get<SupportedCurrencies>('/currencies/supported-list')
-	return data
+	try {
+		const client = await getMainClient()
+		const { data } = await client.get<SupportedCurrencies>('/currencies/supported-list')
+		return data
+	} catch {
+		return localSupportedCryptos
+	}
 }

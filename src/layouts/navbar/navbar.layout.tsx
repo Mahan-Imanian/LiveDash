@@ -50,7 +50,7 @@ export function NavbarTabs() {
 					<span
 						className={`
             relative z-10 transition-all duration-300 block
-            ${page === tab.id ? 'text-primary scale-110 drop-shadow-[0_0_10px_rgba(var(--primary-rgb),0.9)]' : 'nav-btn text-white/55 hover:text-white/90'}
+            ${page === tab.id ? 'text-primary scale-110 drop-shadow-[0_0_12px_rgba(var(--primary-rgb),0.9)]' : 'nav-btn text-white/65 hover:text-white'}
         `}
 					>
 						{tab.icon}
@@ -140,9 +140,9 @@ export function NavbarLayout(): JSX.Element {
 			{!isVisible && (
 				<button
 					onClick={() => onToggleNavbar()}
-					className="fixed z-50 bottom-0 left-1/2 -translate-x-1/2 px-10 py-2.5 bg-black/50 backdrop-blur-[40px] backdrop-saturate-[180%] border-t border-x border-white/25 rounded-t-3xl shadow-[0_-14px_44px_rgba(0,0,0,0.45)] transition-all hover:bg-black/60"
+					className="fixed z-50 bottom-0 left-1/2 -translate-x-1/2 px-10 py-2.5 bg-slate-950/70 backdrop-blur-[40px] backdrop-saturate-[180%] border-t border-x border-white/25 rounded-t-3xl shadow-[0_-18px_55px_rgba(0,0,0,0.45)] transition-all hover:bg-slate-900/80"
 				>
-					<div className="w-10 h-1 rounded-full bg-white/65" />
+					<div className="w-10 h-1 rounded-full bg-white/30" />
 				</button>
 			)}
 
@@ -157,10 +157,10 @@ export function NavbarLayout(): JSX.Element {
 					className="absolute w-full h-10 bg-transparent -bottom-16"
 					id="chrome-footer"
 				></div>
-				<nav className="relative flex items-center gap-1 p-1.5 bg-black/45 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] shadow-[0_18px_60px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.16)]">
+				<nav className="relative flex items-center gap-1 p-1.5 bg-slate-950/72 backdrop-blur-2xl backdrop-saturate-[180%] border border-white/22 rounded-[2.5rem] shadow-[0_20px_70px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] ring-1 ring-black/30">
 					<button
 						onClick={() => onToggleNavbar()}
-						className="relative z-10 p-2 transition-colors cursor-pointer nav-btn text-white/55 hover:text-white/90"
+						className="relative z-10 p-2 transition-colors cursor-pointer nav-btn text-white/65 hover:text-white"
 					>
 						<FiChevronDown size={18} />
 					</button>
@@ -189,12 +189,12 @@ export function NavbarLayout(): JSX.Element {
 							href={LIVEDASH_URLS.website}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="flex items-center justify-center w-8 h-8 border rounded-full border-white/25 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_6px_18px_rgba(0,0,0,0.24)] hover:bg-white/15 transition-colors"
+							className="flex items-center justify-center w-8 h-8 border rounded-full border-white/25 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] hover:bg-white/15"
 						>
 							<img
 								src={'/live-assets/logo.svg'}
 								alt="Logo"
-								className="object-contain w-5 h-5 opacity-80"
+								className="object-contain w-5 h-5 opacity-95"
 							/>
 						</a>
 					</div>

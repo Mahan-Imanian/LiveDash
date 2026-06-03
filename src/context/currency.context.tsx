@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react'
 import { getFromStorage, setToStorage } from '@/common/storage'
 import { listenEvent } from '@/common/utils/call-event'
+import { defaultCryptoCurrencies, localSupportedCryptos } from '@/services/local/cryptoRates'
 
 export interface StoreContext {
 	selectedCurrencies: Array<string>
@@ -37,7 +38,10 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({
 				getFromStorage('currencies'),
 				getFromStorage('currencyColorMode'),
 			])
-			setSelectedCurrencies(storedCurrencies ?? ['USD', 'EUR', 'GRAM'])
+			const cleanCurrencies = Array.isArray(storedCurrencies)
+				? storedCurrencies.filter((code) => localSupportedCryptos.some((crypto) => crypto.key === code))
+				: []
+			setSelectedCurrencies(cleanCurrencies.length ? cleanCurrencies : defaultCryptoCurrencies)
 			setCurrencyColorMode(currencyColorMode || CurrencyColorMode.NORMAL)
 		}
 

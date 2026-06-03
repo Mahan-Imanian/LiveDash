@@ -9,6 +9,7 @@ export const useGetMarketItems = (enabled: boolean, params?: MarketQueryParams) 
 		queryFn: async () => getMarketItems(params),
 		retry: 0,
 		enabled,
+		initialData: localMarketItems,
 	})
 }
 

@@ -1,3 +1,4 @@
+import type React from 'react'
 import type { ExplorerCategoryBadge } from '@/services/hooks/content/get-content.hook'
 import type { CategoryItem } from '../interfaces/category.interface'
 import { RenderContentBanner } from './content-banner'
@@ -14,8 +15,6 @@ interface Prop {
 export function ExplorerCategory({
 	category,
 	categoryRefs,
-	index,
-	contentLength,
 	activeCategory,
 }: Prop) {
 	const childLength = !category.links?.length
@@ -26,26 +25,14 @@ export function ExplorerCategory({
 			ref={(el) => {
 				categoryRefs.current[category.id] = el
 			}}
-			style={{
-				gridColumn: category.span?.col
-					? `span ${category.span.col} / span ${category.span.col}`
-					: undefined,
-				gridRow: category.span?.row
-					? `span ${category.span.row} / span ${category.span.row}`
-					: undefined,
-				...(category.banner && {
-					'--banner-url': `url(${category.banner})`,
-				}),
-			}}
-			className={`${childLength && 'invisible'} relative overflow-hidden border scroll-mt-4 bg-content bg-glass border-base-300 rounded-2xl transition-all duration-300 ${
-				index === 0
-					? 'md:col-span-2'
-					: index === contentLength - 1 && contentLength % 2 === 0
-						? 'md:col-span-2'
-						: 'md:col-span-1'
+			style={
+				category.banner
+					? ({ '--banner-url': `url(${category.banner})` } as React.CSSProperties)
+					: undefined
 			}
-			${category.id === activeCategory && 'outline-1 outline-offset-1 outline-primary/80 scale-101'}
-			${category.banner ? 'before:absolute before:inset-x-0 before:top-0 before:h-12 before:bg-cover before:bg-center before:bg-no-repeat before:brightness-75 before:contrast-110 before:pointer-events-none' : ''}
+			className={`${childLength && 'hidden'} relative overflow-hidden border scroll-mt-4 bg-content bg-glass border-base-300/70 rounded-3xl transition-all duration-300 min-h-[255px]
+			${category.id === activeCategory ? 'outline-2 outline-offset-2 outline-primary/70 shadow-xl shadow-primary/10' : 'shadow-sm'}
+			${category.banner ? 'before:absolute before:inset-x-0 before:top-0 before:h-14 before:bg-cover before:bg-center before:bg-no-repeat before:brightness-75 before:contrast-110 before:pointer-events-none' : ''}
 			`}
 		>
 			{category.banner && (
@@ -58,30 +45,32 @@ export function ExplorerCategory({
 					}`}
 				</style>
 			)}
-			<div className="relative z-10 p-3">
+			<div className="relative z-10 flex h-full flex-col p-4">
 				{!category.hideName && (
-					<div className="flex items-center justify-between gap-4 mb-2">
-						<div className="flex items-center gap-2.5">
+					<div className="flex items-center justify-between gap-4 mb-4">
+						<div className="flex items-center min-w-0 gap-2.5">
 							{category.icon ? (
-								<img
-									src={category.icon}
-									className="w-4 h-4 opacity-70"
-									alt=""
-								/>
+								<div className="flex items-center justify-center w-8 h-8 rounded-2xl bg-base-100/80 ring-1 ring-base-300/80 shadow-sm shrink-0">
+									<img
+										src={category.icon}
+										className="object-contain w-5 h-5 opacity-90"
+										alt=""
+									/>
+								</div>
 							) : (
-								<div className="w-1 h-3.5 rounded-full bg-primary" />
+								<div className="w-1 h-5 rounded-full bg-primary" />
 							)}
 							<h3
-								className={`text-xs font-semibold tracking-widest  ${category.banner ? 'text-base-content/90' : 'text-base-content/70'}`}
+								className={`text-xs font-black tracking-[0.16em] uppercase truncate ${category.banner ? 'text-base-content/90' : 'text-base-content/75'}`}
 							>
 								{category.category}
 							</h3>
 						</div>
 
 						{category.badges?.length ? (
-							<div className="flex flex-row gap-1">
-								{category.badges?.map((f, i) => (
-									<CategoryBadge badge={f} key={`badge-${i}`} />
+							<div className="flex flex-row gap-1 shrink-0">
+								{category.badges?.map((badge, i) => (
+									<CategoryBadge badge={badge} key={`badge-${i}`} />
 								))}
 							</div>
 						) : (
@@ -90,7 +79,7 @@ export function ExplorerCategory({
 					</div>
 				)}
 
-				<HandleCatalogs category={category} colSpan={category.span?.col} />
+				<HandleCatalogs category={category} />
 			</div>
 		</div>
 	)
@@ -98,18 +87,11 @@ export function ExplorerCategory({
 
 interface HandleCatalogsProp {
 	category: CategoryItem
-	colSpan?: number | null
 }
 
-function HandleCatalogs({ category, colSpan }: HandleCatalogsProp) {
-	const colSpanValue = !colSpan || colSpan < 2 ? 4 : 7
+function HandleCatalogs({ category }: HandleCatalogsProp) {
 	return (
-		<div
-			className="grid grid-cols-3 gap-y-6 gap-x-2"
-			style={{
-				gridTemplateColumns: `repeat(${colSpanValue}, minmax(0, 1fr))`,
-			}}
-		>
+		<div className="grid flex-1 grid-cols-4 gap-x-3 gap-y-5 content-start">
 			{category.links?.map((link) =>
 				link.type === 'REMOTE_IFRAME' ? (
 					<RenderContentIframe key={link.url} link={link} />
@@ -128,10 +110,11 @@ interface BadgeProp {
 function CategoryBadge({ badge }: BadgeProp) {
 	const render = (
 		<div
-			className="flex h-5 gap-1 px-1 py-0.5 items-center rounded-lg w-fit"
+			className="flex h-5 gap-1 px-1.5 py-0.5 items-center rounded-lg w-fit text-[10px] font-black"
 			key={badge.label}
 			style={{
 				background: badge.bgColor,
+				color: badge.textColor || '#fff',
 			}}
 		>
 			{badge.label}
