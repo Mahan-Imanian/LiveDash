@@ -172,7 +172,7 @@ export const UpdateReleaseNotesModal = ({
 
 				<div className="flex items-center justify-between px-4 py-2 border border-t border-base-300/10 bg-base-200/40 rounded-3xl">
 					<a
-						href="https://feedback.livedash.eu"
+						href="https://livedash.codersays.com/feedback"
 						target="_blank"
 						rel="noreferrer"
 						className="text-[10px] font-black text-muted hover:text-content transition-all underline decoration-dotted underline-offset-4"

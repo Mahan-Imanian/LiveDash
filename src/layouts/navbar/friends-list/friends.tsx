@@ -89,7 +89,7 @@ export function FriendsList() {
 			setFirstAuth(true)
 			return
 		}
-		callEvent('openProfile')
+		callEvent('openProfile', 'friends')
 	}
 
 	const handleAuthModalClose = () => setFirstAuth(false)

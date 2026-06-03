@@ -77,7 +77,7 @@ export function ImageSearchPortal({ onClose }: { onClose: () => void }) {
 				</span>
 				<div className="flex flex-row items-center gap-1">
 					<a
-						href="https://livedash.eu/privacy?target=search"
+						href="https://livedash.codersays.com/privacy?target=search"
 						className="p-1 transition-colors rounded-full cursor-pointer hover:bg-base-200 text-base-content/50"
 						target="_blank"
 						rel="noreferrer"

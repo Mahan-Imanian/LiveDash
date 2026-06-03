@@ -38,6 +38,20 @@ function getLocalTimezone(): FetchedTimezone {
 	return { label, value, offset: `${sign}${hours}:${minutes}` }
 }
 
+function shouldReplaceStoredTimezone(timezone: unknown): boolean {
+	if (!timezone || typeof timezone !== 'object') return true
+	const value = String((timezone as FetchedTimezone).value || '')
+	const label = String((timezone as FetchedTimezone).label || '')
+	const offset = String((timezone as FetchedTimezone).offset || '')
+	return (
+		!value ||
+		value === 'Asia/Tehran' ||
+		label.toLowerCase().includes('tehran') ||
+		label.toLowerCase().includes('iran') ||
+		offset === '+03:30'
+	)
+}
+
 const DEFAULT_SETTINGS: GeneralData = {
 	blurMode: false,
 	analyticsEnabled: import.meta.env.FIREFOX ? false : true,
@@ -64,16 +78,22 @@ export function GeneralSettingProvider({ children }: { children: React.ReactNode
 				])
 
 				if (storedSettings) {
-					setSettings({
+					const detectedTimezone = getLocalTimezone()
+					const selectedTimezone =
+						typeof storedSettings.selected_timezone === 'string' || shouldReplaceStoredTimezone(storedSettings.selected_timezone)
+							? detectedTimezone
+							: storedSettings.selected_timezone
+					const migratedSettings = {
 						...DEFAULT_SETTINGS,
 						...storedSettings,
-						selected_timezone:
-							typeof storedSettings.selected_timezone === 'string'
-								? DEFAULT_SETTINGS.selected_timezone
-								: storedSettings.selected_timezone,
+						selected_timezone: selectedTimezone,
 						browserBookmarksEnabled: browserBookmarksEnabled,
 						browserTabsEnabled: browserTabsEnabled,
-					})
+					}
+					setSettings(migratedSettings)
+					if (selectedTimezone.value === detectedTimezone.value) {
+						setToStorage('generalSettings', migratedSettings)
+					}
 				} else {
 					const detectedSettings = { ...DEFAULT_SETTINGS, selected_timezone: getLocalTimezone(), browserBookmarksEnabled, browserTabsEnabled }
 					setSettings(detectedSettings)

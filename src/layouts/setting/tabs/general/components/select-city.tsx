@@ -180,7 +180,7 @@ export function SelectCity({ onSave, size }: Prop) {
 						<p className="text-sm text-center text-base-content/60">
 							Is your city missing or do you see an issue?{' '}
 							<a
-								href="https://feedback.livedash.eu"
+								href="https://livedash.codersays.com/feedback"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="font-medium text-primary hover:underline"

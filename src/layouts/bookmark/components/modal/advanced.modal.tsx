@@ -300,7 +300,7 @@ export function AdvancedModal({ title, onClose, isOpen, bookmark }: AdvancedModa
 									order: null,
 									icon: bookmark.icon,
 									title: bookmark.title || 'Preview',
-									url: 'https://livedash.eu',
+									url: 'https://livedash.codersays.com',
 									id: 'preview',
 									isLocal: false,
 									onlineId: null,

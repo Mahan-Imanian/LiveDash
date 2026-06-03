@@ -145,7 +145,7 @@ const StepFirefoxConsent = ({ onGetStarted }: StepFirefoxConsentProps) => {
 				</div>
 
 				<a
-					href="https://livedash.eu/privacy"
+					href="https://livedash.codersays.com/privacy"
 					target="_blank"
 					rel="noopener noreferrer"
 					className="flex items-center justify-center font-medium underline text-primary gap-0.5 mb-2"

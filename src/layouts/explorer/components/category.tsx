@@ -50,13 +50,14 @@ export function ExplorerCategory({
 					<div className="flex items-center justify-between gap-4 mb-4">
 						<div className="flex items-center min-w-0 gap-2.5">
 							{category.icon ? (
-								<div className="flex items-center justify-center w-8 h-8 rounded-2xl bg-base-100/80 ring-1 ring-base-300/80 shadow-sm shrink-0">
-									<img
-										src={category.icon}
-										className="object-contain w-5 h-5 opacity-90"
-										alt=""
-									/>
-								</div>
+								<img
+									src={category.icon}
+									className="object-contain w-6 h-6 opacity-95 drop-shadow-sm shrink-0"
+									alt=""
+									onError={(event) => {
+										event.currentTarget.src = '/live-assets/site-icons/fallback.svg'
+									}}
+								/>
 							) : (
 								<div className="w-1 h-5 rounded-full bg-primary" />
 							)}
