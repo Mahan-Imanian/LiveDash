@@ -27,6 +27,7 @@ export default function LoginGoogleButton() {
 			await sleep(300)
 		}
 		login(token)
+		callEvent('openProfile', 'profile')
 	}
 
 	const loginGoogle = async () => {

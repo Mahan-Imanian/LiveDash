@@ -29,28 +29,16 @@ export interface SearchBoxResponse {
 	recommendedSites: RecommendedSite[]
 }
 
-async function fetchTrends(region = 'US', limit = 10): Promise<SearchBoxResponse> {
+async function fetchTrends(region = 'IR', limit = 10): Promise<SearchBoxResponse> {
 	const client = await getMainClient()
 
-	try {
-		const response = await client.get<SearchBoxResponse>('/extension/searchbox', {
-			params: {
-				region,
-				limit,
-			},
-		})
-		return response.data
-	} catch {
-		return {
-			trends: [],
-			recommendedSites: [
-				{ name: 'Google', title: 'Google', url: 'https://www.google.com', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=64', priority: 1 },
-				{ name: 'ChatGPT', title: 'ChatGPT', url: 'https://chat.openai.com', icon: 'https://www.google.com/s2/favicons?domain=openai.com&sz=64', priority: 2 },
-				{ name: 'Gmail', title: 'Gmail', url: 'https://mail.google.com', icon: 'https://www.google.com/s2/favicons?domain=gmail.com&sz=64', priority: 3 },
-				{ name: 'WhatsApp', title: 'WhatsApp', url: 'https://web.whatsapp.com', icon: '/live-assets/social/whatsapp.svg', priority: 4 },
-			],
-		}
-	}
+	const response = await client.get<SearchBoxResponse>('/extension/searchbox', {
+		params: {
+			region,
+			limit,
+		},
+	})
+	return response.data
 }
 
 export function useGetTrends(
@@ -75,7 +63,7 @@ export function useGetTrends(
 		})()
 	}, [])
 
-	const { region = 'US', limit = 10, refetchInterval = null, enabled = true } = options
+	const { region = 'IR', limit = 10, refetchInterval = null, enabled = true } = options
 	return useQuery<SearchBoxResponse>({
 		queryKey: ['getTrends', region, limit],
 		queryFn: () => fetchTrends(region, limit),

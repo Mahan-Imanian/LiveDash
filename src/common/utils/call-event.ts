@@ -42,7 +42,7 @@ export interface EventName {
 	wigiNewsSettingsChanged: WigiNewsSetting
 	weatherSettingsChanged: WeatherSettings
 	closeAllDropdowns: null
-	openProfile?: 'friends' | 'platforms'
+	openProfile?: 'profile' | 'friends' | 'platforms'
 	openMarketModal: null
 	font_change: string
 	ui_change: string

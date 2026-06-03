@@ -37,18 +37,9 @@ export interface NotificationItemResponse {
 
 async function fetchNotifications(): Promise<NotificationItemResponse> {
 	const client = await getMainClient()
-	try {
-		const { data } = await client.get<NotificationItemResponse>('/notifications/beta')
+	const { data } = await client.get<NotificationItemResponse>('/notifications/beta')
 
-		return data
-	} catch {
-		return {
-			data: {
-				notifications: [],
-				upcomingCalendarEvents: [],
-			},
-		}
-	}
+	return data
 }
 
 export function useGetNotifications(options: {
