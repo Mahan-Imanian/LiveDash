@@ -1,32 +1,23 @@
-import { useEffect, useRef, useState } from 'react'
-import type React from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { FaArrowDownLong, FaArrowUpLong } from 'react-icons/fa6'
 import { MdDragIndicator } from 'react-icons/md'
 import Analytics from '@/analytics'
 import { getFromStorage, setToStorage } from '@/common/storage'
-import { showToast } from '@/common/toast'
 import { CurrencyColorMode } from '@/context/currency.context'
+import { useGetImageMainColor } from '@/hooks/useGetImageMainColor'
 import {
 	type FetchedCurrency,
 	useGetCurrencyByCode,
 } from '@/services/hooks/currency/getCurrencyByCode.hook'
 import { GetPrice } from '../utils/getPrice'
 import { CurrencyModalComponent } from './currency-modal'
+import { showToast } from '@/common/toast'
 
 interface CurrencyBoxProps {
 	code: string
 	currencyColorMode: CurrencyColorMode | null
 	dragHandle?: React.HTMLAttributes<HTMLDivElement>
-}
-
-function formatUsd(value: number) {
-	if (!Number.isFinite(value)) return '$0'
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		maximumFractionDigits: value >= 100 ? 2 : value >= 1 ? 4 : 6,
-	}).format(value)
 }
 
 export const CurrencyBox = ({
@@ -44,10 +35,23 @@ export const CurrencyBox = ({
 
 	const prevPriceRef = useRef<number | null>(null)
 
+	const imgMainColor = useGetImageMainColor(currency?.icon)
+	const iconTone = useMemo(() => {
+		const tones: Record<string, string> = {
+			BTC: 'from-orange-400 to-amber-700', ETH: 'from-indigo-300 to-blue-700', USDT: 'from-emerald-300 to-teal-700',
+			BNB: 'from-yellow-300 to-amber-700', SOL: 'from-fuchsia-400 to-emerald-400', XRP: 'from-slate-300 to-slate-700',
+			USDC: 'from-sky-300 to-blue-700', DOGE: 'from-yellow-300 to-yellow-700', ADA: 'from-blue-400 to-blue-900',
+			TRX: 'from-red-400 to-rose-800', AVAX: 'from-red-300 to-red-700', LINK: 'from-blue-300 to-blue-800',
+		}
+		return tones[code] || 'from-primary to-secondary'
+	}, [code])
+
 	useEffect(() => {
 		async function load() {
-			const storedCurrency = await getFromStorage(`currency:${code}`)
-			if (storedCurrency) setCurrency(storedCurrency)
+			const currency = await getFromStorage(`currency:${code}`)
+			if (currency) {
+				setCurrency(currency)
+			}
 		}
 		load()
 	}, [code])
@@ -59,17 +63,20 @@ export const CurrencyBox = ({
 		}
 		const event = new Event('fetched-data')
 		window.dispatchEvent(event)
-	}, [data, dataUpdatedAt, code])
+	}, [dataUpdatedAt])
 
 	useEffect(() => {
-		if (currency?.price && prevPriceRef.current !== currency.price) {
-			prevPriceRef.current = currency.price
-			if (currency.changePercentage) {
-				const changeAmount = (currency.changePercentage / 100) * currency.price
-				setPriceChange(changeAmount)
+		if (currency?.price) {
+			if (prevPriceRef.current !== currency.price) {
+				prevPriceRef.current = currency.price
+				if (currency.changePercentage) {
+					const changeAmount =
+						(currency.changePercentage / 100) * currency.rialPrice
+					setPriceChange(changeAmount)
+				}
 			}
 		}
-	}, [currency?.price, currency?.changePercentage])
+	}, [currency?.price])
 
 	function toggleCurrencyModal() {
 		if (currency?.url && currency?.isSponsored) {
@@ -88,68 +95,59 @@ export const CurrencyBox = ({
 		}
 	}
 
-	const isPositive = (currency?.changePercentage || 0) >= 0
 	const priceChangeColor =
 		currencyColorMode === CurrencyColorMode.NORMAL
-			? `${isPositive ? 'text-green-500' : 'text-red-500'}`
-			: `${isPositive ? 'text-green-500' : 'text-red-500'}`
+			? `${priceChange > 0 ? 'text-red-500' : 'text-green-500'}`
+			: `${priceChange > 0 ? 'text-green-500' : 'text-red-500'}`
 
 	return (
 		<>
 			<div
-				className="flex items-center justify-between w-full min-w-0 gap-3 px-3 py-2.5 rounded-2xl cursor-pointer bg-base-100/75 border border-base-300/60 hover:border-primary/30 hover:bg-base-100 transition-all duration-200 shadow-sm"
+				className={`flex items-center justify-between gap-2 py-2 rounded-xl cursor-pointer 
+				bg-base-300 opacity-100 hover:!bg-gray-500/10
+				transition-all duration-200 ease-in-out
+				transform`}
 				onClick={() => toggleCurrencyModal()}
 				dir="ltr"
 			>
-				<div className="flex items-center min-w-0 gap-x-2.5">
-					{dragHandle && (
-						<div
-							{...dragHandle}
-							className="flex items-center justify-center w-4 h-4 transition-colors cursor-grab active:cursor-grabbing text-muted hover:bg-primary/10 rounded-lg"
-						>
-							<MdDragIndicator size={14} />
-						</div>
-					)}
-					<div className="relative flex items-center justify-center w-9 h-9 overflow-hidden rounded-full bg-slate-950 ring-1 ring-white/15 shadow-[0_8px_20px_rgba(15,23,42,.18)] shrink-0">
-						<div className="absolute inset-0 rounded-full bg-linear-to-br from-white/20 via-transparent to-black/35" />
-						{currency?.icon ? (
-							<img
-								src={currency.icon}
-								alt={currency?.name?.en || code}
-								className="relative object-contain w-7 h-7 drop-shadow"
-							/>
-						) : (
-							<span className="relative text-[10px] font-black text-white">{code.slice(0, 2)}</span>
+				<div className="flex  gap-x-2.5 max-w-full items-center">
+					<div className="flex items-center">
+						{dragHandle && (
+							<div
+								{...dragHandle}
+								className="flex items-center justify-center w-4 h-4 transition-colors cursor-grab active:cursor-grabbing text-muted hover:bg-primary/10"
+							>
+								<MdDragIndicator size={14} />
+							</div>
 						)}
+						<div className={`flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br ${iconTone} shadow-sm ring-1 ring-white/20 shrink-0`}>
+							<span className="text-[8px] font-black tracking-tight text-white">
+								{code.slice(0, 3)}
+							</span>
+						</div>
 					</div>
-					<div className="flex flex-col min-w-0">
-						<span className="block text-sm font-black leading-tight truncate text-content">
+					<div className="flex items-center min-w-0 space-x-2 text-sm font-medium">
+						<span className="block text-sm font-bold truncate text-content">
 							{code}
-						</span>
-						<span className="block text-[10px] font-bold leading-tight truncate text-muted max-w-24">
-							{currency?.name?.en || 'Crypto'}
 						</span>
 					</div>
 				</div>
 
-				<div className="flex items-center min-w-0 gap-2">
-					<div className="flex flex-col items-end min-w-0 pr-1">
-						<span className="max-w-full overflow-hidden text-sm font-black text-right whitespace-nowrap text-ellipsis text-content tabular-nums">
-							{currency ? formatUsd(currency.price) : '-'}
-						</span>
-						<span className="text-[10px] font-bold text-muted tabular-nums">
+				<div className="flex items-center gap-2">
+					<div className="flex items-baseline gap-2 pr-2">
+						<span className={'text-sm font-bold text-content'}>
 							{currency ? GetPrice(code, currency).label : '-'}
 						</span>
+						{priceChange !== 0 && (
+							<span className={`text-xs ${priceChangeColor}`}>
+								{priceChange > 0 ? (
+									<FaArrowUpLong className="inline" />
+								) : (
+									<FaArrowDownLong className="inline" />
+								)}
+							</span>
+						)}
 					</div>
-					{priceChange !== 0 && (
-						<span className={`text-xs ${priceChangeColor}`}>
-							{isPositive ? (
-								<FaArrowUpLong className="inline" />
-							) : (
-								<FaArrowDownLong className="inline" />
-							)}
-						</span>
-					)}
 				</div>
 			</div>
 			{currency && !currency.url && (
@@ -158,7 +156,7 @@ export const CurrencyBox = ({
 					currencyColorMode={currencyColorMode}
 					currency={currency}
 					priceChange={priceChange}
-					imgMainColor="#38bdf8"
+					imgMainColor={imgMainColor}
 					isModalOpen={isModalOpen}
 					toggleCurrencyModal={toggleCurrencyModal}
 					key={code}

@@ -19,13 +19,14 @@ export function RenderContentSite({ link }: SiteProp) {
 	const badge = link.badge?.trim()
 	const col = link?.span?.col
 	const row = link?.span?.row
+	const pos = row && row >= 2 ? 'justify-center' : ''
 
 	return (
 		<a
 			href={getUrl(link.url)}
 			target="_blank"
 			rel="noopener noreferrer"
-			className="relative flex min-w-0 flex-col items-center gap-2 rounded-2xl p-2 transition-all duration-300 group active:scale-95 hover:bg-base-100/75 hover:shadow-sm"
+			className={`relative flex flex-col items-center gap-2 transition-all duration-300 group active:scale-95 ${pos} rounded-2xl hover:bg-base-200/50 p-1.5 ${link.hasBorder ? 'border border-base-300' : ''}`}
 			style={{
 				gridColumn: col ? `span ${col} / span ${col}` : undefined,
 				gridRow: row ? `span ${row} / span ${row}` : undefined,
@@ -45,17 +46,13 @@ export function RenderContentSite({ link }: SiteProp) {
 					{badge}
 				</span>
 			)}
-			<div className="relative flex items-center justify-center w-12 h-12 overflow-hidden transition-all duration-300 rounded-2xl bg-base-100/90 ring-1 ring-base-300/80 shadow-sm group-hover:scale-105 group-hover:ring-primary/25">
-				<div className="absolute inset-0 bg-linear-to-br from-white/35 via-transparent to-primary/10" />
-				<img
-					src={link.icon}
-					className="relative object-contain transition-all duration-300 rounded-md w-7 h-7"
-					alt={link.name || link.url}
-					loading="lazy"
-				/>
-			</div>
+			<img
+				src={link.icon}
+				className="object-contain transition-all duration-300 w-9 h-9 group-hover:scale-110 drop-shadow-sm"
+				alt={link.name || link.url}
+			/>
 
-			<span className="w-full text-[10px] font-bold leading-tight tracking-tight text-center truncate opacity-85 transition-all duration-300 group-hover:opacity-100 group-hover:text-primary">
+			<span className="w-full text-[10px] font-bold leading-tight text-center truncate opacity-85 transition-all duration-300 group-hover:opacity-100 group-hover:text-primary">
 				{link.name}
 			</span>
 		</a>

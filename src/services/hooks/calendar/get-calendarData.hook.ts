@@ -29,8 +29,12 @@ async function getCalendarData(
 	end: string
 ): Promise<GetCalendarDataResponse> {
 	const client = await getMainClient()
-	const { data } = await client.get<GetCalendarDataResponse>(
-		`/widgets/calendar?start=${start}&end=${end}`
-	)
-	return data ?? { moods: [], googleEvents: [] }
+	try {
+		const { data } = await client.get<GetCalendarDataResponse>(
+			`/widgets/calendar?start=${start}&end=${end}`
+		)
+		return data ?? { moods: [], googleEvents: [] }
+	} catch {
+		return { moods: [], googleEvents: [] }
+	}
 }
