@@ -7,7 +7,7 @@ import axios, {
 import { getFromStorage, setToStorage } from '@/common/storage'
 import { callEvent } from '@/common/utils/call-event'
 
-const DEFAULT_API_URL = 'https://livedash.codersays.com'
+const DEFAULT_API_URL = 'https://livedash.codersays.com/api'
 
 export let API_URL = ''
 

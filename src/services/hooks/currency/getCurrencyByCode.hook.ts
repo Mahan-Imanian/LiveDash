@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import ms from 'ms'
 import { getMainClient } from '@/services/api'
+import { getLocalCryptoCurrency } from '@/services/local/cryptoRates'
 
 export interface FetchedCurrency {
 	name: {
@@ -37,7 +38,11 @@ export const useGetCurrencyByCode = (
 }
 
 async function getSupportCurrencies(currency: string): Promise<FetchedCurrency> {
-	const client = await getMainClient()
-	const { data } = await client.get<FetchedCurrency>(`/currencies/${currency}`)
-	return data
+	try {
+		const client = await getMainClient()
+		const { data } = await client.get<FetchedCurrency>(`/currencies/${currency}`)
+		return data
+	} catch {
+		return getLocalCryptoCurrency(currency)
+	}
 }

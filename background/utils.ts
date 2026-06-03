@@ -1,24 +1,15 @@
 import { getFromStorage, setToStorage } from '../src/common/storage'
 import { getMainClient } from '../src/services/api'
+
 export const BOOKMARK_ORDER_KEY = '__root__'
+
 export async function preloadCriticalResources() {
-	try {
-		const cache = await caches.open('critical-resources-v1')
-
-		const criticalUrls = ['/newtab.html'].filter(Boolean)
-
-		if (criticalUrls.length > 0) {
-			await cache.addAll(criticalUrls)
-		}
-	} catch (error) {
-		console.error('Failed to preload critical resources:', error)
-	}
+	return
 }
 
 export async function trySync() {
 	const pending = await getFromStorage('pendingOrders')
 	if (!pending) return
-	console.log('Trying to sync pending bookmark orders...')
 	for (const rawKey of Object.keys(pending)) {
 		const folderId = denormalizeKey(rawKey)
 

@@ -1,74 +1,74 @@
-import { IconLoading } from '@/components/loading/icon-loading'
-import { useAuth } from '@/context/auth.context'
 import { useState } from 'react'
-import { getApiBaseUrl } from '@/services/api'
-import { showToast } from '@/common/toast'
+import type { AxiosError } from 'axios'
 import Analytics from '@/analytics'
+import { IconLoading } from '@/components/loading/icon-loading'
+import { setToStorage } from '@/common/storage'
+import { showToast } from '@/common/toast'
 import { callEvent } from '@/common/utils/call-event'
 import { sleep } from '@/common/utils/timeout'
+import { useAuth } from '@/context/auth.context'
+import { launchLiveDashGoogleOAuth } from '@/services/auth/googleOAuth'
+import { safeAwait } from '@/services/api'
+import {
+	type AuthResponse,
+	useGoogleSignIn,
+} from '@/services/hooks/auth/authService.hook'
+import { translateError } from '@/utils/translate-error'
 
 export default function LoginGoogleButton() {
 	const { login } = useAuth()
 	const [isLoading, setIsLoading] = useState(false)
+	const googleSignInMutation = useGoogleSignIn()
+
+	const finishLogin = async (token: string, isNewUser: boolean) => {
+		await setToStorage('refresh_token', token)
+		if (isNewUser) {
+			callEvent('openWizardModal')
+			await sleep(300)
+		}
+		login(token)
+	}
 
 	const loginGoogle = async () => {
 		Analytics.event('auth_method_changed_to_google')
 		setIsLoading(true)
 		try {
-			const hasIdentityPermission = await browser.permissions.contains({
-				permissions: ['identity'],
-			})
+			const result = await launchLiveDashGoogleOAuth('signin')
+			if (result.error) {
+				showToast(`Google sign-in failed: ${result.error}`, 'error')
+				return
+			}
 
-			if (!hasIdentityPermission) {
-				const granted = await browser.permissions.request({
-					permissions: ['identity'],
-				})
+			if (result.token) {
+				await finishLogin(result.token, result.isNewUser)
+				return
+			}
 
-				if (!granted) {
-					showToast('Google sign-in needs browser identity permission.', 'error')
+			if (result.googleToken) {
+				const [err, response] = await safeAwait<AxiosError, AuthResponse>(
+					googleSignInMutation.mutateAsync({
+						token: result.googleToken,
+						referralCode: undefined,
+					})
+				)
+
+				if (err) {
+					showToast(translateError(err) as string, 'error')
 					return
 				}
-			}
 
-			const redirectUri = browser.identity.getRedirectURL('google')
-			const serverAuthUrl = new URL('/auth/google/start.php', getApiBaseUrl())
-			serverAuthUrl.searchParams.set('redirect_uri', redirectUri)
-
-			const redirectUrl = await browser.identity.launchWebAuthFlow({
-				url: serverAuthUrl.toString(),
-				interactive: true,
-			})
-
-			if (!redirectUrl) {
-				showToast('Google sign-in was cancelled.', 'error')
+				await finishLogin(response.data, response.isNewUser || false)
 				return
 			}
 
-			const parsedUrl = new URL(redirectUrl)
-			const hashParams = new URLSearchParams(parsedUrl.hash.replace(/^#/, ''))
-			const queryParams = new URLSearchParams(parsedUrl.search)
-			const appToken = hashParams.get('token') || queryParams.get('token')
-			const error = hashParams.get('error') || queryParams.get('error')
-			const isNewUser = hashParams.get('new') === '1' || queryParams.get('new') === '1'
-
-			if (error) {
-				showToast(decodeURIComponent(error), 'error')
-				return
-			}
-
-			if (!appToken) {
-				showToast('Google sign-in did not return a LiveDash session.', 'error')
-				return
-			}
-
-			if (isNewUser) {
-				callEvent('openWizardModal')
-				await sleep(300)
-			}
-
-			login(appToken)
-		} catch {
-			showToast('Google sign-in could not be completed. Check the LiveDash backend Google OAuth configuration.', 'error')
+			showToast('Google sign-in did not return a LiveDash token.', 'error')
+		} catch (error) {
+			showToast(
+				error instanceof Error
+					? error.message
+					: 'Google authorization page could not be loaded.',
+				'error'
+			)
 		} finally {
 			setIsLoading(false)
 		}
@@ -79,9 +79,9 @@ export default function LoginGoogleButton() {
 			type="button"
 			onClick={loginGoogle}
 			disabled={isLoading}
-			className="group px-4 md:px-8 py-2.5 md:py-3 rounded-2xl text-sm md:text-base font-medium shadow-md hover:shadow-lg w-full flex items-center justify-center border-2 border-content bg-content hover:bg-base-200 transition-all duration-200 gap-1.5 md:gap-2 cursor-pointer active:scale-95 group"
+			className="group min-h-13 px-4 py-3.5 rounded-2xl text-sm font-semibold shadow-md hover:shadow-lg w-full flex items-center justify-center border border-base-300/80 bg-base-100/90 hover:bg-base-200 transition-all duration-200 gap-3 cursor-pointer active:scale-95 disabled:opacity-70"
 		>
-			<div className="relative flex items-center justify-center flex-shrink-0">
+			<div className="relative flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-white shadow-sm ring-1 ring-black/5">
 				{isLoading ? (
 					<IconLoading className="!h-4 !w-4 md:!h-5 md:!w-5" />
 				) : (
@@ -89,12 +89,12 @@ export default function LoginGoogleButton() {
 						src="/live-assets/google.svg"
 						alt=""
 						aria-hidden="true"
-						className="w-4 h-4 transition-all duration-200 md:w-5 md:h-5 group-hover:scale-110 group-hover:rotate-3"
+						className="w-5 h-5 transition-all duration-200 group-hover:scale-110"
 					/>
 				)}
 			</div>
-			<span className="transition-all duration-200 group-hover:scale-105 whitespace-nowrap text-base-content/80 group-hover:text-base-content">
-				{isLoading ? 'Processing...' : 'Sign in with Google'}
+			<span className="min-w-0 leading-snug text-center whitespace-normal text-base-content group-hover:text-primary">
+				{isLoading ? 'Opening Google...' : 'Continue with Google'}
 			</span>
 		</button>
 	)
