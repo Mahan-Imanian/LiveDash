@@ -37,6 +37,7 @@ export function ProfileNav() {
 	const [activeTab, setActiveTab] = useState<string>()
 
 	const handleProfileClick = () => {
+		setActiveTab('profile')
 		setShowSettingsModal(true)
 	}
 

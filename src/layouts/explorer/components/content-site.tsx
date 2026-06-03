@@ -46,10 +46,13 @@ export function RenderContentSite({ link }: SiteProp) {
 				</span>
 			)}
 			<img
-				src={link.icon}
+				src={link.icon || '/live-assets/site-icons/fallback.svg'}
 				className="object-contain w-10 h-10 transition-all duration-300 drop-shadow-sm group-hover:scale-110"
 				alt={link.name || link.url}
 				loading="lazy"
+				onError={(event) => {
+					event.currentTarget.src = '/live-assets/site-icons/fallback.svg'
+				}}
 			/>
 
 			<span className="w-full text-[10px] font-bold leading-tight tracking-tight text-center truncate opacity-85 transition-all duration-300 group-hover:opacity-100 group-hover:text-primary">

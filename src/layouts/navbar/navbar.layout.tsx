@@ -17,7 +17,7 @@ import { HiRectangleGroup } from 'react-icons/hi2'
 import { usePage } from '@/context/page.context'
 
 const LIVEDASH_URLS = {
-	website: 'https://livedash.eu',
+	website: 'https://livedash.codersays.com',
 } as const
 
 const tabs = [
@@ -189,12 +189,12 @@ export function NavbarLayout(): JSX.Element {
 							href={LIVEDASH_URLS.website}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="flex items-center justify-center w-8 h-8 border rounded-full border-white/25 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] hover:bg-white/15"
+							className="flex items-center justify-center w-8 h-8 rounded-full transition-transform hover:scale-110 active:scale-95"
 						>
 							<img
 								src={'/live-assets/logo.svg'}
-								alt="Logo"
-								className="object-contain w-5 h-5 opacity-95"
+								alt="LiveDash"
+								className="object-contain w-8 h-8 opacity-100 drop-shadow-[0_6px_14px_rgba(35,90,255,0.45)]"
 							/>
 						</a>
 					</div>

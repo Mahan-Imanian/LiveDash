@@ -4,6 +4,7 @@ import Analytics from '@/analytics'
 import { HiChevronLeft, HiChevronRight, HiOutlineCalendar } from 'react-icons/hi2'
 import { useGetGoogleCalendarEvents } from '@/services/hooks/date/getGoogleCalendarEvents.hook'
 import { useDate } from '@/context/date.context'
+import { useGeneralSetting } from '@/context/general-setting.context'
 import { CalendarEvent } from './google-event.item'
 import { useAuth } from '@/context/auth.context'
 import { Button } from '@/components/button/button'
@@ -14,6 +15,7 @@ import { GoogleEventItemSkeleton } from './google-event.item-skeleton'
 export const GoogleCalendarView: React.FC = () => {
 	const { user, isAuthenticated } = useAuth()
 	const { currentDate, isToday } = useDate()
+	const { selected_timezone: timezone } = useGeneralSetting()
 	const [currentTime, setCurrentTime] = useState(new Date())
 	const [selectedDay, setSelectedDay] = useState(currentDate)
 
@@ -25,11 +27,13 @@ export const GoogleCalendarView: React.FC = () => {
 	}, [])
 
 	const getStartOfDay = (date: LiveDashDate) => {
-		return `${date.clone().locale('en').format('YYYY-MM-DD')}T00:00:00+03:30`
+		const offset = timezone.offset || '+00:00'
+		return `${date.clone().locale('en').format('YYYY-MM-DD')}T00:00:00${offset}`
 	}
 
 	const getEndOfDay = (date: LiveDashDate) => {
-		return `${date.clone().locale('en').format('YYYY-MM-DD')}T23:59:59+03:30`
+		const offset = timezone.offset || '+00:00'
+		return `${date.clone().locale('en').format('YYYY-MM-DD')}T23:59:59${offset}`
 	}
 
 	const { data: events, isLoading } = useGetGoogleCalendarEvents(
