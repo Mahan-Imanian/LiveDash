@@ -1,13 +1,13 @@
 import type { FetchedContentsResponse } from '@/services/hooks/content/get-content.hook'
 
 const favicon = (domain: string) =>
-	`https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+	`https://www.google.com/s2/favicons?domain=${domain}&sz=64`
 
 const site = (name: string, url: string, domain?: string) => ({
 	name,
 	url,
 	type: 'SITE' as const,
-	icon: favicon(domain || new URL(url).hostname),
+	icon: domain?.startsWith('/') ? domain : favicon(domain || new URL(url).hostname),
 	hasBorder: false,
 	isNew: false,
 })
@@ -38,7 +38,7 @@ export const localContents: FetchedContentsResponse = {
 			id: 'ai',
 			category: 'AI & Research',
 			icon: favicon('openai.com'),
-			badges: [{ label: 'AI', bgColor: '#8b5cf6', textColor: '#fff' }],
+			badges: [],
 			links: [
 				site('ChatGPT', 'https://chat.openai.com', 'openai.com'),
 				site('Claude', 'https://claude.ai'),
@@ -75,7 +75,7 @@ export const localContents: FetchedContentsResponse = {
 			],
 		},
 		{
-			id: 'development',
+			id: 'dev',
 			category: 'Development',
 			icon: favicon('github.com'),
 			badges: [],
@@ -98,7 +98,7 @@ export const localContents: FetchedContentsResponse = {
 			id: 'crypto-finance',
 			category: 'Crypto & Finance',
 			icon: favicon('coinmarketcap.com'),
-			badges: [{ label: 'Markets', bgColor: '#12b981', textColor: '#fff' }],
+			badges: [],
 			links: [
 				site('CoinMarketCap', 'https://coinmarketcap.com'),
 				site('CoinGecko', 'https://www.coingecko.com'),
@@ -165,53 +165,13 @@ export const localContents: FetchedContentsResponse = {
 				site('Instagram', 'https://instagram.com'),
 				site('Reddit', 'https://reddit.com'),
 				site('Discord', 'https://discord.com'),
-				site('WhatsApp', 'https://web.whatsapp.com'),
+				site('WhatsApp', 'https://web.whatsapp.com', '/live-assets/social/whatsapp.svg'),
 				site('Telegram', 'https://web.telegram.org'),
 				site('Pinterest', 'https://pinterest.com'),
 				site('YouTube', 'https://youtube.com'),
 				site('Spotify', 'https://open.spotify.com', 'spotify.com'),
 				site('Behance', 'https://www.behance.net'),
 				site('Dribbble', 'https://dribbble.com'),
-			],
-		},
-		{
-			id: 'shopping',
-			category: 'Shopping & Deals',
-			icon: favicon('amazon.com'),
-			badges: [],
-			links: [
-				site('Amazon', 'https://www.amazon.com'),
-				site('eBay', 'https://www.ebay.com'),
-				site('Etsy', 'https://www.etsy.com'),
-				site('IKEA', 'https://www.ikea.com'),
-				site('Apple', 'https://www.apple.com'),
-				site('Best Buy', 'https://www.bestbuy.com'),
-				site('Target', 'https://www.target.com'),
-				site('Walmart', 'https://www.walmart.com'),
-				site('Idealo', 'https://www.idealo.de'),
-				site('CamelCamelCamel', 'https://camelcamelcamel.com'),
-				site('Honey', 'https://www.joinhoney.com'),
-				site('Google Shopping', 'https://shopping.google.com'),
-			],
-		},
-		{
-			id: 'learning',
-			category: 'Learning',
-			icon: favicon('coursera.org'),
-			badges: [],
-			links: [
-				site('Coursera', 'https://www.coursera.org'),
-				site('edX', 'https://www.edx.org'),
-				site('Khan Academy', 'https://www.khanacademy.org'),
-				site('Udemy', 'https://www.udemy.com'),
-				site('Duolingo', 'https://www.duolingo.com'),
-				site('Brilliant', 'https://brilliant.org'),
-				site('MIT OpenCourseWare', 'https://ocw.mit.edu', 'mit.edu'),
-				site('Google Scholar', 'https://scholar.google.com', 'scholar.google.com'),
-				site('Archive', 'https://archive.org'),
-				site('TED', 'https://www.ted.com'),
-				site('OpenStax', 'https://openstax.org'),
-				site('WolframAlpha', 'https://www.wolframalpha.com'),
 			],
 		},
 	],

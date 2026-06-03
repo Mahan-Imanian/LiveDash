@@ -161,9 +161,9 @@ export function HomePage() {
 
 		const openWidgetsSettingsEvent = listenEvent(
 			'openWidgetsSettings',
-			(data: { tab: WidgetTabKeys | null }) => {
+			(data: { tab?: WidgetTabKeys | null } | null) => {
 				setShowWidgetSettings(true)
-				if (data.tab) setTab(data.tab)
+				if (data?.tab) setTab(data.tab)
 			}
 		)
 

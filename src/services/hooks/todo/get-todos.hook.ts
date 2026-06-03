@@ -13,6 +13,10 @@ export const useGetTodos = (enabled: boolean) => {
 }
 export async function getTodos(): Promise<FetchedTodo[]> {
 	const client = await getMainClient()
-	const { data } = await client.get<FetchedTodo[]>('/todos/@me')
-	return data
+	try {
+		const { data } = await client.get<FetchedTodo[]>('/todos/@me')
+		return data
+	} catch {
+		return []
+	}
 }

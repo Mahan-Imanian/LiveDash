@@ -9,14 +9,6 @@ export interface FetchedReligiousTimeData {
 	azan_maghreb: string
 	nimeshab: string
 }
-export interface FetchedReligiousTimeData {
-	azan_sobh: string
-	tolu_aftab: string
-	azan_zohr: string
-	ghorub_aftab: string
-	azan_maghreb: string
-	nimeshab: string
-}
 
 interface Prop {
 	day: number
@@ -33,19 +25,31 @@ export const useReligiousTime = (op: Prop, enabled: boolean) => {
 	return useQuery({
 		queryKey: key,
 		queryFn: async () => {
-			const client = await getMainClient()
-			const { data: result } = await client.get<FetchedReligiousTimeData>(
-				'/date/owghat',
-				{
-					params: {
-						day: op.day,
-						month: op.month,
-						lat: op.lat || undefined,
-						lan: op.lon || undefined,
-					},
-				}
-			)
-			return result
+			const fallback: FetchedReligiousTimeData = {
+				azan_sobh: '05:12',
+				tolu_aftab: '06:48',
+				azan_zohr: '13:18',
+				ghorub_aftab: '19:50',
+				azan_maghreb: '20:08',
+				nimeshab: '00:32',
+			}
+			try {
+				const client = await getMainClient()
+				const { data: result } = await client.get<FetchedReligiousTimeData>(
+					'/date/owghat',
+					{
+						params: {
+							day: op.day,
+							month: op.month,
+							lat: op.lat || undefined,
+							lan: op.lon || undefined,
+						},
+					}
+				)
+				return result
+			} catch {
+				return fallback
+			}
 		},
 		enabled,
 	})
