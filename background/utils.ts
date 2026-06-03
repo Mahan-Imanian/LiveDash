@@ -1,6 +1,8 @@
 import { getFromStorage, setToStorage } from '../src/common/storage'
 import { getMainClient } from '../src/services/api'
+
 export const BOOKMARK_ORDER_KEY = '__root__'
+
 export async function preloadCriticalResources() {
 	return
 }
@@ -8,7 +10,6 @@ export async function preloadCriticalResources() {
 export async function trySync() {
 	const pending = await getFromStorage('pendingOrders')
 	if (!pending) return
-	console.log('Trying to sync pending bookmark orders...')
 	for (const rawKey of Object.keys(pending)) {
 		const folderId = denormalizeKey(rawKey)
 

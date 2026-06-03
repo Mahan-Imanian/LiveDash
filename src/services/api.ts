@@ -12,8 +12,7 @@ const DEFAULT_API_URL = 'https://livedash.codersays.com/api'
 export let API_URL = ''
 
 export function getApiBaseUrl() {
-	const configured = (import.meta.env.VITE_API || DEFAULT_API_URL).replace(/\/$/, '')
-	return configured.endsWith('/api') ? configured : `${configured}/api`
+	return (import.meta.env.VITE_API || DEFAULT_API_URL).replace(/\/$/, '')
 }
 
 export async function getMainClient(): Promise<AxiosInstance> {

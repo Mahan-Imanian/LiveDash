@@ -19,14 +19,13 @@ export function RenderContentSite({ link }: SiteProp) {
 	const badge = link.badge?.trim()
 	const col = link?.span?.col
 	const row = link?.span?.row
-	const pos = row && row >= 2 ? 'justify-center' : ''
 
 	return (
 		<a
 			href={getUrl(link.url)}
 			target="_blank"
 			rel="noopener noreferrer"
-			className={`relative flex flex-col items-center gap-2 transition-all duration-300 group active:scale-95 ${pos} rounded-2xl hover:bg-base-200/50 p-1.5 ${link.hasBorder ? 'border border-base-300' : ''}`}
+			className="relative flex min-w-0 flex-col items-center gap-2 rounded-2xl p-2 transition-all duration-300 group active:scale-95 hover:bg-base-100/75 hover:shadow-sm"
 			style={{
 				gridColumn: col ? `span ${col} / span ${col}` : undefined,
 				gridRow: row ? `span ${row} / span ${row}` : undefined,
@@ -48,11 +47,12 @@ export function RenderContentSite({ link }: SiteProp) {
 			)}
 			<img
 				src={link.icon}
-				className="object-contain transition-all duration-300 w-9 h-9 group-hover:scale-110 drop-shadow-sm"
+				className="object-contain w-10 h-10 transition-all duration-300 drop-shadow-sm group-hover:scale-110"
 				alt={link.name || link.url}
+				loading="lazy"
 			/>
 
-			<span className="w-full text-[10px] font-bold leading-tight text-center truncate opacity-85 transition-all duration-300 group-hover:opacity-100 group-hover:text-primary">
+			<span className="w-full text-[10px] font-bold leading-tight tracking-tight text-center truncate opacity-85 transition-all duration-300 group-hover:opacity-100 group-hover:text-primary">
 				{link.name}
 			</span>
 		</a>

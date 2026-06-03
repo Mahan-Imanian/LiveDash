@@ -16,6 +16,17 @@ interface Prop {
 	lat?: number
 	lon?: number
 }
+function fallbackPrayerTimes(): FetchedReligiousTimeData {
+	return {
+		azan_sobh: '05:14',
+		tolu_aftab: '06:47',
+		azan_zohr: '13:08',
+		ghorub_aftab: '19:29',
+		azan_maghreb: '19:47',
+		nimeshab: '00:28',
+	}
+}
+
 export const useReligiousTime = (op: Prop, enabled: boolean) => {
 	const key = ['religiousTime', op.day, op.month]
 	if (op.lon && op.lat) {
@@ -25,14 +36,6 @@ export const useReligiousTime = (op: Prop, enabled: boolean) => {
 	return useQuery({
 		queryKey: key,
 		queryFn: async () => {
-			const fallback: FetchedReligiousTimeData = {
-				azan_sobh: '05:12',
-				tolu_aftab: '06:48',
-				azan_zohr: '13:18',
-				ghorub_aftab: '19:50',
-				azan_maghreb: '20:08',
-				nimeshab: '00:32',
-			}
 			try {
 				const client = await getMainClient()
 				const { data: result } = await client.get<FetchedReligiousTimeData>(
@@ -42,13 +45,13 @@ export const useReligiousTime = (op: Prop, enabled: boolean) => {
 							day: op.day,
 							month: op.month,
 							lat: op.lat || undefined,
-							lan: op.lon || undefined,
+							lon: op.lon || undefined,
 						},
 					}
 				)
 				return result
 			} catch {
-				return fallback
+				return fallbackPrayerTimes()
 			}
 		},
 		enabled,
