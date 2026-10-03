@@ -1,0 +1,22 @@
+name: Bug report
+description: Something in LiveDash doesn't work as expected.
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw instead. Screenshots help.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: LiveDash version
+      description: Settings → About shows the version.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 142 on Windows 11
+    validations:
+      required: true

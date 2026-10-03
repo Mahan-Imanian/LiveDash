@@ -1,0 +1,10 @@
+name: Idea
+description: Suggest an improvement.
+labels: [idea]
+body:
+  - type: textarea
+    attributes:
+      label: What are you trying to do?
+      description: Describe the situation and the problem first, then the change you'd like.
+    validations:
+      required: true
