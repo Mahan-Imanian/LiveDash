@@ -1,104 +1,68 @@
-## What LiveDash includes
+# LiveDash
 
-- Smart new-tab dashboard with animated widgets and glass-style panels
-- Gregorian calendar, notes, todos, bookmarks, weather, news, translation, and currency tools
-- Store and catalog surfaces with local fallback data, so the UI still renders when the backend is unavailable
-- Google sign-in flow prepared for the LiveDash backend
-- MySQL/PHP backend starter for cPanel-style hosting
-- Chrome MV3 build through WXT, React, TypeScript, Tailwind, and Workbox
-- Local extension assets for the LiveDash logo, LiveCoin, onboarding graphics, favicon fallbacks, and alarm sounds
+A fast, private, keyboard-first new tab for Chrome.
 
-## Project structure
+Open a tab, see what's next, act on it, get back to work. Capture a task with a date in plain English, jump to any site, jot a note, or start a focus session — all from one box, without an account, and without anything leaving your device.
 
-```text
-background/              Service worker modules and cache routing
-entrypoints/newtab/      New-tab HTML entrypoint
-public/icons/            Extension icon set
-public/live-assets/      Bundled LiveDash brand and UI assets
-server/                  PHP backend starter for auth, catalog, store, and user profile endpoints
-src/                     React dashboard source
-wxt.config.ts            Extension manifest and WXT build config
-```
+![LiveDash home, dark theme](docs/screenshots/home-dark.png)
 
-## Browser development
+## What it does
+
+- **One box for everything.** Press <kbd>/</kbd> or <kbd>Ctrl</kbd> <kbd>K</kbd> and type. “Call Alex tomorrow at 3pm” becomes a task due tomorrow at 15:00, and you see how it was understood before you press Enter. The same box opens sites, searches the web with your default engine, finds your shortcuts, notes, tasks and (if you allow it) bookmarks, and runs commands.
+- **Quick capture on any page.** <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd> opens a small capture window over whatever you're doing. Add a task, save the page as a note or pin it as a shortcut, and keep going. Right-click selected text to add it as a task.
+- **Today, not a dashboard.** Overdue, today, upcoming and undated tasks, grouped and ordered. Complete with a click or <kbd>Space</kbd>, edit with <kbd>Enter</kbd>, reorder with drag or <kbd>Alt</kbd> + arrows, and undo anything with <kbd>Ctrl</kbd> <kbd>Z</kbd>.
+- **Shortcuts that start full.** Suggestions come from Chrome's own most-visited list (only if you allow it). Open them with a click or keys <kbd>1</kbd>–<kbd>9</kbd>. Custom names, letter icons or your own image.
+- **Notes that save as you type.** The first line is the title.
+- **Focus timer** that starts instantly, survives closing the tab, shows the remaining minutes on the toolbar icon, and notifies you only if you ask it to.
+- **Optional context.** Your next calendar event (from any iCal link — Google, Outlook, iCloud) and the weather (Open-Meteo, no key, no account) sit quietly under the clock.
+
+| | |
+|---|---|
+| ![Command bar](docs/screenshots/command-bar.png) | ![Quick capture](docs/screenshots/quick-capture.png) |
+| ![Light theme](docs/screenshots/home-light.png) | ![Settings](docs/screenshots/settings.png) |
+
+## Privacy
+
+No account, no analytics, no ads, no remote code. Tasks, notes and shortcuts live in your browser's extension storage. The only network requests are the ones you turn on (weather, calendar), each behind its own Chrome permission prompt. See [PRIVACY.md](PRIVACY.md).
+
+Install-time permissions are limited to storage, alarms, the right-click menu, site icons, search through your default engine, and the current tab when you open quick capture. Bookmarks, most-visited sites, notifications and the weather/calendar hosts are optional and requested only when you use the feature that needs them.
+
+## Build from source
+
+Requires Node.js 22.6+ and Chrome 120+.
 
 ```bash
 git clone https://github.com/Mahan-Imanian/LiveDash.git
 cd LiveDash
-npm install --legacy-peer-deps
-npm run dev
-```
-
-## Chrome build
-
-```bash
+npm ci
 npm run build
 ```
 
-The unpacked Chrome MV3 extension is generated at:
+Then open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and select `.output/chrome-mv3`.
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Development build with live reload in a separate Chrome profile |
+| `npm run build` | Production build in `.output/chrome-mv3` |
+| `npm run zip` | Store-ready zip in `.output/` |
+| `npm run check` | Type check, lint and unit tests |
+
+## Project layout
 
 ```text
-.output/chrome-mv3
+entrypoints/   newtab page, quick-capture popup, background service worker
+src/app/       page shells and boot (store load, theme)
+src/features/  command bar, tasks, shortcuts, notes, focus, settings, calendar/weather services
+src/lib/       pure logic: natural-language dates, iCal parsing, fuzzy matching, formatting
+src/store/     local-first store, actions, import/export, migration from v1
+src/styles/    design tokens and component styles
+tests/         unit tests (node --test)
 ```
 
-Load that folder through `chrome://extensions` with Developer Mode enabled.
+## Origins
 
-## Backend deployment
-
-The extension is configured to use:
-
-```text
-https://livedash.codersays.com
-```
-
-Deploy the contents of `server/` to that host, then create a private `server/.env` file from `server/.env.example`. Do not commit the private `.env` file.
-
-Required backend variables:
-
-```text
-DB_HOST
-DB_NAME
-DB_USER
-DB_PASS
-APP_SECRET
-APP_URL
-ALLOWED_ORIGINS
-GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET
-GOOGLE_REDIRECT_URI
-```
-
-Import the schema before enabling Google sign-in:
-
-```bash
-mysql -u <user> -p <database> < server/sql/install.sql
-```
-
-The backend currently provides the minimum endpoints needed by the extension shell: extension metadata, catalog data, market data, wallpapers, Google OAuth, profile lookup, refresh, and purchase acknowledgement. Replace or extend those handlers as the production product grows.
-
-## Environment
-
-Extension-side public variables live in `.env.example`:
-
-```text
-VITE_API=https://livedash.codersays.com
-VITE_GOOGLE_OAUTH_CLIENT_ID=<public Google OAuth client id>
-```
-
-Only public client-side values belong in extension env files. Database credentials, app secrets, and Google client secrets belong only in the backend environment.
-
-## Privacy and analytics
-
-LiveDash can send anonymous Google Analytics 4 events for product quality, usage health, and error visibility. Widget content, notes, todos, and private user text are not analytics payloads. Analytics can be disabled from extension settings.
-
-## Feedback and issues
-
-Open issues at:
-
-```text
-https://github.com/Mahan-Imanian/LiveDash/issues
-```
+LiveDash 1.x was built on a fork of [Widgetify](https://github.com/widgetify-app/widgetify-extension), an open-source new-tab extension released under the MIT License (© 2025 widgetify). Version 2 is a ground-up rewrite that shares no code with it; the original copyright notice is kept in [LICENSE](LICENSE) as the MIT License requires. Bundled third-party licenses are in [public/THIRD_PARTY_NOTICES.txt](public/THIRD_PARTY_NOTICES.txt).
 
 ## License
 
-See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
