@@ -4,6 +4,7 @@ import { migrateLegacy } from '@/store/data'
 import { getState, loadStore, onStoreError, subscribe } from '@/store/store'
 import type { Settings } from '@/store/types'
 import { toast } from '@/ui/toast'
+import '@/styles/fonts.css'
 import '@/styles/tokens.css'
 import '@/styles/app.css'
 
@@ -13,10 +14,15 @@ function applyTheme(s: Settings) {
 	else root.dataset.theme = s.theme
 	if (s.accent === 'ember') delete root.dataset.accent
 	else root.dataset.accent = s.accent
+	root.dataset.density = s.density
+	root.dataset.headline = s.headline
+	if (s.background.kind === 'tone') root.dataset.tone = s.background.tone
+	else delete root.dataset.tone
 	try {
 		localStorage.setItem('ld-theme', s.theme)
 		localStorage.setItem('ld-accent', s.accent)
 		localStorage.setItem('ld-type', s.typeOnOpen ? '1' : '0')
+		localStorage.setItem('ld-tone', s.background.kind === 'tone' ? s.background.tone : '')
 	} catch {}
 }
 

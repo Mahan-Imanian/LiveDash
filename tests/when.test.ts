@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { parseWhen } from '../src/lib/when.ts'
+import { nextOccurrence, parseWhen } from '../src/lib/when.ts'
 
 const now = new Date(2026, 9, 5, 9, 0).getTime()
 const at = (y: number, m: number, d: number, h = 0, mi = 0) => new Date(y, m, d, h, mi).getTime()
@@ -68,4 +68,43 @@ test('leaves plain text alone', () => {
 	]) {
 		assert.deepEqual(parseWhen(s, now), { title: s, due: null, allDay: false })
 	}
+})
+
+test('drops reminder lead-ins', () => {
+	assert.equal(parseWhen('remind me to call mom tomorrow 5pm', now).title, 'call mom')
+	assert.equal(parseWhen("Don't forget to pay rent", now).title, 'pay rent')
+	assert.equal(parseWhen('remind me to', now).title, 'remind me to')
+})
+
+test('repeating tasks', () => {
+	assert.deepEqual(parseWhen('Water plants every day', now), {
+		title: 'Water plants',
+		due: at(2026, 9, 5),
+		allDay: true,
+		repeat: 'daily',
+	})
+	assert.deepEqual(parseWhen('Standup notes every monday 9:30am', now), {
+		title: 'Standup notes',
+		due: at(2026, 9, 5, 9, 30),
+		allDay: false,
+		repeat: 'weekly',
+	})
+	assert.equal(parseWhen('Pay rent monthly on the 1st of november', now).repeat, 'monthly')
+	assert.equal(parseWhen('Journal daily at 8am', now).due, at(2026, 9, 6, 8))
+	assert.equal(nextOccurrence(at(2026, 9, 9), 'weekdays', now), at(2026, 9, 12))
+	assert.equal(nextOccurrence(at(2026, 8, 1), 'weekly', now), at(2026, 9, 6))
+	assert.equal(nextOccurrence(at(2026, 0, 31), 'monthly', at(2026, 0, 31)), at(2026, 1, 28))
+	assert.equal(nextOccurrence(at(2028, 1, 29), 'yearly', at(2028, 1, 29)), at(2029, 1, 28))
+})
+
+test('day of the month', () => {
+	assert.deepEqual(parseWhen('pay rent every month on the 1st', now), {
+		title: 'pay rent',
+		due: at(2026, 10, 1),
+		allDay: true,
+		repeat: 'monthly',
+	})
+	assert.equal(parseWhen('dentist on the 5th at 3pm', now).due, at(2026, 9, 5, 15))
+	assert.equal(parseWhen('invoice the 31st', at(2026, 10, 2)).due, at(2026, 10, 30))
+	assert.equal(parseWhen('meet on the 3rd floor', now).due, null)
 })
