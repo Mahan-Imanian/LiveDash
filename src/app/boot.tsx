@@ -16,11 +16,14 @@ function applyTheme(s: Settings) {
 	try {
 		localStorage.setItem('ld-theme', s.theme)
 		localStorage.setItem('ld-accent', s.accent)
+		localStorage.setItem('ld-type', s.typeOnOpen ? '1' : '0')
 	} catch {}
 }
 
 export async function boot(surface: 'newtab' | 'popup', app: ReactNode) {
 	document.documentElement.dataset.surface = surface
+	if ((window as { __ldRedirect?: boolean }).__ldRedirect)
+		await new Promise((r) => setTimeout(r, 800))
 	await loadStore()
 	let last = getState().settings
 	applyTheme(last)

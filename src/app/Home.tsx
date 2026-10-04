@@ -1,282 +1,127 @@
-import { Settings as Gear, Keyboard, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { Focus, finishIfDue } from '@/features/focus/Focus'
-import { Hero } from '@/features/Hero'
-import { Notes } from '@/features/notes/Notes'
-import { MOD, Palette } from '@/features/palette/Palette'
-import { refreshCalendar, refreshWeather } from '@/features/services'
-import { SettingsDialog } from '@/features/settings/Settings'
-import { Shortcuts } from '@/features/shortcuts/Shortcuts'
-import { Today } from '@/features/tasks/Today'
-import { emit, on } from '@/lib/bus'
-import { pause, start } from '@/store/focus-logic'
-import { getState, update, useStore } from '@/store/store'
-import { PanelBoundary } from '@/ui/controls'
-import { Dialog } from '@/ui/Dialog'
-import { Mark } from '@/ui/Mark'
+import { useEffect, useRef, useState } from 'react'
+import { refreshCalendar } from '@/features/calendar'
+import { Later } from '@/features/later/Later'
+import { Launcher } from '@/features/launcher/Launcher'
+import { Settings } from '@/features/Settings'
+import { Top } from '@/features/Top'
+import { emit, on, type View } from '@/lib/bus'
+import { finishIfDue } from '@/store/focus-run'
+import { Boundary } from '@/ui/controls'
 import { ToastHost } from '@/ui/ToastHost'
 import { runUndo } from '@/ui/toast'
 
-function typingTarget(el: EventTarget | null): boolean {
-	const e = el as HTMLElement | null
-	if (!e) return false
-	return e.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.tagName)
-}
+const KEYS: [string, string[][]][] = [
+	['Go to the highlighted place', [['↵']]],
+	['Open places 1–9', [['alt', '1…9']]],
+	['Open in a new tab', [['alt', '↵']]],
+	['Save what you typed for later', [['⇧', '↵']]],
+	['Search the web for what you typed', [['ctrl', '↵']]],
+	['More actions for the highlighted row', [['→']]],
+	['Commands', [['>']]],
+	['Back to the bar from anywhere', [['esc'], ['/']]],
+	['Undo', [['ctrl', 'z']]],
+	['In Later: mark done, edit, delete, reorder', [['space'], ['e'], ['del'], ['alt', '↑↓']]],
+	['Quick capture on any web page', [['alt', 'shift', 'l']]],
+]
 
-function useMinute(): number {
-	const [now, setNow] = useState(Date.now())
-	useEffect(() => {
-		let t = 0
-		const tick = () => {
-			setNow(Date.now())
-			t = window.setTimeout(tick, 60_000 - (Date.now() % 60_000) + 10)
-		}
-		const vis = () => {
-			clearTimeout(t)
-			if (!document.hidden) {
-				tick()
-				refreshCalendar()
-				refreshWeather()
-			}
-		}
-		tick()
-		document.addEventListener('visibilitychange', vis)
-		return () => {
-			clearTimeout(t)
-			document.removeEventListener('visibilitychange', vis)
-		}
-	}, [])
-	return now
+function typing(el: EventTarget | null): boolean {
+	const e = el as HTMLElement | null
+	return !!e && (e.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.tagName))
 }
 
 export function Home() {
-	const now = useMinute()
-	const panels = useStore((s) => s.settings.panels)
-	const welcomed = useStore((s) => s.ui.welcomed)
-	const [settings, setSettings] = useState<{ open: boolean; section?: string }>({ open: false })
-	const [help, setHelp] = useState(false)
+	const [view, setView] = useState<View>('go')
+	const [note, setNote] = useState<string | undefined>()
+	const viewRef = useRef(view)
+	viewRef.current = view
 
 	useEffect(() => {
 		finishIfDue()
 		refreshCalendar()
-		refreshWeather()
-		const hash = new URLSearchParams(location.hash.slice(1))
-		const note = hash.get('note')
-		if (note) emit({ type: 'note', id: note })
-		if (hash.has('capture')) emit({ type: 'palette' })
-		if (location.hash) history.replaceState(null, '', location.pathname)
-	}, [])
-
-	useEffect(
-		() =>
-			on((e) => {
-				if (e.type === 'settings') setSettings({ open: true, section: e.section })
-				if (e.type === 'help') setHelp(true)
-			}),
-		[],
-	)
-
-	useEffect(() => {
+		const vis = () => !document.hidden && refreshCalendar()
+		document.addEventListener('visibilitychange', vis)
+		const off = on((e) => {
+			if (e.type === 'view') {
+				setNote(e.note)
+				setView(e.view)
+			}
+		})
 		function onKey(e: KeyboardEvent) {
 			if (e.defaultPrevented) return
 			const mod = e.ctrlKey || e.metaKey
-			if (mod && e.key.toLowerCase() === 'k') {
-				e.preventDefault()
-				emit({ type: 'palette' })
-				return
-			}
-			if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey && !typingTarget(e.target)) {
+			if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey && !typing(e.target)) {
 				if (runUndo()) e.preventDefault()
 				return
 			}
-			if (mod || e.altKey || typingTarget(e.target) || document.querySelector('dialog[open]'))
+			if (mod && e.key.toLowerCase() === 'k') {
+				e.preventDefault()
+				setView('go')
+				emit({ type: 'prompt' })
 				return
-			const k = e.key
-			if (k === '/') {
+			}
+			if (e.key === 'Escape' && viewRef.current !== 'go') {
 				e.preventDefault()
-				emit({ type: 'palette' })
-			} else if (k === '?') {
+				setView('go')
+				return
+			}
+			if (e.key === '/' && !typing(e.target)) {
 				e.preventDefault()
-				setHelp(true)
-			} else if (k === ',') {
-				e.preventDefault()
-				setSettings({ open: true })
-			} else if ((k === 'n' || k === 'N') && getState().settings.panels.notes) {
-				e.preventDefault()
-				emit({ type: 'note' })
-			} else if ((k === 'f' || k === 'F') && getState().settings.panels.focus) {
-				e.preventDefault()
-				update('focus', (f) => (f.status === 'running' ? pause(f) : start(f)))
-			} else if (
-				/^[1-9]$/.test(k) &&
-				!(e.target as HTMLElement)?.closest?.('[role="radiogroup"]')
-			) {
-				const s = getState().shortcuts[Number(k) - 1]
-				if (s) {
-					e.preventDefault()
-					location.assign(s.url)
-				}
+				setView('go')
+				emit({ type: 'prompt' })
 			}
 		}
 		window.addEventListener('keydown', onKey)
-		return () => window.removeEventListener('keydown', onKey)
+		return () => {
+			document.removeEventListener('visibilitychange', vis)
+			window.removeEventListener('keydown', onKey)
+			off()
+		}
 	}, [])
 
-	const side = panels.shortcuts || panels.focus || panels.notes
-
 	return (
-		<div className="app">
-			<header className="topbar">
-				<span className="brand">
-					<Mark />
-					LiveDash
-				</span>
-				<nav className="topbar-actions" aria-label="App">
-					<button
-						type="button"
-						className="icon-btn icon-btn--md"
-						aria-label="Keyboard shortcuts"
-						title="Keyboard shortcuts (?)"
-						onClick={() => setHelp(true)}
-					>
-						<Keyboard size={18} />
-					</button>
-					<button
-						type="button"
-						className="icon-btn icon-btn--md"
-						aria-label="Settings"
-						title="Settings (,)"
-						onClick={() => setSettings({ open: true })}
-					>
-						<Gear size={18} />
-					</button>
-				</nav>
+		<div className="canvas">
+			<header className="top">
+				<Top
+					view={view}
+					onView={(v) => {
+						setNote(undefined)
+						setView(v)
+					}}
+				/>
 			</header>
-
-			<main className="home">
-				<Hero now={now} showSetupHint={!welcomed}>
-					<Palette />
-					{!welcomed && (
-						<div className="welcome" role="note">
-							<span>
-								Type anything above and press Enter. Dates like “Friday 5pm” are understood.
-								Everything stays on this device. Press <kbd>Alt</kbd>
-								<kbd>Shift</kbd>
-								<kbd>L</kbd> on any page to capture without leaving it.
-							</span>
-							<button
-								type="button"
-								className="icon-btn"
-								aria-label="Dismiss tip"
-								onClick={() => update('ui', (u) => ({ ...u, welcomed: true }))}
-							>
-								<X size={14} />
-							</button>
-						</div>
+			<main className="stage" key={view}>
+				<Boundary name={view === 'go' ? 'The launcher' : view === 'later' ? 'Later' : 'This page'}>
+					{view === 'go' && <Launcher />}
+					{view === 'later' && <Later openNote={note} />}
+					{view === 'settings' && <Settings />}
+					{view === 'keys' && (
+						<section className="block" aria-label="Keyboard shortcuts">
+							<h1 className="block-label">keys</h1>
+							<dl className="keys">
+								{KEYS.map(([label, combos]) => (
+									<div key={label} style={{ display: 'contents' }}>
+										<dt>{label}</dt>
+										<dd>
+											{combos.map((c, i) => (
+												<span
+													key={c.join('+')}
+													style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}
+												>
+													{i > 0 && <span className="setting-desc">/</span>}
+													{c.map((k) => (
+														<kbd key={k}>{k}</kbd>
+													))}
+												</span>
+											))}
+										</dd>
+									</div>
+								))}
+							</dl>
+						</section>
 					)}
-				</Hero>
-
-				<div
-					className="columns"
-					style={side ? undefined : { gridTemplateColumns: 'minmax(0, 1fr)', maxWidth: 720 }}
-				>
-					<div className="column">
-						<PanelBoundary name="Tasks">
-							<Today now={now} />
-						</PanelBoundary>
-					</div>
-					{side && (
-						<div className="column">
-							{panels.shortcuts && (
-								<PanelBoundary name="Shortcuts">
-									<Shortcuts />
-								</PanelBoundary>
-							)}
-							{panels.focus && (
-								<PanelBoundary name="Focus timer">
-									<Focus />
-								</PanelBoundary>
-							)}
-							{panels.notes && (
-								<PanelBoundary name="Notes">
-									<Notes />
-								</PanelBoundary>
-							)}
-						</div>
-					)}
-				</div>
+				</Boundary>
 			</main>
-
 			<ToastHost />
-			<SettingsDialog
-				open={settings.open}
-				section={settings.section}
-				onClose={() => setSettings({ open: false })}
-			/>
-			<Dialog open={help} onClose={() => setHelp(false)} title="Keyboard shortcuts">
-				<div className="keys">
-					<KeyGroup
-						title="Anywhere on this page"
-						rows={[
-							['Command bar', [MOD, 'K'], ['/']],
-							['New note', ['N']],
-							['Start or pause focus', ['F']],
-							['Open shortcut 1–9', ['1…9']],
-							['Undo', [MOD, 'Z']],
-							['Settings', [',']],
-							['This list', ['?']],
-						]}
-					/>
-					<KeyGroup
-						title="Command bar"
-						rows={[
-							['Run the highlighted action', ['↵']],
-							['Save as a note instead', ['⇧', '↵']],
-							['Search the web instead', [MOD, '↵']],
-							['Open in a background tab', ['Alt', '↵']],
-						]}
-					/>
-					<KeyGroup
-						title="Tasks and shortcuts"
-						rows={[
-							['Move between items', ['↑', '↓']],
-							['Complete task', ['Space']],
-							['Edit', ['↵'], ['E']],
-							['Delete or unpin', ['Del']],
-							['Reorder', ['Alt', '↑'], ['Alt', '↓']],
-						]}
-					/>
-					<KeyGroup title="Any web page" rows={[['Quick capture', ['Alt', 'Shift', 'L']]]} />
-				</div>
-			</Dialog>
 		</div>
-	)
-}
-
-function KeyGroup({ title, rows }: { title: string; rows: [string, ...string[][]][] }) {
-	return (
-		<section>
-			<h3>{title}</h3>
-			<dl>
-				{rows.map(([label, ...combos]) => (
-					<div key={label} style={{ display: 'contents' }}>
-						<dt>{label}</dt>
-						<dd>
-							{combos.map((c, i) => (
-								<span
-									key={c.join('+')}
-									style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}
-								>
-									{i > 0 && <span className="setting-desc">or</span>}
-									{c.map((k) => (
-										<kbd key={k}>{k}</kbd>
-									))}
-								</span>
-							))}
-						</dd>
-					</div>
-				))}
-			</dl>
-		</section>
 	)
 }

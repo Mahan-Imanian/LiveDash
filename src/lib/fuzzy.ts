@@ -8,6 +8,11 @@ export function score(query: string, text: string): number {
 	if (words.some((w) => w.startsWith(q))) return 75
 	const tokens = q.split(/\s+/).filter(Boolean)
 	if (tokens.length > 1 && tokens.every((tk) => words.some((w) => w.startsWith(tk)))) return 78
+	const initials = words
+		.filter(Boolean)
+		.map((w) => w[0])
+		.join('')
+	if (q.length >= 2 && initials.startsWith(q)) return 72
 	const at = t.indexOf(q)
 	if (at >= 0) return 60 - Math.min(20, at)
 	let ti = 0
@@ -18,5 +23,6 @@ export function score(query: string, text: string): number {
 		gaps += found - ti
 		ti = found + 1
 	}
+	if (q.length <= 4 && t.startsWith(q[0]) && gaps <= (q.length === 2 ? 3 : 1)) return 50
 	return Math.max(1, 40 - gaps)
 }

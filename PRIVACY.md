@@ -1,41 +1,33 @@
 # Privacy policy
 
-LiveDash keeps your tasks, notes, shortcuts and focus history in your browser's extension storage on your device. Settings (theme, accent, clock format, panel choices, timer lengths) are saved with Chrome's sync storage, so they follow you if Chrome Sync is on. There is no LiveDash account and no LiveDash server.
+LiveDash runs entirely in your browser. There is no LiveDash account, server, analytics, advertising or remote code.
 
-## What leaves your device
-
-Nothing, unless you turn on one of these features:
-
-| Feature | Sent to | What is sent |
-|---|---|---|
-| Weather | open-meteo.com | The city name you search for, and the coordinates of the place you pick |
-| Calendar | The calendar address you paste | A normal request for that iCal file |
-| Search | Your default search engine, through Chrome | The text you choose to search |
-
-Each feature asks Chrome for permission to contact only that site. You can turn it off in Settings, which also removes the permission.
-
-## What LiveDash can read
+## What LiveDash reads
 
 | Permission | Why | When |
 |---|---|---|
-| Storage | Save your data on this device | Always |
-| Alarms | End focus sessions on time, even with no tab open | Always |
-| Context menus | "Add as a LiveDash task" and "Pin to LiveDash" in the right-click menu | Always |
-| Favicon | Show site icons from Chrome's own cache | Always |
+| Storage | Save your pins, saved items, notes, settings and what you've opened through LiveDash | Always |
 | Search | Send what you choose to search to your default search engine, through Chrome | When you search |
-| Active tab | Read the current tab's address when you press Pin this page in quick capture | Only when you open quick capture |
-| Top sites | Suggest shortcuts from Chrome's most-visited list | Only if you allow it |
-| Bookmarks | Find your bookmarks in the command bar | Only if you allow it |
+| Favicon | Show site icons from Chrome's own cache | Always |
+| Alarms | End focus sessions on time, even with no tab open | Always |
+| Context menus | "Save page for later" and "Pin to LiveDash" in the right-click menu | Always |
+| Active tab | Read the current page's address when you open quick capture | Only when you open it |
+| History, tabs, recently closed tabs | Rank where you go, switch to open tabs, offer recently closed tabs, find duplicates | Only if you allow it |
+| Bookmarks | Include bookmarks when you type | Only if you allow it |
 | Notifications | Tell you when a focus session ends | Only if you allow it |
+| One calendar address | Show your next meeting | Only if you add a calendar |
 
-## What LiveDash never does
+Everything LiveDash computes from your history — rankings, time-of-day patterns, which result you picked for which letters — is stored in this browser's extension storage and never transmitted. Settings use Chrome's sync storage, so they follow you only if Chrome Sync is on.
 
-- No analytics, telemetry, advertising or tracking of any kind.
-- No selling or sharing of data.
-- No remote code. Everything that runs is in the published package.
+## What leaves your device
+
+- Searches you run go to your default search engine, exactly as if you had typed them into the address bar.
+- If you add a calendar, LiveDash requests that one iCal file from the address you gave.
+
+Nothing else.
 
 ## Your control
 
-Settings → Your data lets you export everything as a JSON file, import it again, or erase all LiveDash data from this browser. Uninstalling the extension also deletes its local data.
+Settings lets you turn off history and tab access (which also removes the permission), forget everything LiveDash learned, hide any suggestion permanently, export your data as JSON, import it, or erase it all. Uninstalling removes all LiveDash data.
 
-Questions: open an issue at https://github.com/Mahan-Imanian/LiveDash/issues.
+Questions: https://github.com/Mahan-Imanian/LiveDash/issues
