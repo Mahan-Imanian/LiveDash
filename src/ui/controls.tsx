@@ -1,7 +1,5 @@
 import { Component, type ReactNode, useEffect, useState } from 'react'
 import { faviconUrl } from '@/lib/chrome'
-import { hostOf } from '@/lib/url'
-import type { Shortcut } from '@/store/types'
 
 export function Switch({
 	checked,
@@ -28,19 +26,15 @@ export function Setting({
 	label,
 	desc,
 	children,
-	id,
 }: {
 	label: string
 	desc?: ReactNode
 	children: ReactNode
-	id?: string
 }) {
 	return (
 		<div className="setting">
 			<div className="setting-text">
-				<span className="setting-label" id={id}>
-					{label}
-				</span>
+				<span className="setting-label">{label}</span>
 				{desc && <span className="setting-desc">{desc}</span>}
 			</div>
 			{children}
@@ -79,8 +73,7 @@ export function Segmented<T extends string>({
 									: 0
 						if (!step) return
 						e.preventDefault()
-						const next = options[(i + step + options.length) % options.length]
-						onChange(next.value)
+						onChange(options[(i + step + options.length) % options.length].value)
 						const group = e.currentTarget.parentElement
 						requestAnimationFrame(() =>
 							group?.querySelector<HTMLElement>('[aria-checked="true"]')?.focus(),
@@ -92,23 +85,6 @@ export function Segmented<T extends string>({
 			))}
 		</div>
 	)
-}
-
-export const MONO_COLORS = [
-	'#b33a17',
-	'#2c55d6',
-	'#18764a',
-	'#6a45d8',
-	'#92590d',
-	'#0f766e',
-	'#be185d',
-	'#3f4349',
-]
-
-export function monoText(title: string): string {
-	const words = title.trim().split(/\s+/).filter(Boolean)
-	if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase()
-	return (words[0] ?? '?').charAt(0).toUpperCase()
 }
 
 const known = new Map<string, boolean>()
@@ -130,43 +106,67 @@ function signature(src: string): Promise<string> {
 }
 
 async function hasRealFavicon(url: string): Promise<boolean> {
-	blank ??= signature(faviconUrl('https://favicon-probe.invalid/', 64))
-	const [a, b] = await Promise.all([blank, signature(faviconUrl(url, 64))])
+	blank ??= signature(faviconUrl('https://favicon-probe.invalid/', 32))
+	const [a, b] = await Promise.all([blank, signature(faviconUrl(url, 32))])
 	return !!b && a !== b
 }
 
-export function SiteIcon({ s }: { s: Pick<Shortcut, 'url' | 'title' | 'icon'> }) {
-	const [real, setReal] = useState<boolean | undefined>(known.get(s.url))
-	const failed = real === false
+function hostOf(url: string): string {
+	try {
+		return new URL(url).host
+	} catch {
+		return url
+	}
+}
+
+export function Favicon({ url, label }: { url: string; label: string }) {
+	const host = hostOf(url)
+	const [real, setReal] = useState<boolean | undefined>(known.get(host))
 	useEffect(() => {
-		if (s.icon.kind !== 'site' || known.has(s.url)) return
+		if (known.has(host)) {
+			setReal(known.get(host))
+			return
+		}
 		let live = true
-		hasRealFavicon(s.url).then((ok) => {
-			known.set(s.url, ok)
+		hasRealFavicon(url).then((ok) => {
+			known.set(host, ok)
 			if (live) setReal(ok)
 		})
 		return () => {
 			live = false
 		}
-	}, [s.url, s.icon.kind])
-	if (s.icon.kind === 'image') return <img src={s.icon.data} alt="" data-kind="image" />
-	if (s.icon.kind === 'mono' || failed) {
-		const color =
-			s.icon.kind === 'mono' ? s.icon.color : MONO_COLORS[hostOf(s.url).length % MONO_COLORS.length]
+	}, [url, host])
+	if (!real) {
 		return (
-			<span className="mono" style={{ background: color }} aria-hidden="true">
-				{monoText(s.title)}
+			<span
+				className="row-letter"
+				aria-hidden="true"
+				style={real === undefined ? { opacity: 0 } : undefined}
+			>
+				{(label.trim()[0] ?? '?').toUpperCase()}
 			</span>
 		)
 	}
-	if (real === undefined) return null
-	return <img src={faviconUrl(s.url, 64)} alt="" />
+	return <img src={faviconUrl(url, 32)} alt="" />
 }
 
-export class PanelBoundary extends Component<
-	{ name: string; children: ReactNode },
-	{ error: boolean }
-> {
+export function CheckMark() {
+	return (
+		<svg
+			viewBox="0 0 12 12"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2.2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M2.5 6.5 5 9l4.5-6" />
+		</svg>
+	)
+}
+
+export class Boundary extends Component<{ name: string; children: ReactNode }, { error: boolean }> {
 	override state = { error: false }
 
 	static getDerivedStateFromError() {
@@ -176,18 +176,12 @@ export class PanelBoundary extends Component<
 	override render() {
 		if (!this.state.error) return this.props.children
 		return (
-			<div className="crash" role="alert">
-				<span>{this.props.name} couldn’t be displayed. Your data is safe.</span>
-				<span>
-					<button
-						type="button"
-						className="link-btn"
-						onClick={() => this.setState({ error: false })}
-					>
-						Try again
-					</button>
-				</span>
-			</div>
+			<p className="crash" role="alert">
+				{this.props.name} couldn’t be displayed. Your data is safe.{' '}
+				<button type="button" className="text-btn" onClick={() => this.setState({ error: false })}>
+					Try again
+				</button>
+			</p>
 		)
 	}
 }

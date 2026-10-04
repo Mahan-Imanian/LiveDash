@@ -1,10 +1,9 @@
+export type View = 'go' | 'later' | 'settings' | 'keys'
+
 export type UiEvent =
-	| { type: 'palette'; text?: string }
-	| { type: 'settings'; section?: string }
-	| { type: 'help' }
-	| { type: 'note'; id?: string; text?: string }
-	| { type: 'shortcut'; id?: string; url?: string; title?: string }
-	| { type: 'task'; id: string }
+	| { type: 'view'; view: View; note?: string }
+	| { type: 'refresh' }
+	| { type: 'prompt'; text?: string }
 
 const target = new EventTarget()
 

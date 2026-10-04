@@ -6,7 +6,18 @@ import type { Settings, State } from './types'
 export { defaults, PREFIX, todayKey } from './defaults'
 
 type Key = keyof State
-const LOCAL: Key[] = ['tasks', 'notes', 'shortcuts', 'focus', 'calendar', 'weather', 'ui']
+const LOCAL: Key[] = [
+	'tasks',
+	'notes',
+	'shortcuts',
+	'focus',
+	'calendar',
+	'launches',
+	'hidden',
+	'hours',
+	'cache',
+	'ui',
+]
 
 let state: State = defaults()
 const listeners = new Set<() => void>()
@@ -21,7 +32,6 @@ function mergeSettings(raw: unknown): Settings {
 	return {
 		...defaultSettings,
 		...s,
-		panels: { ...defaultSettings.panels, ...s.panels },
 		focus: { ...defaultSettings.focus, ...s.focus },
 	}
 }

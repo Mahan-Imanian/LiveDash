@@ -3,7 +3,7 @@ import { titleFromUrl, toUrl } from '@/lib/url'
 import { parseWhen } from '@/lib/when'
 import { toast } from '@/ui/toast'
 import { getState, uid, update } from './store'
-import type { Note, Shortcut, ShortcutIcon, Task } from './types'
+import type { Note, Shortcut, Task } from './types'
 
 function restore<T extends { id: string }>(list: T[], item: T, index: number): T[] {
 	if (list.some((x) => x.id === item.id)) return list
@@ -12,7 +12,7 @@ function restore<T extends { id: string }>(list: T[], item: T, index: number): T
 	return next
 }
 
-export function addTask(input: string, opts: { quiet?: boolean } = {}): Task | null {
+export function addTask(input: string, opts: { quiet?: boolean; url?: string } = {}): Task | null {
 	const text = input.trim()
 	if (!text) {
 		toast('Type something first, like “Call Alex tomorrow at 3pm”.', { tone: 'error' })
@@ -29,6 +29,7 @@ export function addTask(input: string, opts: { quiet?: boolean } = {}): Task | n
 		doneAt: null,
 		createdAt: Date.now(),
 		order: tasks.reduce((m, t) => Math.max(m, t.order), 0) + 1,
+		url: opts.url,
 	}
 	update('tasks', (list) => [...list, task])
 	if (!opts.quiet) {
@@ -122,11 +123,7 @@ export function noteTitle(n: Note): string {
 	return n.text.trim().split('\n')[0].slice(0, 120) || 'Empty note'
 }
 
-export function addShortcut(
-	rawUrl: string,
-	title?: string,
-	icon: ShortcutIcon = { kind: 'site' },
-): Shortcut | null {
+export function addShortcut(rawUrl: string, title?: string): Shortcut | null {
 	const url = toUrl(rawUrl)
 	if (!url) {
 		toast('That doesn’t look like a web address. Try something like example.com.', {
@@ -139,7 +136,7 @@ export function addShortcut(
 		toast(`${existing.title} is already pinned`)
 		return existing
 	}
-	const s: Shortcut = { id: uid(), url, title: title?.trim() || titleFromUrl(url), icon }
+	const s: Shortcut = { id: uid(), url, title: title?.trim() || titleFromUrl(url) }
 	update('shortcuts', (list) => [...list, s])
 	return s
 }
@@ -177,4 +174,17 @@ export function moveItem<T extends { id: string }>(list: T[], id: string, to: nu
 	const [item] = next.splice(from, 1)
 	next.splice(clamped, 0, item)
 	return next
+}
+
+export function hideSuggestion(key: string, label: string): void {
+	update('hidden', (l) => (l.includes(key) ? l : [...l, key]))
+	toast(`Won’t suggest ${label} again`, {
+		undo: () => update('hidden', (l) => l.filter((k) => k !== key)),
+	})
+}
+
+export function togglePin(url: string, title: string): void {
+	const existing = getState().shortcuts.find((s) => s.url === url)
+	if (existing) removeShortcut(existing.id)
+	else if (addShortcut(url, title)) toast(`Pinned ${title}`, { tone: 'success' })
 }
