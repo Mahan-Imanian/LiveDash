@@ -1,9 +1,9 @@
 import { formatDue } from '@/lib/format'
 import { titleFromUrl, toUrl } from '@/lib/url'
-import { parseWhen } from '@/lib/when'
+import { nextOccurrence, parseWhen, type Repeat } from '@/lib/when'
 import { toast } from '@/ui/toast'
 import { getState, uid, update } from './store'
-import type { Note, Shortcut, Task } from './types'
+import type { Group, Note, Shortcut, Task } from './types'
 
 function restore<T extends { id: string }>(list: T[], item: T, index: number): T[] {
 	if (list.some((x) => x.id === item.id)) return list
@@ -30,18 +30,58 @@ export function addTask(input: string, opts: { quiet?: boolean; url?: string } =
 		createdAt: Date.now(),
 		order: tasks.reduce((m, t) => Math.max(m, t.order), 0) + 1,
 		url: opts.url,
+		repeat: p.repeat,
 	}
 	update('tasks', (list) => [...list, task])
 	if (!opts.quiet) {
 		const when = task.due
 			? ` · ${formatDue(task.due, task.allDay, getState().settings.hourCycle)}`
 			: ''
-		toast(`Task added${when}`, {
+		toast(`Added${when}${task.repeat ? `, repeats ${REPEAT_LABEL[task.repeat]}` : ''}`, {
 			tone: 'success',
 			undo: () => update('tasks', (list) => list.filter((t) => t.id !== task.id)),
 		})
 	}
 	return task
+}
+
+export const REPEAT_LABEL: Record<Repeat, string> = {
+	daily: 'daily',
+	weekdays: 'on weekdays',
+	weekly: 'weekly',
+	monthly: 'monthly',
+	yearly: 'yearly',
+}
+
+export function completeTask(id: string): void {
+	const t = getState().tasks.find((x) => x.id === id)
+	if (!t) return
+	if (t.done) {
+		update('tasks', (list) =>
+			list.map((x) => (x.id === id ? { ...x, done: false, doneAt: null } : x)),
+		)
+		return
+	}
+	if (t.repeat && t.due !== null) {
+		const before = t
+		const due = nextOccurrence(t.due, t.repeat)
+		update('tasks', (list) => list.map((x) => (x.id === id ? { ...x, due } : x)))
+		toast(`Done. Next: ${formatDue(due, t.allDay, getState().settings.hourCycle).toLowerCase()}`, {
+			tone: 'success',
+			undo: () => update('tasks', (list) => list.map((x) => (x.id === id ? before : x))),
+		})
+		return
+	}
+	update('tasks', (list) =>
+		list.map((x) => (x.id === id ? { ...x, done: true, doneAt: Date.now() } : x)),
+	)
+	toast(`Done: ${t.title}`, {
+		tone: 'success',
+		undo: () =>
+			update('tasks', (list) =>
+				list.map((x) => (x.id === id ? { ...x, done: false, doneAt: null } : x)),
+			),
+	})
 }
 
 export function toggleTask(id: string): void {
@@ -60,7 +100,7 @@ export function editTask(id: string, input: string, keepDate: boolean): void {
 		list.map((t) => {
 			if (t.id !== id) return t
 			if (p.due === null && keepDate) return { ...t, title: text }
-			return { ...t, title: p.title, due: p.due, allDay: p.allDay }
+			return { ...t, title: p.title, due: p.due, allDay: p.allDay, repeat: p.repeat }
 		}),
 	)
 }
@@ -123,7 +163,42 @@ export function noteTitle(n: Note): string {
 	return n.text.trim().split('\n')[0].slice(0, 120) || 'Empty note'
 }
 
-export function addShortcut(rawUrl: string, title?: string): Shortcut | null {
+export function togglePinNote(id: string): void {
+	update('notes', (list) => list.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n)))
+}
+
+export function addGroup(name: string): Group | null {
+	const clean = name.trim().slice(0, 32)
+	if (!clean) return null
+	const existing = getState().groups.find((g) => g.name.toLowerCase() === clean.toLowerCase())
+	if (existing) return existing
+	const g: Group = { id: uid(), name: clean }
+	update('groups', (l) => [...l, g])
+	return g
+}
+
+export function renameGroup(id: string, name: string): void {
+	const clean = name.trim().slice(0, 32)
+	if (!clean) return
+	update('groups', (l) => l.map((g) => (g.id === id ? { ...g, name: clean } : g)))
+}
+
+export function removeGroup(id: string): void {
+	const before = { groups: getState().groups, shortcuts: getState().shortcuts }
+	const g = before.groups.find((x) => x.id === id)
+	if (!g) return
+	update('groups', (l) => l.filter((x) => x.id !== id))
+	update('shortcuts', (l) => l.map((s) => (s.group === id ? { ...s, group: undefined } : s)))
+	update('ui', (u) => (u.group === id ? { ...u, group: 'all' } : u))
+	toast(`Removed group “${g.name}”. Its sites are still pinned.`, {
+		undo: () => {
+			update('groups', () => before.groups)
+			update('shortcuts', () => before.shortcuts)
+		},
+	})
+}
+
+export function addShortcut(rawUrl: string, title?: string, group?: string): Shortcut | null {
 	const url = toUrl(rawUrl)
 	if (!url) {
 		toast('That doesn’t look like a web address. Try something like example.com.', {
@@ -136,7 +211,12 @@ export function addShortcut(rawUrl: string, title?: string): Shortcut | null {
 		toast(`${existing.title} is already pinned`)
 		return existing
 	}
-	const s: Shortcut = { id: uid(), url, title: title?.trim() || titleFromUrl(url) }
+	const s: Shortcut = {
+		id: uid(),
+		url,
+		title: title?.trim() || titleFromUrl(url),
+		group: group && group !== 'all' ? group : undefined,
+	}
 	update('shortcuts', (list) => [...list, s])
 	return s
 }

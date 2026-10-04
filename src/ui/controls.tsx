@@ -1,5 +1,6 @@
 import { Component, type ReactNode, useEffect, useState } from 'react'
 import { faviconUrl } from '@/lib/chrome'
+import type { ShortcutIcon } from '@/store/types'
 
 export function Switch({
 	checked,
@@ -87,28 +88,44 @@ export function Segmented<T extends string>({
 	)
 }
 
-const known = new Map<string, boolean>()
-let blank: Promise<string> | null = null
+type Probe = { ok: boolean; tone?: 'light' | 'dark' }
+const known = new Map<string, Probe>()
+let blank: Promise<Probe & { sig: string }> | null = null
 
-function signature(src: string): Promise<string> {
+function probe(src: string): Promise<Probe & { sig: string }> {
 	return new Promise((resolve) => {
 		const img = new Image()
 		img.onload = () => {
 			const c = document.createElement('canvas')
 			c.width = 16
 			c.height = 16
-			c.getContext('2d')?.drawImage(img, 0, 0, 16, 16)
-			resolve(c.toDataURL())
+			const ctx = c.getContext('2d', { willReadFrequently: true })
+			if (!ctx) return resolve({ ok: true, sig: '' })
+			ctx.drawImage(img, 0, 0, 16, 16)
+			const px = ctx.getImageData(0, 0, 16, 16).data
+			let n = 0
+			let lum = 0
+			let sat = 0
+			for (let i = 0; i < px.length; i += 4) {
+				if (px[i + 3] < 128) continue
+				const [r, g, b] = [px[i], px[i + 1], px[i + 2]]
+				n++
+				lum += (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+				sat += (Math.max(r, g, b) - Math.min(r, g, b)) / 255
+			}
+			const mono = n >= 20 && sat / n < 0.12
+			const tone = !mono ? undefined : lum / n > 0.82 ? 'light' : lum / n < 0.2 ? 'dark' : undefined
+			resolve({ ok: true, tone, sig: c.toDataURL() })
 		}
-		img.onerror = () => resolve('')
+		img.onerror = () => resolve({ ok: false, sig: '' })
 		img.src = src
 	})
 }
 
-async function hasRealFavicon(url: string): Promise<boolean> {
-	blank ??= signature(faviconUrl('https://favicon-probe.invalid/', 32))
-	const [a, b] = await Promise.all([blank, signature(faviconUrl(url, 32))])
-	return !!b && a !== b
+async function faviconProbe(url: string): Promise<Probe> {
+	blank ??= probe(faviconUrl('https://favicon-probe.invalid/', 32))
+	const [a, b] = await Promise.all([blank, probe(faviconUrl(url, 32))])
+	return { ok: !!b.sig && a.sig !== b.sig, tone: b.tone }
 }
 
 function hostOf(url: string): string {
@@ -119,35 +136,80 @@ function hostOf(url: string): string {
 	}
 }
 
-export function Favicon({ url, label }: { url: string; label: string }) {
+export const LETTER_COLORS = [
+	'#b33a17',
+	'#2c55d6',
+	'#18764a',
+	'#6a45d8',
+	'#92590d',
+	'#0f766e',
+	'#be185d',
+	'#3f4349',
+]
+
+export function letterColor(url: string): string {
+	const h = hostOf(url)
+	let n = 0
+	for (const c of h) n = (n * 31 + c.charCodeAt(0)) >>> 0
+	return LETTER_COLORS[n % LETTER_COLORS.length]
+}
+
+export function Favicon({
+	url,
+	label,
+	icon,
+	size = 32,
+}: {
+	url: string
+	label: string
+	icon?: ShortcutIcon
+	size?: number
+}) {
 	const host = hostOf(url)
-	const [real, setReal] = useState<boolean | undefined>(known.get(host))
+	const [info, setInfo] = useState<Probe | undefined>(known.get(host))
+	const real = info?.ok
+	const wantsSite = !icon || icon.kind === 'site'
 	useEffect(() => {
+		if (!wantsSite) return
 		if (known.has(host)) {
-			setReal(known.get(host))
+			setInfo(known.get(host))
 			return
 		}
 		let live = true
-		hasRealFavicon(url).then((ok) => {
-			known.set(host, ok)
-			if (live) setReal(ok)
+		faviconProbe(url).then((p) => {
+			known.set(host, p)
+			if (live) setInfo(p)
 		})
 		return () => {
 			live = false
 		}
-	}, [url, host])
-	if (!real) {
+	}, [url, host, wantsSite])
+	if (icon?.kind === 'image') return <img className="fav fav--image" src={icon.data} alt="" />
+	if (icon?.kind === 'letter' || (wantsSite && !real)) {
 		return (
 			<span
-				className="row-letter"
+				className="fav fav--letter"
 				aria-hidden="true"
-				style={real === undefined ? { opacity: 0 } : undefined}
+				style={{
+					background: icon?.kind === 'letter' ? icon.color : letterColor(url),
+					opacity: icon?.kind !== 'letter' && real === undefined ? 0 : 1,
+				}}
 			>
 				{(label.trim()[0] ?? '?').toUpperCase()}
 			</span>
 		)
 	}
-	return <img src={faviconUrl(url, 32)} alt="" />
+	return (
+		<img
+			className={`fav${info?.tone ? ` fav--${info.tone}` : ''}`}
+			src={faviconUrl(url, size)}
+			alt=""
+		/>
+	)
+}
+
+export function Kbd({ children }: { children: ReactNode }) {
+	return <kbd>{children}</kbd>
 }
 
 export function CheckMark() {

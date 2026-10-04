@@ -18,7 +18,15 @@ export async function openUrl(url: string, newTab = false): Promise<void> {
 	window.location.assign(url)
 }
 
-export async function searchWeb(text: string, newTab = false): Promise<void> {
+export async function searchWeb(
+	text: string,
+	newTab = false,
+	engineUrlOverride?: string | null,
+): Promise<void> {
+	if (engineUrlOverride) {
+		await openUrl(engineUrlOverride, newTab)
+		return
+	}
 	await browser.search.query({ text, disposition: isPopup() || newTab ? 'NEW_TAB' : 'CURRENT_TAB' })
 	if (isPopup()) window.close()
 }

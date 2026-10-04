@@ -31,6 +31,19 @@ test('merge keeps one entry per page and remembers the open tab', () => {
 	assert.equal(d[0].visits, 40)
 })
 
+test('merge drops error pages from history but keeps open tabs', () => {
+	const d = merge([
+		{ url: 'https://web.dev/x', title: 'Error 403 (Forbidden)!!1', visits: 3, lastVisit: ago(1) },
+		{ url: 'https://stackoverflow.com/q', title: 'Forbidden', visits: 3, lastVisit: ago(1) },
+		{ url: 'https://a.com/404', title: '404 Not Found', tabId: 3, windowId: 1 },
+		{ url: 'https://b.com/', title: '404 ways to cook', visits: 1, lastVisit: ago(1) },
+	])
+	assert.deepEqual(
+		d.map((x) => x.host),
+		['a.com', 'b.com'],
+	)
+})
+
 test('home ranking: pins first in order, then frequent and recent, one per site', () => {
 	const d = merge([
 		{ url: 'https://mail.google.com/mail/u/0/', title: 'Mail', visits: 90, lastVisit: ago(2) },
@@ -103,4 +116,8 @@ test('titles lose site-name noise', async () => {
 	)
 	assert.equal(cleanTitle('Hacker News', 'news.ycombinator.com', ''), 'Hacker News')
 	assert.equal(cleanTitle('', 'example.org', '/a'), 'example.org')
+	assert.equal(
+		cleanTitle('https://www.google.com/search?q=focus+40', 'google.com', '/search'),
+		'google.com',
+	)
 })

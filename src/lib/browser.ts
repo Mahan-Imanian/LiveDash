@@ -21,12 +21,21 @@ export interface OpenTab {
 	lastAccessed: number
 }
 
+export interface DeviceTab {
+	device: string
+	url: string
+	title: string
+	sessionId?: string
+	at: number
+}
+
 export interface Snapshot {
 	dests: Dest[]
 	home: Dest[]
 	closed: Closed[]
 	tabs: OpenTab[]
 	duplicates: number[]
+	devices: DeviceTab[]
 }
 
 const DAY = 86_400_000
@@ -180,12 +189,35 @@ export function findDuplicates(tabs: OpenTab[]): number[] {
 	return extra
 }
 
+async function deviceTabs(access: Access): Promise<DeviceTab[]> {
+	if (!access.sessions || !access.tabs) return []
+	const devices = await browser.sessions.getDevices({ maxResults: 4 })
+	const out: DeviceTab[] = []
+	for (const d of devices) {
+		for (const s of d.sessions ?? []) {
+			for (const t of s.window?.tabs ?? (s.tab ? [s.tab] : [])) {
+				if (!t.url || !/^https?:/.test(t.url)) continue
+				const n = normalize(t.url)
+				out.push({
+					device: d.deviceName,
+					url: t.url,
+					title: cleanTitle(t.title ?? '', n?.host ?? '', n?.path ?? ''),
+					sessionId: t.sessionId,
+					at: (s.lastModified ?? 0) * 1000,
+				})
+			}
+		}
+	}
+	return out.sort((a, b) => b.at - a.at).slice(0, 6)
+}
+
 export async function snapshot(access: Access): Promise<Snapshot> {
 	const s = getState()
-	const [tabs, hist, closed] = await Promise.all([
+	const [tabs, hist, closed, devices] = await Promise.all([
 		openTabs(access).catch(() => []),
 		history(access).catch(() => []),
 		closedSessions(access).catch(() => []),
+		deviceTabs(access).catch(() => []),
 	])
 	const pins: Source[] = s.shortcuts.map((p, i) => ({ url: p.url, title: p.title, pinned: i }))
 	const tabSources: Source[] = tabs.map((t) => ({
@@ -204,7 +236,39 @@ export async function snapshot(access: Access): Promise<Snapshot> {
 		hours: s.hours.data,
 	})
 	update('cache', () => ({ home, closed, at: Date.now() }))
-	return { dests, home, closed, tabs, duplicates: findDuplicates(tabs) }
+	return { dests, home, closed, tabs, duplicates: findDuplicates(tabs), devices }
+}
+
+export async function importTopSites(): Promise<{ url: string; title: string }[]> {
+	const granted =
+		(await browser.permissions
+			.contains({ permissions: ['topSites'] } as Parameters<typeof browser.permissions.contains>[0])
+			.catch(() => false)) ||
+		(await browser.permissions
+			.request({ permissions: ['topSites'] } as Parameters<typeof browser.permissions.request>[0])
+			.catch(() => false))
+	if (!granted) return []
+	const top = await browser.topSites.get()
+	return top
+		.filter((t) => /^https?:/.test(t.url))
+		.map((t) => {
+			const n = normalize(t.url)
+			return { url: t.url, title: cleanTitle(t.title, n?.host ?? '', n?.path ?? '') }
+		})
+}
+
+export async function openAll(urls: string[], groupTitle?: string): Promise<void> {
+	const created = []
+	for (const [i, url] of urls.entries())
+		created.push(await browser.tabs.create({ url, active: i === 0 }))
+	if (!groupTitle) return
+	const ids = created.map((t) => t.id).filter((id): id is number => id !== undefined)
+	const canGroup = await browser.permissions
+		.contains({ permissions: ['tabGroups'] } as Parameters<typeof browser.permissions.contains>[0])
+		.catch(() => false)
+	if (!canGroup || !ids.length) return
+	const groupId = await browser.tabs.group({ tabIds: ids as [number, ...number[]] })
+	await browser.tabGroups.update(groupId, { title: groupTitle })
 }
 
 export async function bookmarkSources(q: string, access: Access): Promise<Source[]> {
@@ -249,16 +313,4 @@ export async function closeTabs(ids: number[], tabs: OpenTab[]): Promise<() => P
 		for (const t of closing)
 			await browser.tabs.create({ url: t.url, windowId: t.windowId, active: false }).catch(() => {})
 	}
-}
-
-export function isNewTabFocusRedirect(): boolean {
-	return new URLSearchParams(location.search).has('f')
-}
-
-export async function claimFocus(): Promise<boolean> {
-	if (isNewTabFocusRedirect() || document.documentElement.dataset.surface !== 'newtab') return false
-	const id = await currentTabId()
-	if (id === undefined) return false
-	await browser.tabs.update(id, { url: browser.runtime.getURL('/newtab.html?f') })
-	return true
 }
