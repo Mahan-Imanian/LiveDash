@@ -21,9 +21,8 @@ export const defaultSettings: Settings = {
 	theme: 'auto',
 	accent: 'ember',
 	hourCycle: 'auto',
-	showSeconds: false,
-	panels: { shortcuts: true, notes: true, focus: true },
-	weatherUnit: 'auto',
+	typeOnOpen: true,
+	switchTabs: true,
 	focus: { focus: 25, short: 5, long: 15, sound: true, notify: false },
 }
 
@@ -33,7 +32,10 @@ export const defaults = (): State => ({
 	shortcuts: [],
 	focus: defaultFocus(),
 	calendar: { url: null, events: [], fetchedAt: null, error: null },
-	weather: { place: null, data: null, fetchedAt: null, error: null },
-	ui: { welcomed: false, migrated: false, completedOpen: false },
+	launches: [],
+	hidden: [],
+	hours: { at: 0, data: {} },
+	cache: { home: [], closed: [], at: 0 },
+	ui: { welcomed: false, migrated: false, completedOpen: false, asked: false },
 	settings: defaultSettings,
 })

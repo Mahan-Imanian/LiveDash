@@ -1,10 +1,13 @@
 import { defineConfig } from 'wxt'
 
+const testBuild = process.env.LD_TEST === '1'
+
 export default defineConfig({
 	modules: ['@wxt-dev/module-react'],
 	srcDir: 'src',
 	entrypointsDir: '../entrypoints',
 	publicDir: 'public',
+	outDir: testBuild ? '.output-test' : '.output',
 	vite: () => ({
 		build: {
 			sourcemap: false,
@@ -15,10 +18,18 @@ export default defineConfig({
 		name: 'LiveDash',
 		short_name: 'LiveDash',
 		description:
-			'A fast, private, keyboard-first new tab. Capture tasks and notes, jump to any site, and see what is next.',
+			'A new tab that learns where you go and gets you there in one keystroke. Switches to open tabs, reopens closed ones, saves things for later. Private and local.',
 		minimum_chrome_version: '120',
-		permissions: ['storage', 'alarms', 'contextMenus', 'favicon', 'activeTab', 'search'],
-		optional_permissions: ['topSites', 'bookmarks', 'notifications'],
+		permissions: [
+			'storage',
+			'alarms',
+			'contextMenus',
+			'favicon',
+			'activeTab',
+			'search',
+			...(testBuild ? ['history', 'tabs', 'sessions', 'bookmarks'] : []),
+		],
+		optional_permissions: ['history', 'tabs', 'sessions', 'bookmarks', 'notifications'],
 		optional_host_permissions: ['https://*/*'],
 		action: {
 			default_title: 'LiveDash quick capture',
