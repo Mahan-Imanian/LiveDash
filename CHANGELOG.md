@@ -2,39 +2,32 @@
 
 ## 2.0.0
 
-A ground-up rebuild. LiveDash is now a local-first, keyboard-first new tab focused on one loop: open a tab, see what's next, act, get back to work.
+LiveDash is no longer a dashboard. The new tab is now a single instrument built around one question — *where to?* — and the one thing Chrome's own new tab can't do: rank where you're about to go from what you actually do.
+
+### The product
+
+- **Go.** One prompt, and beneath it the places you're most likely to want right now, numbered 1–9. Ranked from your history by frequency, recency and hour of day, plus what you've picked from LiveDash for the letters you typed. Pins keep their numbers.
+- **Switch, don't duplicate.** Opening something already open jumps to that tab and closes the new one. Duplicate tabs are detected and closed with undo.
+- **Pick up.** Recently closed tabs and windows, one key to reopen.
+- **Type anything.** Addresses open, questions search with your default engine, dated phrases ("dentist thursday 9am") become things saved for later, `>` lists commands, `→` shows actions for any row (open in new tab, pin, save for later, copy link, never suggest).
+- **Later.** Pages, tasks and notes to come back to, grouped by when they're due, with inline editing, reordering and undo.
+- **Right now.** A single top line shows the next meeting with its join link and a running focus timer — only when they apply.
+- **Quick capture** on any page with Alt+Shift+L, and right-click "Save page for later" / "Pin to LiveDash".
+- **Start typing immediately.** LiveDash takes keyboard focus from the address bar on new tabs (can be turned off).
 
 ### Removed
 
-- The account system: Google sign-in, email/phone/OTP login, profile, avatar, referrals, friends and friend requests. Nothing needs an account any more.
-- LiveCoin, the store, missions and rewards, and the focus leaderboard.
-- Virtual pets, mood log, network/IP lookup, YouTube stats, prayer times and daily zikr, currency and crypto rates, RSS news, translator, image and voice search, trending searches, and the Explorer site directory.
-- Hardcoded crypto prices that were shown as live data whenever the API failed.
-- Google Analytics, including a measurement secret shipped in the bundle and an opt-out switch that did not work.
-- The dependency on `livedash.codersays.com` (most endpoints returned 404).
-- Remote Google Fonts, the Workbox service-worker cache, Firefox build leftovers, Docker files, both lockfiles (one of which pointed at a private registry and could not be installed), Tailwind, daisyUI, moment and about 30 other dependencies.
-- Region-specific defaults (Tehran time-zone handling, `region=IR`, Persian translator default, Saturday weekend, Iranian football-club theme).
-- All Widgetify-era code, names, themes, assets and issue templates.
-- Host permissions for google.com, accounts.google.com, googleapis.com and google-analytics.com; the `identity` and optional `tabs`/`tabGroups` permissions.
+- Everything from 1.x that wasn't about getting somewhere: accounts and sign-in, LiveCoin and the store, missions, referrals, friends, leaderboard, pets, mood log, IP lookup, YouTube stats, prayer times, crypto and currency rates (including hardcoded prices shown as live), RSS, translator, image and voice search, Explorer directory, wallpapers and themes for sale.
+- Google Analytics (including a secret shipped in the bundle and an opt-out that did nothing) and the dependency on an API that returned 404s.
+- The widget grid, clock hero, weather, shortcut tiles and every card. The icon library, Tailwind, daisyUI, moment and about 30 other dependencies.
+- Region-specific defaults and all Widgetify-era code, names, assets and templates.
 
-### Rebuilt
+### Under the hood
 
-- **Storage.** One local store with separate keys for tasks, notes, shortcuts, focus state and UI state, plus settings in Chrome sync storage. Open tabs stay in sync live. No code path clears user data except the explicit **Erase everything** action.
-- **Tasks.** Work offline with no account. Natural-language dates (“Friday 5pm”, “in 2 hours”, “oct 12”, “next week”), overdue / today / upcoming / no-date groups, inline editing, drag and keyboard reordering, completion animation, and undo for complete, delete and clear.
-- **Shortcuts.** Real links (middle-click, Ctrl-click and hover URL all work), most-visited suggestions, letter or uploaded icons, keyboard navigation, keys 1–9, and undo on unpin. No more empty placeholder grid.
-- **Notes.** Autosave as you type, first line as title, undo on delete.
-- **Focus timer.** Starts immediately, keeps correct time across tab closes and browser restarts, counts sessions, suggests the next break, and shows minutes left on the toolbar badge. Notifications are opt-in and requested only when you turn them on.
-- **Design.** A new token-based design system (type scale, 4-pt spacing, three radii, two elevations, one icon set, one motion curve), light, dark and system themes with five accents, no theme flash on load, and a new mark and icon.
-- **Accessibility.** Every control has an accessible name. Dialogs use the native modal `<dialog>`. Lists and grids use roving focus, focus is visible everywhere, motion respects reduced-motion, and every text/background pair meets WCAG AA contrast.
-- **Build.** Minified production bundle (about 100 KB of gzipped JavaScript, down from 3.7 MB unminified), a single npm lockfile from the public registry, CI that type-checks, lints, tests and builds a zip, and no source maps in the package.
-
-### Added
-
-- Command bar (<kbd>/</kbd> or <kbd>Ctrl</kbd> <kbd>K</kbd>) that adds tasks and notes, opens sites, searches the web, finds shortcuts, tasks, notes and bookmarks, and runs commands. It previews how a date will be read before you commit.
-- Quick capture from any page (<kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd>) with “Pin this page” and “Save this page as a note”.
-- Right-click actions: add selected text as a task, pin a page or link.
-- Optional calendar (any iCal link) with the next event under the clock and today's agenda above your tasks.
-- Optional weather from Open-Meteo, showing when it was last updated and offering a retry when unavailable.
-- Export, import and erase in Settings.
-- One-time migration of tasks, notes and bookmarks from LiveDash 1.x.
-- Privacy policy, third-party notices and unit tests for date parsing, iCal parsing, fuzzy matching and URL handling.
+- Local-first store with live sync between open tabs; no code path erases user data except an explicit, confirmed "Erase everything".
+- Ranking (`src/lib/rank.ts`), natural-language dates (`src/lib/when.ts`) and iCal parsing with recurrence and meeting-link detection (`src/lib/ics.ts`), all unit-tested.
+- Minimal required permissions; history, tabs, sessions, bookmarks and notifications are optional and requested in context.
+- One typographic design system: system sans for content, monospace for keys and metadata, a single accent, line-numbered rows, no cards, a custom glyph set with one stroke weight.
+- About 95 KB of gzipped JavaScript; no network requests unless you search or add a calendar; no background work unless a focus session is running.
+- One-time migration of tasks, notes and bookmarks from 1.x.
+- Clean, reproducible build from the public npm registry, CI, privacy policy and third-party notices.

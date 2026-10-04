@@ -1,42 +1,51 @@
-import { CircleCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { browser } from 'wxt/browser'
-import { Palette } from '@/features/palette/Palette'
+import { Launcher } from '@/features/launcher/Launcher'
+import { Glyph } from '@/ui/Glyph'
 import { ToastHost } from '@/ui/ToastHost'
 
 export function Popup() {
-	const [page, setPage] = useState<{ url: string; title: string } | null>(null)
+	const [page, setPage] = useState<{ url: string; title: string } | null | undefined>(undefined)
 	const [done, setDone] = useState<string | null>(null)
 
 	useEffect(() => {
 		browser.tabs
 			.query({ active: true, currentWindow: true })
-			.then(([tab]) => {
-				if (tab?.url && /^https?:/.test(tab.url))
-					setPage({ url: tab.url, title: tab.title || tab.url })
-			})
-			.catch(() => {})
+			.then(([tab]) =>
+				setPage(
+					tab?.url && /^https?:/.test(tab.url)
+						? { url: tab.url, title: tab.title || tab.url }
+						: null,
+				),
+			)
+			.catch(() => setPage(null))
 	}, [])
 
 	useEffect(() => {
 		if (!done) return
-		const t = setTimeout(() => window.close(), 900)
+		const t = setTimeout(() => window.close(), 850)
 		return () => clearTimeout(t)
 	}, [done])
 
 	if (done) {
 		return (
 			<output className="popup-done">
-				<CircleCheck size={22} aria-hidden="true" />
+				<span style={{ color: 'var(--accent)' }}>
+					<Glyph name="check" size={20} />
+				</span>
 				{done}
 			</output>
 		)
 	}
 
+	if (page === undefined) return null
+
 	return (
-		<>
-			<Palette inline page={page} onDone={setDone} />
+		<div className="canvas">
+			<main className="stage">
+				<Launcher page={page} onDone={setDone} />
+			</main>
 			<ToastHost />
-		</>
+		</div>
 	)
 }

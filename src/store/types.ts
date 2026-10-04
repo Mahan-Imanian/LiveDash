@@ -1,5 +1,6 @@
 import type { HourCycle } from '@/lib/format'
 import type { CalEvent } from '@/lib/ics'
+import type { Dest, Launch } from '@/lib/rank'
 
 export interface Task {
 	id: string
@@ -10,6 +11,7 @@ export interface Task {
 	doneAt: number | null
 	createdAt: number
 	order: number
+	url?: string
 }
 
 export interface Note {
@@ -19,16 +21,10 @@ export interface Note {
 	updatedAt: number
 }
 
-export type ShortcutIcon =
-	| { kind: 'site' }
-	| { kind: 'mono'; color: string }
-	| { kind: 'image'; data: string }
-
 export interface Shortcut {
 	id: string
 	url: string
 	title: string
-	icon: ShortcutIcon
 }
 
 export type FocusMode = 'focus' | 'short' | 'long'
@@ -50,27 +46,19 @@ export interface CalendarState {
 	error: string | null
 }
 
-export interface Place {
-	name: string
-	region?: string
-	lat: number
-	lon: number
+export interface Closed {
+	id: string
+	kind: 'tab' | 'window'
+	title: string
+	url?: string
+	count: number
+	at: number
 }
 
-export interface WeatherData {
-	temp: number
-	code: number
-	isDay: boolean
-	max: number
-	min: number
-	unit: 'c' | 'f'
-}
-
-export interface WeatherState {
-	place: Place | null
-	data: WeatherData | null
-	fetchedAt: number | null
-	error: string | null
+export interface Cache {
+	home: Dest[]
+	closed: Closed[]
+	at: number
 }
 
 export type Accent = 'ember' | 'cobalt' | 'moss' | 'iris' | 'graphite'
@@ -79,9 +67,8 @@ export interface Settings {
 	theme: 'auto' | 'light' | 'dark'
 	accent: Accent
 	hourCycle: HourCycle
-	showSeconds: boolean
-	panels: { shortcuts: boolean; notes: boolean; focus: boolean }
-	weatherUnit: 'auto' | 'c' | 'f'
+	typeOnOpen: boolean
+	switchTabs: boolean
 	focus: { focus: number; short: number; long: number; sound: boolean; notify: boolean }
 }
 
@@ -89,6 +76,7 @@ export interface Ui {
 	welcomed: boolean
 	migrated: boolean
 	completedOpen: boolean
+	asked: boolean
 }
 
 export interface State {
@@ -97,7 +85,10 @@ export interface State {
 	shortcuts: Shortcut[]
 	focus: FocusState
 	calendar: CalendarState
-	weather: WeatherState
+	launches: Launch[]
+	hidden: string[]
+	hours: { at: number; data: Record<string, number[]> }
+	cache: Cache
 	ui: Ui
 	settings: Settings
 }

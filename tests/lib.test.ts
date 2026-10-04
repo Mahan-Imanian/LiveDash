@@ -98,3 +98,29 @@ test('multi-word queries match word prefixes', () => {
 	assert.ok(score('start focus', 'Start focus timer') >= 75)
 	assert.equal(score('theme purple', 'Theme: light'), 0)
 })
+
+test('ics: finds the meeting link to join', () => {
+	const from = Date.UTC(2026, 9, 1)
+	const [e] = parseIcs(
+		ics(
+			[
+				'BEGIN:VEVENT',
+				'UID:m',
+				'SUMMARY:Standup',
+				'DTSTART:20261006T090000Z',
+				'DTEND:20261006T091500Z',
+				'DESCRIPTION:Join with Google Meet: https://meet.google.com/abc-defg-hij\nOr dial in',
+				'END:VEVENT',
+			].join('\r\n'),
+		),
+		from,
+		from + 30 * 86_400_000,
+	)
+	assert.equal(e.link, 'https://meet.google.com/abc-defg-hij')
+})
+
+test('launcher abbreviations', () => {
+	assert.ok(score('hn', 'Hacker News') >= 70)
+	assert.ok(score('gh', 'github.com') >= 45)
+	assert.ok(score('git', 'grid-template-columns') < 45)
+})
