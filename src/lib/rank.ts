@@ -69,7 +69,7 @@ const SEP = /\s+[-–—|·•»]\s+/
 
 export function cleanTitle(raw: string, host: string, path: string): string {
 	const title = raw.replace(/\s+/g, ' ').trim()
-	if (!title) return host
+	if (!title || /^[a-z][a-z0-9+.-]*:\/\//i.test(title)) return host
 	const brand = host.split('.').slice(-2, -1)[0] ?? host
 	const isBrand = (seg: string) => {
 		const t = seg.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -156,8 +156,13 @@ export function merge(sources: Source[]): Dest[] {
 		if (s.bookmark) d.bookmark = true
 		if ((!d.title || d.title === d.host) && s.title) d.title = cleanTitle(s.title, n.host, n.path)
 	}
-	return [...map.values()]
+	return [...map.values()].filter(
+		(d) => d.pinned !== undefined || d.tabId !== undefined || !ERROR_TITLE.test(d.title),
+	)
 }
+
+const ERROR_TITLE =
+	/^(?:error )?[45]\d\d(?:$|\s*[^\w\s]|\s+(?:forbidden|not found|bad gateway|service unavailable|internal server error|unauthorized|gone|too many requests))|^(?:forbidden|not found|access denied|page not found|just a moment\W*)$/i
 
 function base(d: Dest, ctx: RankCtx): number {
 	const f = frecency(d.visits, 0, d.lastVisit || ctx.now - 30 * DAY, ctx.now)

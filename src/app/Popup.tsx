@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { browser } from 'wxt/browser'
-import { Launcher } from '@/features/launcher/Launcher'
+import { Search } from '@/features/search/Search'
 import { Glyph } from '@/ui/Glyph'
+import { MenuHost } from '@/ui/Menu'
 import { ToastHost } from '@/ui/ToastHost'
 
 export function Popup() {
@@ -30,9 +31,7 @@ export function Popup() {
 	if (done) {
 		return (
 			<output className="popup-done">
-				<span style={{ color: 'var(--accent)' }}>
-					<Glyph name="check" size={20} />
-				</span>
+				<Glyph name="check" size={20} />
 				{done}
 			</output>
 		)
@@ -41,10 +40,9 @@ export function Popup() {
 	if (page === undefined) return null
 
 	return (
-		<div className="canvas">
-			<main className="stage">
-				<Launcher page={page} onDone={setDone} />
-			</main>
+		<div className="popup-shell">
+			<Search page={page} alwaysOpen onDone={setDone} />
+			<MenuHost />
 			<ToastHost />
 		</div>
 	)
