@@ -1,31 +1,41 @@
 # LiveDash
 
-A fast, private, keyboard-first new tab for Chrome.
+**Where to?** A new tab that knows where you go.
 
-Open a tab, see what's next, act on it, get back to work. Capture a task with a date in plain English, jump to any site, jot a note, or start a focus session — all from one box, without an account, and without anything leaving your device.
+Open a tab, type two letters or press a number, and you're there. If it's already open somewhere, LiveDash switches to that tab instead of opening it twice. Everything you might want next — the places you visit at this time of day, the tab you just closed, the meeting starting in ten minutes, the thing you saved for later — is one keystroke away. Nothing leaves your browser.
 
-![LiveDash home, dark theme](docs/screenshots/home-dark.png)
+![Go](docs/screenshots/go-dark.png)
 
 ## What it does
 
-- **One box for everything.** Press <kbd>/</kbd> or <kbd>Ctrl</kbd> <kbd>K</kbd> and type. “Call Alex tomorrow at 3pm” becomes a task due tomorrow at 15:00, and you see how it was understood before you press Enter. The same box opens sites, searches the web with your default engine, finds your shortcuts, notes, tasks and (if you allow it) bookmarks, and runs commands.
-- **Quick capture on any page.** <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd> opens a small capture window over whatever you're doing. Add a task, save the page as a note or pin it as a shortcut, and keep going. Right-click selected text to add it as a task.
-- **Today, not a dashboard.** Overdue, today, upcoming and undated tasks, grouped and ordered. Complete with a click or <kbd>Space</kbd>, edit with <kbd>Enter</kbd>, reorder with drag or <kbd>Alt</kbd> + arrows, and undo anything with <kbd>Ctrl</kbd> <kbd>Z</kbd>.
-- **Shortcuts that start full.** Suggestions come from Chrome's own most-visited list (only if you allow it). Open them with a click or keys <kbd>1</kbd>–<kbd>9</kbd>. Custom names, letter icons or your own image.
-- **Notes that save as you type.** The first line is the title.
-- **Focus timer** that starts instantly, survives closing the tab, shows the remaining minutes on the toolbar icon, and notifies you only if you ask it to.
-- **Optional context.** Your next calendar event (from any iCal link — Google, Outlook, iCloud) and the weather (Open-Meteo, no key, no account) sit quietly under the clock.
+- **Learns where you go.** Places are ranked from your own history by how often, how recently and at what hour you visit them, and numbered 1–9. Pick something for a few letters a couple of times and it ranks first for those letters next time. No setup, no bookmarks to curate.
+- **Switches instead of duplicating.** Going somewhere you already have open jumps to that tab and closes the new one. One row tells you when you have duplicate tabs and closes them with undo.
+- **Picks up where you left off.** Recently closed tabs and windows come back with one key.
+- **Understands what you type.** An address opens. A question searches with your default engine. "Dentist thursday 9am" becomes something saved for later with a date. `>` lists commands.
+- **Later.** Things to come back to — pages, tasks with dates, notes — on their own quiet page. Save the current page from anywhere with <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd> or the right-click menu.
+- **What matters right now, only when it matters.** The next meeting (with a join link) and a running focus timer appear in one line at the top, and disappear when they don't apply.
 
 | | |
 |---|---|
-| ![Command bar](docs/screenshots/command-bar.png) | ![Quick capture](docs/screenshots/quick-capture.png) |
-| ![Light theme](docs/screenshots/home-light.png) | ![Settings](docs/screenshots/settings.png) |
+| ![Typing two letters](docs/screenshots/type-hn.png) | ![Saving something for later](docs/screenshots/save-for-later.png) |
+| ![Later](docs/screenshots/later.png) | ![First run](docs/screenshots/first-run.png) |
+
+## Keys
+
+| | |
+|---|---|
+| Go to the highlighted row | <kbd>↵</kbd> |
+| Open place 1–9 | <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd> |
+| Open in a new tab | <kbd>Alt</kbd> <kbd>↵</kbd> |
+| Save what you typed for later | <kbd>⇧</kbd> <kbd>↵</kbd> |
+| Search the web for what you typed | <kbd>Ctrl</kbd> <kbd>↵</kbd> |
+| More actions (pin, copy, never suggest…) | <kbd>→</kbd> |
+| Commands | <kbd>></kbd> |
+| Quick capture on any page | <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd> |
 
 ## Privacy
 
-No account, no analytics, no ads, no remote code. Tasks, notes and shortcuts live in your browser's extension storage. The only network requests are the ones you turn on (weather, calendar), each behind its own Chrome permission prompt. See [PRIVACY.md](PRIVACY.md).
-
-Install-time permissions are limited to storage, alarms, the right-click menu, site icons, search through your default engine, and the current tab when you open quick capture. Bookmarks, most-visited sites, notifications and the weather/calendar hosts are optional and requested only when you use the feature that needs them.
+LiveDash has no account, no server, no analytics and no remote code. Ranking happens in your browser from data Chrome already has. Access to history, tabs and recently closed tabs is optional and asked for once, with an explanation; without it LiveDash still launches, searches and saves things, and learns from what you open through it. See [PRIVACY.md](PRIVACY.md).
 
 ## Build from source
 
@@ -38,30 +48,33 @@ npm ci
 npm run build
 ```
 
-Then open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and select `.output/chrome-mv3`.
+Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and select `.output/chrome-mv3`.
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Development build with live reload in a separate Chrome profile |
+| `npm run dev` | Development build with live reload |
 | `npm run build` | Production build in `.output/chrome-mv3` |
 | `npm run zip` | Store-ready zip in `.output/` |
 | `npm run check` | Type check, lint and unit tests |
 
+`LD_TEST=1 npx wxt build` produces a test build in `.output-test/` with history and tab access granted up front, for automated testing only.
+
 ## Project layout
 
 ```text
-entrypoints/   newtab page, quick-capture popup, background service worker
-src/app/       page shells and boot (store load, theme)
-src/features/  command bar, tasks, shortcuts, notes, focus, settings, calendar/weather services
-src/lib/       pure logic: natural-language dates, iCal parsing, fuzzy matching, formatting
-src/store/     local-first store, actions, import/export, migration from v1
-src/styles/    design tokens and component styles
-tests/         unit tests (node --test)
+entrypoints/        new tab, quick-capture popup, background service worker
+src/lib/rank.ts     ranking: frequency, recency, hour of day, learned picks, title cleanup
+src/lib/browser.ts  history, open tabs, recently closed, duplicates, tab switching
+src/lib/when.ts     natural-language dates
+src/lib/ics.ts      iCal parsing with recurrence and meeting links
+src/features/       launcher, later, settings, top line
+src/store/          local store, actions, import/export, migration
+tests/              unit tests (node --test)
 ```
 
 ## Origins
 
-LiveDash 1.x was built on a fork of [Widgetify](https://github.com/widgetify-app/widgetify-extension), an open-source new-tab extension released under the MIT License (© 2025 widgetify). Version 2 is a ground-up rewrite that shares no code with it; the original copyright notice is kept in [LICENSE](LICENSE) as the MIT License requires. Bundled third-party licenses are in [public/THIRD_PARTY_NOTICES.txt](public/THIRD_PARTY_NOTICES.txt).
+LiveDash 1.x was built on a fork of [Widgetify](https://github.com/widgetify-app/widgetify-extension), an open-source new-tab extension released under the MIT License (© 2025 widgetify). The current version is a ground-up rewrite that shares no code with it; the original copyright notice is kept in [LICENSE](LICENSE) as the MIT License requires. Bundled third-party licenses are in [public/THIRD_PARTY_NOTICES.txt](public/THIRD_PARTY_NOTICES.txt).
 
 ## License
 
