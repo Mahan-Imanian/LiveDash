@@ -1,8 +1,8 @@
 {
 	"name": "livedash",
-	"description": "A new tab that learns where you go and gets you there in one keystroke. Switches to open tabs, reopens closed ones, saves things for later. Private and local.",
+	"description": "The front page of your browser: one box for the web, your tabs, history and bookmarks, shortcuts with groups, what to pick up, today, notes and focus. Private and local.",
 	"private": true,
-	"version": "2.0.0",
+	"version": "2.1.0",
 	"type": "module",
 	"license": "MIT",
 	"repository": {
@@ -23,6 +23,7 @@
 		"postinstall": "wxt prepare"
 	},
 	"dependencies": {
+		"@fontsource-variable/newsreader": "^5.3.0",
 		"react": "^19.3.0",
 		"react-dom": "^19.3.0"
 	},
