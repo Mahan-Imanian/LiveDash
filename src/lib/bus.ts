@@ -1,9 +1,11 @@
-export type View = 'go' | 'later' | 'settings' | 'keys'
+export type Panel = 'bookmarks' | 'tasks' | 'notes' | 'customize' | 'settings'
 
 export type UiEvent =
-	| { type: 'view'; view: View; note?: string }
-	| { type: 'refresh' }
+	| { type: 'open'; panel: Panel; arg?: string }
+	| { type: 'focus-mode'; on: boolean }
 	| { type: 'prompt'; text?: string }
+	| { type: 'refresh' }
+	| { type: 'shortcut'; id?: string; url?: string; title?: string }
 
 const target = new EventTarget()
 

@@ -10,8 +10,12 @@ const LOCAL: Key[] = [
 	'tasks',
 	'notes',
 	'shortcuts',
+	'groups',
 	'focus',
 	'calendar',
+	'weather',
+	'daily',
+	'photo',
 	'launches',
 	'hidden',
 	'hours',
@@ -33,6 +37,9 @@ function mergeSettings(raw: unknown): Settings {
 		...defaultSettings,
 		...s,
 		focus: { ...defaultSettings.focus, ...s.focus },
+		background: { ...defaultSettings.background, ...s.background },
+		modules: { ...defaultSettings.modules, ...s.modules },
+		keywords: Array.isArray(s.keywords) ? s.keywords : defaultSettings.keywords,
 	}
 }
 
@@ -41,6 +48,7 @@ function hydrate(key: Key, value: unknown): State[Key] {
 	if (value === undefined || value === null) return base[key]
 	if (key === 'settings') return mergeSettings(value)
 	if (Array.isArray(base[key])) return Array.isArray(value) ? (value as State[Key]) : base[key]
+	if (base[key] === null || typeof value !== 'object') return value as State[Key]
 	return { ...(base[key] as object), ...(value as object) } as State[Key]
 }
 

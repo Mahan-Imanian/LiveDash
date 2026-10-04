@@ -18,7 +18,7 @@ export default defineConfig({
 		name: 'LiveDash',
 		short_name: 'LiveDash',
 		description:
-			'A new tab that learns where you go and gets you there in one keystroke. Switches to open tabs, reopens closed ones, saves things for later. Private and local.',
+			'The front page of your browser: one box for the web, your tabs, history and bookmarks, shortcuts with groups, what to pick up, today, notes and focus. Private and local.',
 		minimum_chrome_version: '120',
 		permissions: [
 			'storage',
@@ -27,10 +27,28 @@ export default defineConfig({
 			'favicon',
 			'activeTab',
 			'search',
-			...(testBuild ? ['history', 'tabs', 'sessions', 'bookmarks'] : []),
+			...(testBuild ? ['history', 'tabs', 'sessions', 'bookmarks', 'tabGroups', 'topSites'] : []),
 		],
-		optional_permissions: ['history', 'tabs', 'sessions', 'bookmarks', 'notifications'],
+		optional_permissions: [
+			'history',
+			'tabs',
+			'sessions',
+			'bookmarks',
+			'topSites',
+			'tabGroups',
+			'notifications',
+		],
 		optional_host_permissions: ['https://*/*'],
+		...(testBuild
+			? {
+					host_permissions: [
+						'https://api.open-meteo.com/*',
+						'https://geocoding-api.open-meteo.com/*',
+						'https://en.wikipedia.org/*',
+						'https://upload.wikimedia.org/*',
+					],
+				}
+			: {}),
 		action: {
 			default_title: 'LiveDash quick capture',
 		},

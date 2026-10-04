@@ -2,6 +2,7 @@ export interface Parsed {
 	title: string
 	due: number | null
 	allDay: boolean
+	repeat?: Repeat
 }
 
 const DAY = 86_400_000
@@ -209,6 +210,20 @@ function parseDay(
 		if (!dateHit[3] && d < today) d = new Date(year + 1, month, date)
 		return { day: d }
 	}
+
+	const ord = take(
+		text,
+		/(?:^|\s)(?:on\s+)?the\s+(\d{1,2})(?:st|nd|rd|th)(?=\s*$|\s*[,.!?]|\s+(?:at\s|@|\d))/i,
+		hits,
+	)
+	if (ord) {
+		const n = Number(ord[1])
+		if (n < 1 || n > 31) return null
+		const y = today.getFullYear()
+		const inMonth = (m: number) => new Date(y, m, Math.min(n, new Date(y, m + 1, 0).getDate()))
+		const d = inMonth(today.getMonth())
+		return { day: d < today ? inMonth(today.getMonth() + 1) : d }
+	}
 	return null
 }
 
@@ -226,27 +241,86 @@ function strip(text: string, hits: Hit[]): string {
 		.trim()
 }
 
+export type Repeat = 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'yearly'
+
+const REPEATS: [RegExp, Repeat][] = [
+	[/^(every\s+day|daily)$/i, 'daily'],
+	[/^(every\s+weekday|weekdays)$/i, 'weekdays'],
+	[/^(every\s+week|weekly)$/i, 'weekly'],
+	[/^(every\s+month|monthly)$/i, 'monthly'],
+	[/^(every\s+year|yearly|annually)$/i, 'yearly'],
+]
+
+function parseRepeat(text: string, hits: Hit[]): Repeat | undefined {
+	const m = take(
+		text,
+		/(?:^|\s)(every\s+day|daily|every\s+weekday|weekdays|every\s+week|weekly|every\s+month|monthly|every\s+year|yearly|annually)\b/i,
+		hits,
+	)
+	if (m) return REPEATS.find(([re]) => re.test(m[1]))?.[1]
+	if (take(text, new RegExp(`(?:^|\\s)every(?=\\s+(?:${WD}|saturday|sunday)\\b)`, 'i'), hits))
+		return 'weekly'
+	return undefined
+}
+
+function mask(text: string, hits: Hit[]): string {
+	return hits.reduce(
+		(s, h) => s.slice(0, h.start) + ' '.repeat(h.end - h.start) + s.slice(h.end),
+		text,
+	)
+}
+
+function isWeekend(d: Date): boolean {
+	return d.getDay() === 0 || d.getDay() === 6
+}
+
+export function nextOccurrence(due: number, repeat: Repeat, now = Date.now()): number {
+	const d = new Date(due)
+	const dom = d.getDate()
+	const today = startOfDay(now).getTime()
+	const addMonths = (n: number) => {
+		const target = new Date(d.getFullYear(), d.getMonth() + n, 1, d.getHours(), d.getMinutes())
+		const last = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate()
+		target.setDate(Math.min(dom, last))
+		d.setTime(target.getTime())
+	}
+	const step = () => {
+		if (repeat === 'daily') d.setDate(d.getDate() + 1)
+		else if (repeat === 'weekdays') {
+			do d.setDate(d.getDate() + 1)
+			while (isWeekend(d))
+		} else if (repeat === 'weekly') d.setDate(d.getDate() + 7)
+		else if (repeat === 'monthly') addMonths(1)
+		else addMonths(12)
+	}
+	step()
+	for (let i = 0; i < 1000 && d.getTime() < today; i++) step()
+	return d.getTime()
+}
+
+const LEAD_IN = /^(?:please\s+)?(?:remind me to|remember to|don'?t forget to|i need to|todo:?)\s+/i
+
 export function parseWhen(input: string, now = Date.now()): Parsed {
-	const text = input.trim()
+	const text = input.trim().replace(LEAD_IN, '') || input.trim()
 	const hits: Hit[] = []
-	const day = parseDay(text, now, hits)
-	const masked = hits.length
-		? hits.reduce(
-				(s, h) => s.slice(0, h.start) + ' '.repeat(h.end - h.start) + s.slice(h.end),
-				text,
-			)
-		: text
+	const repeat = parseRepeat(text, hits)
+	const day = parseDay(mask(text, hits), now, hits)
 	const timeHits: Hit[] = []
-	const time = day?.time ?? parseTime(masked, timeHits)
+	const time = day?.time ?? parseTime(mask(text, hits), timeHits)
 	hits.push(...timeHits)
 
-	if (!day && !time) return { title: text, due: null, allDay: false }
+	if (!day && !time && !repeat) return { title: text, due: null, allDay: false }
 
 	const title = strip(text, hits) || text
-	if (day && !time) return { title, due: day.day.getTime(), allDay: true }
+	let start = day ? new Date(day.day) : startOfDay(now)
+	if (!day && repeat === 'weekdays')
+		while (isWeekend(start)) start = new Date(start.getTime() + DAY)
+	const out = (due: number, allDay: boolean): Parsed =>
+		repeat ? { title, due, allDay, repeat } : { title, due, allDay }
+	if (!time) return out(start.getTime(), true)
 
-	const base = day ? new Date(day.day) : startOfDay(now)
-	base.setHours(time!.h, time!.m, 0, 0)
-	if (!day && base.getTime() <= now) base.setDate(base.getDate() + 1)
-	return { title, due: base.getTime(), allDay: false }
+	start.setHours(time.h, time.m, 0, 0)
+	if (!day && start.getTime() <= now)
+		start = new Date(nextOccurrence(start.getTime(), repeat ?? 'daily', now + DAY))
+	return out(start.getTime(), false)
 }

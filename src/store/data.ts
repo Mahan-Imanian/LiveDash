@@ -2,7 +2,7 @@ import { browser } from 'wxt/browser'
 import { titleFromUrl, toUrl } from '@/lib/url'
 import { toast } from '@/ui/toast'
 import { defaults, getState, uid, update } from './store'
-import type { Note, Shortcut, State, Task } from './types'
+import type { Group, Note, Shortcut, State, Task } from './types'
 
 const FORMAT = 'livedash-backup'
 
@@ -15,6 +15,7 @@ export function exportData(): void {
 		tasks: s.tasks,
 		notes: s.notes,
 		shortcuts: s.shortcuts,
+		groups: s.groups,
 		settings: s.settings,
 		calendarUrl: s.calendar.url,
 		hidden: s.hidden,
@@ -65,11 +66,18 @@ export async function importData(file: File): Promise<void> {
 	)
 		? raw.shortcuts
 		: []
+	const groups = isArrayOf<Group>(
+		raw.groups,
+		(g) => typeof g.id === 'string' && typeof g.name === 'string',
+	)
+		? raw.groups
+		: []
 	const before = getState()
 	const merge = <T extends { id: string }>(cur: T[], inc: T[]) => [
 		...cur,
 		...inc.filter((x) => !cur.some((c) => c.id === x.id)),
 	]
+	update('groups', (l) => merge(l, groups))
 	update('tasks', (l) => merge(l, tasks))
 	update('notes', (l) => merge(l, notes))
 	update('shortcuts', (l) => merge(l, shortcuts))
@@ -103,8 +111,12 @@ export async function eraseAll(): Promise<void> {
 		'tasks',
 		'notes',
 		'shortcuts',
+		'groups',
 		'focus',
 		'calendar',
+		'weather',
+		'daily',
+		'photo',
 		'launches',
 		'hidden',
 		'hours',

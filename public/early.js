@@ -3,6 +3,8 @@ try {
 	const a = localStorage.getItem('ld-accent')
 	if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
 	if (a && a !== 'ember') document.documentElement.dataset.accent = a
+	const tone = localStorage.getItem('ld-tone')
+	if (tone) document.documentElement.dataset.tone = tone
 	if (
 		location.pathname.endsWith('/newtab.html') &&
 		!new URLSearchParams(location.search).has('f') &&
