@@ -1,21 +1,18 @@
-import { CircleAlert, CircleCheck, X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { dismissToast, runUndo, useToast } from './toast'
 
 export function ToastHost() {
 	const t = useToast()
-	const hover = useRef(false)
+	const hold = useRef(false)
 
 	useEffect(() => {
 		if (!t) return
-		const ms = t.undo || t.action ? 7000 : t.tone === 'error' ? 8000 : 3500
-		let left = ms
-		const tick = 250
+		let left = t.undo || t.action ? 7000 : t.tone === 'error' ? 8000 : 3200
 		const timer = setInterval(() => {
-			if (hover.current || document.hidden) return
-			left -= tick
+			if (hold.current || document.hidden) return
+			left -= 250
 			if (left <= 0) dismissToast(t.id)
-		}, tick)
+		}, 250)
 		return () => clearInterval(timer)
 	}, [t])
 
@@ -27,50 +24,39 @@ export function ToastHost() {
 					className="toast"
 					data-tone={t.tone}
 					role={t.tone === 'error' ? 'alert' : 'status'}
-					onMouseEnter={() => {
-						hover.current = true
+					onPointerEnter={() => {
+						hold.current = true
 					}}
-					onMouseLeave={() => {
-						hover.current = false
+					onPointerLeave={() => {
+						hold.current = false
 					}}
-					onFocus={() => {
-						hover.current = true
+					onFocusCapture={() => {
+						hold.current = true
 					}}
-					onBlur={() => {
-						hover.current = false
+					onBlurCapture={() => {
+						hold.current = false
 					}}
 				>
-					{t.tone === 'success' && (
-						<CircleCheck size={18} className="toast-icon" aria-hidden="true" />
-					)}
-					{t.tone === 'error' && (
-						<CircleAlert size={18} className="toast-icon" aria-hidden="true" />
-					)}
+					<span className="toast-mark" aria-hidden="true" />
 					<span className="toast-msg">{t.message}</span>
 					{t.undo && (
-						<button type="button" className="btn" onClick={() => runUndo()}>
-							Undo
+						<button type="button" onClick={() => runUndo()}>
+							undo
 						</button>
 					)}
 					{t.action && (
 						<button
 							type="button"
-							className="btn"
 							onClick={() => {
 								t.action?.run()
 								dismissToast(t.id)
 							}}
 						>
-							{t.action.label}
+							{t.action.label.toLowerCase()}
 						</button>
 					)}
-					<button
-						type="button"
-						className="icon-btn"
-						aria-label="Dismiss"
-						onClick={() => dismissToast(t.id)}
-					>
-						<X size={16} />
+					<button type="button" aria-label="Dismiss" onClick={() => dismissToast(t.id)}>
+						×
 					</button>
 				</div>
 			)}

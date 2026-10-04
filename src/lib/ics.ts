@@ -4,7 +4,11 @@ export interface CalEvent {
 	end: number
 	allDay: boolean
 	location?: string
+	link?: string
 }
+
+const MEETING =
+	/https:\/\/[^\s"<>\\]*(?:meet\.google\.com|zoom\.us|teams\.microsoft\.com|teams\.live\.com|whereby\.com|webex\.com|around\.co|meet\.jit\.si)[^\s"<>\\]*/i
 
 interface Prop {
 	value: string
@@ -232,6 +236,14 @@ export function parseIcs(text: string, from: number, to: number): CalEvent[] {
 					: 0
 		const title = unescapeText(r.SUMMARY?.[0]?.value ?? '') || 'Untitled event'
 		const location = r.LOCATION?.[0] ? unescapeText(r.LOCATION[0].value) || undefined : undefined
+		const link = [
+			r.URL?.[0]?.value,
+			r.LOCATION?.[0]?.value,
+			r.DESCRIPTION?.[0]?.value,
+			r['X-GOOGLE-CONFERENCE']?.[0]?.value,
+		]
+			.map((v) => (v ? MEETING.exec(v.replace(/\\[nN]/g, ' '))?.[0] : undefined))
+			.find(Boolean)
 
 		let starts = [ds.t]
 		const rule = r.RRULE?.[0]
@@ -249,7 +261,7 @@ export function parseIcs(text: string, from: number, to: number): CalEvent[] {
 			const e = s + Math.max(0, dur)
 			if (e < from && !(ds.allDay && e === from)) continue
 			if (s > to) continue
-			out.push({ title, start: s, end: e, allDay: ds.allDay, location })
+			out.push({ title, start: s, end: e, allDay: ds.allDay, location, link })
 		}
 	}
 	return out.sort((a, b) => a.start - b.start)

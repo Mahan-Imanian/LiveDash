@@ -1,6 +1,6 @@
 {
 	"name": "livedash",
-	"description": "A fast, private, keyboard-first new tab: capture tasks and notes, jump anywhere, see what is next.",
+	"description": "A new tab that learns where you go and gets you there in one keystroke. Switches to open tabs, reopens closed ones, saves things for later. Private and local.",
 	"private": true,
 	"version": "2.0.0",
 	"type": "module",
@@ -23,7 +23,6 @@
 		"postinstall": "wxt prepare"
 	},
 	"dependencies": {
-		"lucide-react": "^1.51.0",
 		"react": "^19.3.0",
 		"react-dom": "^19.3.0"
 	},

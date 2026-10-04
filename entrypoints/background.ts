@@ -22,7 +22,6 @@ async function settings(): Promise<Settings> {
 		...defaultSettings,
 		...s,
 		focus: { ...defaultSettings.focus, ...s.focus },
-		panels: { ...defaultSettings.panels, ...s.panels },
 	}
 }
 
@@ -82,12 +81,17 @@ export default defineBackground(() => {
 		browser.contextMenus.removeAll(() => {
 			browser.contextMenus.create({
 				id: 'task',
-				title: 'Add “%s” as a LiveDash task',
+				title: 'Save “%s” for later in LiveDash',
 				contexts: ['selection'],
 			})
 			browser.contextMenus.create({
+				id: 'later',
+				title: 'Save page for later in LiveDash',
+				contexts: ['page'],
+			})
+			browser.contextMenus.create({
 				id: 'pin',
-				title: 'Pin this page to LiveDash',
+				title: 'Pin page to LiveDash',
 				contexts: ['page'],
 			})
 			browser.contextMenus.create({
@@ -105,6 +109,27 @@ export default defineBackground(() => {
 	})
 
 	browser.contextMenus.onClicked.addListener(async (info, tab) => {
+		if (info.menuItemId === 'later') {
+			const url = toUrl(tab?.url ?? info.pageUrl ?? '')
+			if (!url) return
+			const tasks = await read<Task[]>('tasks', [])
+			if (!tasks.some((t) => t.url === url && !t.done)) {
+				const task: Task = {
+					id: crypto.randomUUID(),
+					title: tab?.title || titleFromUrl(url),
+					due: null,
+					allDay: false,
+					done: false,
+					doneAt: null,
+					createdAt: Date.now(),
+					order: tasks.reduce((m, t) => Math.max(m, t.order), 0) + 1,
+					url,
+				}
+				await browser.storage.local.set({ [`${PREFIX}tasks`]: [...tasks, task] })
+			}
+			await flash('✓')
+			return
+		}
 		if (info.menuItemId === 'task' && info.selectionText) {
 			const text = info.selectionText.trim().slice(0, 500)
 			const p = parseWhen(text)
@@ -130,10 +155,7 @@ export default defineBackground(() => {
 		if (!list.some((s) => s.url === url)) {
 			const title = info.menuItemId === 'pin' && tab?.title ? tab.title : titleFromUrl(url)
 			await browser.storage.local.set({
-				[`${PREFIX}shortcuts`]: [
-					...list,
-					{ id: crypto.randomUUID(), url, title, icon: { kind: 'site' } },
-				],
+				[`${PREFIX}shortcuts`]: [...list, { id: crypto.randomUUID(), url, title }],
 			})
 		}
 		await flash('✓')

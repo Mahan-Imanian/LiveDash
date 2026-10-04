@@ -34,13 +34,7 @@
 	},
 	"overrides": [
 		{
-			"includes": [
-				"src/features/palette/Palette.tsx",
-				"src/features/tasks/Today.tsx",
-				"src/features/shortcuts/**",
-				"src/features/settings/**",
-				"src/ui/**"
-			],
+			"includes": ["src/features/**", "src/ui/**"],
 			"linter": {
 				"rules": {
 					"a11y": {

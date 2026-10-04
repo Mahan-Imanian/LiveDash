@@ -17,7 +17,7 @@ export function exportData(): void {
 		shortcuts: s.shortcuts,
 		settings: s.settings,
 		calendarUrl: s.calendar.url,
-		weatherPlace: s.weather.place,
+		hidden: s.hidden,
 	}
 	const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
 	const a = document.createElement('a')
@@ -99,7 +99,17 @@ export async function importData(file: File): Promise<void> {
 
 export async function eraseAll(): Promise<void> {
 	const d = defaults()
-	for (const k of ['tasks', 'notes', 'shortcuts', 'focus', 'calendar', 'weather'] as const) {
+	for (const k of [
+		'tasks',
+		'notes',
+		'shortcuts',
+		'focus',
+		'calendar',
+		'launches',
+		'hidden',
+		'hours',
+		'cache',
+	] as const) {
 		update(k, () => d[k] as never)
 	}
 	update('settings', () => d.settings)
@@ -107,6 +117,7 @@ export async function eraseAll(): Promise<void> {
 	try {
 		localStorage.removeItem('ld-theme')
 		localStorage.removeItem('ld-accent')
+		localStorage.removeItem('ld-type')
 	} catch {}
 	toast('All LiveDash data on this device was erased')
 }
@@ -168,7 +179,6 @@ export async function migrateLegacy(): Promise<void> {
 				id: uid(),
 				url,
 				title: b.title?.trim() || titleFromUrl(url),
-				icon: { kind: 'site' as const },
 			}
 		})
 	if (tasks.length) update('tasks', (l) => [...l, ...tasks])
