@@ -1,15 +1,65 @@
-# <img src="assets/icon.svg" width="40" height="40" alt="LiveDash icon"> LiveDash
-
-**The front page of your browser.** A Chrome new tab that searches your tabs, history and bookmarks, and keeps your day on one page.
-
-[![CI](https://github.com/Mahan-Imanian/LiveDash/actions/workflows/ci.yml/badge.svg)](https://github.com/Mahan-Imanian/LiveDash/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-One serif search line that reaches the web, your open tabs, history, bookmarks, shortcuts, tasks and notes. Shortcut keys you can group, drag and number. Beneath them, three quiet columns: what to pick up, what's on today, and your notes. Weather, a picture of the day and focus mode are there when you want them. There is no account, server or analytics, and LiveDash only goes online for your searches and the extras you switch on.
-
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/front-dark.png">
-  <img src="docs/screenshots/front-light.png" alt="The LiveDash new tab: a serif search line, a row of numbered shortcut keys, and three columns below for Pick up, Today and Notes">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/cover-dark.png">
+  <img alt="LiveDash: the front page of your browser. One search line for the web, your tabs, history and bookmarks. Chrome MV3, keyboard-first, opt-in network, MIT." src=".github/assets/cover-light.png" width="100%">
 </picture>
+
+<p align="center">
+  <a href="https://github.com/Mahan-Imanian/LiveDash/actions/workflows/ci.yml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/Mahan-Imanian/LiveDash/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-3d7bfd?style=flat-square"></a>
+  <img alt="Chrome 120 or newer, Manifest V3" src="https://img.shields.io/badge/Chrome-120%2B_·_MV3-155a55?style=flat-square">
+  <img alt="No account and no analytics" src="https://img.shields.io/badge/privacy-no_account_·_no_analytics-ff7a4d?style=flat-square">
+</p>
+
+<p align="center">
+  <a href="#install"><b>Install</b></a> ·
+  <a href="#what-it-does">Features</a> ·
+  <a href="#keys">Keys</a> ·
+  <a href="#privacy-and-permissions">Privacy</a> ·
+  <a href="#development">Development</a>
+</p>
+
+<br>
+
+<img alt="The LiveDash new tab in dark mode: a serif search line, a row of numbered shortcut keys, and three columns for Pick up, Today and Notes" src=".github/assets/showcase.png" width="100%">
+
+One serif search line that reaches the web, your open tabs, history, bookmarks, shortcuts, tasks and notes. Shortcut keys you can group, drag and number. Beneath them, three quiet columns: what to pick up, what's on today, and your notes. There is no account, server or analytics, and LiveDash only goes online for your searches and the extras you switch on.
+
+## What it does
+
+### Search that knows your browser
+
+Type two letters and the top hit is the tab you already have open (it switches, never duplicates), the site you visit at this hour, or a bookmark. Addresses open. Everything else searches with the engine you choose, and site keywords like `yt jazz` or `w typography` go straight to that site. Type a task with a date and <kbd>⇧</kbd> <kbd>↵</kbd> files it under Today.
+
+<p align="center">
+  <img alt="Typing 'next' in search: the top hit is the GitHub tab already open, with search, task and note options below" src=".github/assets/f-search.png" width="49%">
+  <img alt="A task with a natural-language date typed into the search line" src=".github/assets/f-quick-task.png" width="49%">
+</p>
+
+### Shortcut keys, better than tiles
+
+Up to 9 numbered keys (<kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>), plus as many more as you like. Group them as tabs, drag to reorder or drop onto a group, use your own icon or a coloured letter, and open a whole group as a Chrome tab group. No empty slots: when you have room, faded keys suggest sites from your history, and each one can be dismissed.
+
+### Your day on one page
+
+**Pick up** shows tabs and windows you just closed, pages open on your other devices, and today's history minus the junk (search results, sign-in flows, error pages). **Today** shows your next meeting with a join link, then due, upcoming and repeating tasks with natural-language dates ("pay rent every month on the 1st", "call mom friday 6pm"); meetings appear once you paste your calendar's secret iCal link into **Settings → Calendar**. **Notes** lets you jot, pin and search.
+
+### Everything has a key
+
+Press <kbd>></kbd> for every action: themes, focus, reopen, close duplicates, open a group as a tab group, export and more. Every list works with the keyboard alone, and <kbd>?</kbd> shows them all.
+
+<p align="center">
+  <img alt="The command palette listing actions" src=".github/assets/f-commands.png" width="49%">
+  <img alt="Weather with current conditions, 12 hours and 5 days" src=".github/assets/f-weather.png" width="49%">
+</p>
+
+### When you want them
+
+**Weather** for a city or your location, with 12 hours, 5 days and an offline state. **Focus mode**, a full-screen timer with 15, 25, 50 and 90-minute presets that keeps running when you leave. **Make it yours**: light, dark or system, five accents, six paper tones, the Wikipedia picture of the day or your own photo, comfortable or compact density, serif or sans headlines, and a switch for every column.
+
+<p align="center">
+  <img alt="Focus mode: a full-screen timer with an intent line" src=".github/assets/f-focus.png" width="49%">
+  <img alt="The Customize panel with themes, accents, paper tones and backgrounds" src=".github/assets/f-customize.png" width="49%">
+</p>
 
 ## Install
 
@@ -24,38 +74,10 @@ npm run build
 
 Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and select `.output/chrome-mv3`. Open a new tab. `npm run zip` builds a packed copy at `.output/livedash-<version>-chrome.zip`.
 
-## What it does
-
-**Immediately**
-- **Search that knows your browser.** Type two letters and the top hit is the tab you already have open (it switches, never duplicates), the site you visit at this hour, or a bookmark. Addresses open. Everything else searches with the engine you choose. Site keywords like `yt jazz` or `w typography` go straight to that site.
-- **Shortcut keys, better than tiles.** Up to 9 numbered keys (<kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>), plus as many more as you like. Groups as tabs, drag to reorder or drop onto a group, your own icon or a coloured letter, a right-click menu, and keyboard editing. Open a whole group as a Chrome tab group. No empty slots: when you have room, faded keys suggest sites from your history, and each one can be dismissed.
-- **Pick up.** Tabs and windows you just closed, pages open on your other devices, and today's history, minus the junk (search results, sign-in flows, error pages).
-
-**Discoverable**
-- **Today.** Your next meeting with a join link, then due, upcoming and repeating tasks with natural-language dates ("pay rent every month on the 1st", "call mom friday 6pm"). Overdue items are marked, completion has undo, and repeating tasks roll forward. Meetings appear once you paste your calendar's secret iCal link into **Settings → Calendar**.
-- **Notes.** Jot from the page, pin the important ones, search them all.
-- **Bookmarks.** Browse folders, search, open, or turn any bookmark into a shortcut.
-- **Weather.** Pick a city or use your location. You get the current conditions, 12 hours and 5 days, with an "updated" time and an offline state.
-
-**For power users**
-- **Commands.** Press <kbd>></kbd> for every action: themes, focus, reopen, close duplicates, open a group as a tab group, export and more.
-- **Everything has a key**, and every list works with the keyboard alone. Press <kbd>?</kbd> to see them.
-
-**Optional**
-- **Focus mode.** A full-screen timer with 15, 25, 50 and 90-minute presets, breaks and an intent line. It keeps running when you leave.
-- **Make it yours.** Light, dark or system. Five accents. Six paper tones, the Wikipedia picture of the day (credited and licensed) or your own photo with a dim control. Comfortable or compact density, serif or sans headlines, 12/24h, long or short dates, and a switch for every column.
-
-| | |
-|---|---|
-| ![Search switches to an open tab](docs/screenshots/search.png) | ![A task with a date, typed in search](docs/screenshots/quick-task.png) |
-| ![Commands](docs/screenshots/commands.png) | ![Weather forecast](docs/screenshots/weather.png) |
-| ![Picture of the day](docs/screenshots/picture-of-the-day.png) | ![Focus mode](docs/screenshots/focus.png) |
-| ![Customize](docs/screenshots/customize.png) | ![First run](docs/screenshots/first-run.png) |
-
 ## Keys
 
-| | |
-|---|---|
+| Action | Key |
+| --- | --- |
 | Search from anywhere on the page | <kbd>/</kbd> |
 | Commands | <kbd>></kbd> |
 | Open shortcut 1–9 | <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd> |
@@ -75,7 +97,7 @@ Single-letter keys work when the cursor isn't in a text box. Press <kbd>Esc</kbd
 No account, no server, no analytics, no remote code. Optional permissions are asked for in context and can be turned off in Settings. Without them, LiveDash still searches and keeps shortcuts, tasks and notes.
 
 | Permission | Why |
-|---|---|
+| --- | --- |
 | `storage` | Save shortcuts, tasks, notes and settings |
 | `search` | Send a search to Chrome's default engine |
 | `favicon` | Show site icons from Chrome's own cache |
