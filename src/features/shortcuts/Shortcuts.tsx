@@ -1,4 +1,12 @@
-import { type DragEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
+import {
+	type CSSProperties,
+	type DragEvent,
+	type KeyboardEvent,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react'
 import { importTopSites, openAll } from '@/lib/browser'
 import { on } from '@/lib/bus'
 import { openUrl } from '@/lib/chrome'
@@ -346,6 +354,7 @@ export function Shortcuts() {
 							data-sc={s.id}
 							data-dragging={drag?.id === s.id}
 							data-over={drag?.over === s.id}
+							style={{ '--i': i } as CSSProperties}
 							draggable
 							onDragStart={(e) => {
 								e.dataTransfer.effectAllowed = 'move'
@@ -382,6 +391,9 @@ export function Shortcuts() {
 											{i + 1}
 										</span>
 									)}
+									<span className="key-grip" aria-hidden="true">
+										<Glyph name="drag" size={12} />
+									</span>
 								</span>
 								<span className="key-label">{s.title}</span>
 							</a>
