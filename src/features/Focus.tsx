@@ -66,11 +66,28 @@ export function FocusMode({ onClose }: { onClose: () => void }) {
 			}}
 			tabIndex={-1}
 		>
-			<div className="focus-inner">
-				<p className="kicker">
+			<header className="focus-top">
+				<p className="focus-label" data-status={focus.status}>
+					<span className="focus-dot" aria-hidden="true" />
 					{MODE_LABEL[focus.mode]}
 					{running ? '' : focus.status === 'paused' ? ' · paused' : ''}
 				</p>
+				{sessions > 0 && (
+					<p className="focus-sessions">
+						{sessions} {sessions === 1 ? 'session' : 'sessions'} today
+					</p>
+				)}
+				<button
+					type="button"
+					className="drawer-close"
+					aria-label="Leave focus mode"
+					onClick={onClose}
+				>
+					<kbd>esc</kbd>
+					<Glyph name="close" />
+				</button>
+			</header>
+			<div className="focus-inner">
 				<p className="focus-time" role="timer" aria-live="off">
 					{formatDuration(left)}
 				</p>
@@ -127,21 +144,12 @@ export function FocusMode({ onClose }: { onClose: () => void }) {
 					</div>
 				)}
 				<p className="focus-foot">
-					{sessions > 0 ? `${sessions} ${sessions === 1 ? 'session' : 'sessions'} today · ` : ''}
 					<button type="button" className="text-btn" onClick={onClose}>
-						Leave focus mode <kbd>esc</kbd>
+						Leave focus mode
 					</button>{' '}
 					The timer keeps running.
 				</p>
 			</div>
-			<button
-				type="button"
-				className="icon-btn focus-close"
-				aria-label="Leave focus mode"
-				onClick={onClose}
-			>
-				<Glyph name="close" />
-			</button>
 		</div>
 	)
 }

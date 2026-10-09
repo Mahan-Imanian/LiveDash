@@ -41,6 +41,11 @@ export function Popup() {
 
 	return (
 		<div className="popup-shell">
+			<header className="popup-head">
+				<span className="nameplate">LiveDash</span>
+				<span className="popup-what">Quick capture</span>
+				{page && <span className="popup-page">{new URL(page.url).host}</span>}
+			</header>
 			<Search page={page} alwaysOpen onDone={setDone} />
 			<MenuHost />
 			<ToastHost />

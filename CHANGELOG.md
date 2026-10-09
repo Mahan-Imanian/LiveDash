@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.2.0
+
+A visual redesign of the new tab, the quick-capture popup and every panel. Features, keys, permissions and network behaviour are unchanged.
+
+### Changed
+
+- **Masthead.** Today's date is the page headline, set large in Newsreader, with a live clock under it. The next meeting sits beside it with a countdown, its time range, the Join button and what comes after it. When there is no meeting it shows how many tasks are due, or offers to connect a calendar. A thin line above names the edition (morning, afternoon, evening or late) and the week number.
+- **Search.** Bigger serif input with a rule that turns the accent colour on focus. Result groups are labelled with a line, URLs are set in a monospace face, and the selected row shows its action and key. The hint on the right switches from <kbd>/</kbd> to <kbd>></kbd> when the box has focus.
+- **Shortcut keys** are drawn as keycaps with a raised edge, a lift on hover, a press on click, a drag grip and an insertion mark while dragging. Labels have more room.
+- **Columns** are separated by a double rule with serif section heads. Agenda times use a monospace face.
+- **Night edition.** Dark mode now has its own blue-black palette with ivory type instead of a darkened copy of the light theme. Light themes get a fine paper grain.
+- **Type.** Schibsted Grotesk for interface text and IBM Plex Mono for addresses, times and keys, both bundled with the extension. Newsreader now uses its optical-size axis.
+- **Panels.** Drawers, Settings, Customize, Tasks, Notes, Bookmarks, the shortcut editor, menus, toasts, the weather forecast, focus mode and the popup share the same headings, rules and controls. The forecast draws each day's range on a shared scale.
+- **Motion.** The page loads in a short sequence: rules draw in, the headline settles, keys and columns follow. Everything is switched off when the system asks for reduced motion.
+- **Picture backgrounds** get a soft top and bottom shade so text stays readable on busy photos.
+
+### Verified
+
+Checked in Chrome at 560, 900, 1280 and 1440 px wide, light and dark, with a fresh profile and a seeded one, and with the picture of the day. Body and secondary text meet WCAG AA on every tone and accent in both themes (lowest 4.86:1).
+
 ## 2.1.0
 
 2.0 was a better launcher, but it gave up things Chrome's own new tab does well: visible shortcuts, a real search box, a background, customization. 2.1 is a front page. It does everything Chrome's new tab does, then adds what Chrome can't: your tabs, history and bookmarks in one search box, and quiet columns for what to pick up and what's on today. Complexity is layered. Search and shortcuts are visible immediately. Columns and panels are one key away. Commands and keyboard control are there for power users. Weather, wallpaper and focus are opt-in.

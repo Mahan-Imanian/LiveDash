@@ -15,7 +15,7 @@ export function NotesCol({ now }: { now: number }) {
 
 	return (
 		<section className="col" aria-labelledby="nt-title">
-			<h2 className="kicker" id="nt-title">
+			<h2 className="col-head" id="nt-title">
 				Notes
 			</h2>
 			<form
