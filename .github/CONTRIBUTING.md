@@ -30,13 +30,17 @@ src/features/search/      the search line, result model, commands
 src/features/shortcuts/   keys, groups, editor
 src/features/front/       masthead, pick up, today, notes
 src/features/panels/      bookmarks, tasks, notes, customize, settings
-src/lib/rank.ts           ranking: frequency, recency, hour of day, learned picks, title cleanup
+src/lib/rank.ts           ranking constants and scoring: frequency, recency, hour of day, learned picks, title cleanup
 src/lib/when.ts           natural-language dates and repeats
 src/lib/ics.ts            iCal parsing with recurrence and meeting links
 src/store/                local store, actions, import/export, migration
+src/styles/tokens.css     colour, type, spacing and motion tokens
 src/ui/                   drawer, menu, glyphs, controls
-tests/                    unit tests (node --test)
+tests/                    unit tests (node --test), including token contrast
+docs/ranking.md           every ranking constant, what it does and how it was chosen
 ```
+
+If you change a ranking constant, update `docs/ranking.md` and expect `tests/rank.test.ts` to tell you which intended ordering changed. If you change a colour token, `tests/contrast.test.ts` checks WCAG AA for every theme, tone and accent. Parser changes in `when.ts` and `ics.ts` need a test for the invalid and boundary input they touch, not only the happy path.
 
 ## Ground rules
 
