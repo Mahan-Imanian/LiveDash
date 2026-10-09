@@ -32,7 +32,7 @@ export function PickUp() {
 		if (asked) return null
 		return (
 			<section className="col" aria-labelledby="pu-title">
-				<h2 className="kicker" id="pu-title">
+				<h2 className="col-head" id="pu-title">
 					Pick up
 				</h2>
 				<p className="col-lede">
@@ -118,7 +118,7 @@ export function PickUp() {
 
 	return (
 		<section className="col" aria-labelledby="pu-title">
-			<h2 className="kicker" id="pu-title">
+			<h2 className="col-head" id="pu-title">
 				Pick up
 			</h2>
 			{items.length === 0 && dups.length === 0 ? (

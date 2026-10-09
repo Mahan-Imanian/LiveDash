@@ -64,14 +64,15 @@ export function Drawer({
 				<div className="drawer-inner">
 					<header className="drawer-head">
 						<div>
-							{kicker && <p className="kicker">{kicker}</p>}
+							{kicker && <p className="drawer-kicker">{kicker}</p>}
 							<h2 className="drawer-title" id={titleId}>
 								{title}
 							</h2>
 						</div>
 						<div className="drawer-actions">
 							{actions}
-							<button type="button" className="icon-btn" aria-label="Close" onClick={onClose}>
+							<button type="button" className="drawer-close" aria-label="Close" onClick={onClose}>
+								<kbd>esc</kbd>
 								<Glyph name="close" />
 							</button>
 						</div>
