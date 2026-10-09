@@ -59,6 +59,18 @@ export const defaultSettings: Settings = {
 	focus: { focus: 25, short: 5, long: 15, sound: true, notify: false },
 }
 
+export function mergeSettings(raw: unknown): Settings {
+	const s = (raw ?? {}) as Partial<Settings>
+	return {
+		...defaultSettings,
+		...s,
+		focus: { ...defaultSettings.focus, ...s.focus },
+		background: { ...defaultSettings.background, ...s.background },
+		modules: { ...defaultSettings.modules, ...s.modules },
+		keywords: Array.isArray(s.keywords) ? s.keywords : defaultSettings.keywords,
+	}
+}
+
 export const defaults = (): State => ({
 	tasks: [],
 	notes: [],

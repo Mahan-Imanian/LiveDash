@@ -2,7 +2,7 @@ import { browser } from 'wxt/browser'
 import { defineBackground } from 'wxt/utils/define-background'
 import { titleFromUrl, toUrl } from '@/lib/url'
 import { parseWhen } from '@/lib/when'
-import { defaultFocus, defaultSettings, newTask, PREFIX } from '@/store/defaults'
+import { defaultFocus, mergeSettings, newTask, PREFIX } from '@/store/defaults'
 import { MODE_LABEL, remainingMs, settle } from '@/store/focus-logic'
 import type { FocusState, Settings, Shortcut, Task } from '@/store/types'
 
@@ -15,14 +15,7 @@ async function read<T>(key: string, fallback: T, area: 'local' | 'sync' = 'local
 }
 
 async function settings(): Promise<Settings> {
-	const s = await read<Partial<Settings>>('settings', {}, 'sync').catch(
-		() => ({}) as Partial<Settings>,
-	)
-	return {
-		...defaultSettings,
-		...s,
-		focus: { ...defaultSettings.focus, ...s.focus },
-	}
+	return mergeSettings(await read<unknown>('settings', {}, 'sync').catch(() => ({})))
 }
 
 async function badge(f: FocusState) {
