@@ -148,7 +148,6 @@ async function history(access: Access): Promise<Source[]> {
 				url: h.url!,
 				title: h.title ?? '',
 				visits: h.visitCount ?? 0,
-				typed: h.typedCount ?? 0,
 				lastVisit: h.lastVisitTime ?? 0,
 			}))
 	}
