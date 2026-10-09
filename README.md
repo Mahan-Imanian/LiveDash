@@ -29,35 +29,73 @@ A new tab should get you somewhere. LiveDash's search box knows which tabs you h
 
 The page is laid out like a front page. Today's date is the headline, set in Newsreader and sized to fit the column, with a live clock under it. The lead story is your next meeting: a countdown, its time range, a Join button and the meeting after it. With no meeting left today it shows what's due instead, or offers to connect a calendar. The top line names the edition (morning, afternoon, evening or late) and the week of the year. In dark mode the page switches to a night edition with its own blue-black paper and ivory rules, not an inverted copy of the light one.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-masthead-dark.png">
+  <img alt="The masthead: Friday, October 9 as the headline with a live clock under it, and the lead story beside it: Design review, a countdown, its time range, a Join button and 1:1 with Sam after it" src=".github/assets/f-masthead.png" width="100%">
+</picture>
+
 ## Search
 
 Type two letters. If the page is already open in a tab, the top hit switches to it instead of opening a duplicate. Otherwise it's the site you usually visit at this hour, or a bookmark. A full address opens directly, `yt jazz` or `w typography` goes straight to that site, and anything else goes to the engine you chose. Type "call mom friday 6pm" and press <kbd>⇧</kbd> <kbd>↵</kbd> to file it as a task.
 
-<p align="center">
-  <img alt="Typing 'next' in search: the top hit is the GitHub tab already open, with web search, task and note options below" src=".github/assets/f-search.png" width="49%">
-  <img alt="A task with a natural-language date typed into the search line" src=".github/assets/f-quick-task.png" width="49%">
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-search-dark.png">
+  <img alt="Typing 'next' in search: the top hit is the Next.js tab already open on GitHub, with Switch to tab, and web search, task and note options below" src=".github/assets/f-search.png" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-quick-task-dark.png">
+  <img alt="Typing 'pay rent every month on the 1st': the top hit adds 'pay rent' as a task on Nov 1, repeating monthly" src=".github/assets/f-quick-task.png" width="100%">
+</picture>
 
 ## Shortcut keys
 
 Nine numbered keys, opened with <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>, and as many unnumbered ones as you want. Sort them into groups, drag them around, give them your own icon or a coloured letter, and open a whole group as a Chrome tab group. Empty slots don't stay empty: LiveDash suggests sites from your history as faded keys, and you can dismiss any of them.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-keys-dark.png">
+  <img alt="Nine numbered shortcut keys drawn as keycaps, from Next.js to Stack Overflow, with All, Work and Reading group tabs above them" src=".github/assets/f-keys.png" width="100%">
+</picture>
+
 ## Today
 
 Meetings come from your calendar once you paste its secret iCal link into **Settings → Calendar**, listed with their times next to your tasks. The tasks are written the way you'd say them, "pay rent every month on the 1st" or "call mom friday 6pm", with overdue ones marked, undo on every completion, and repeating ones rolling forward on their own. Next to it, **Pick up** lists tabs you closed, pages open on your other devices and today's history without the noise (search results, sign-in pages, errors), and **Notes** holds whatever you jotted.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-pickup-dark.png">
+    <img alt="The Pick up column: two tabs and a window closed minutes ago, then pages from today's history" src=".github/assets/f-pickup.png" width="49%">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-today-dark.png">
+    <img alt="The Today column: an all-day event and three meetings, two with Join links, then tasks with an overdue date, a daily repeat and due times" src=".github/assets/f-today.png" width="49%">
+  </picture>
+</p>
 
 ## Everything else is one key away
 
 <kbd>></kbd> opens a command list for themes, focus, reopening, closing duplicates and exporting. <kbd>?</kbd> shows every key. Weather, a focus timer and a picture of the day are there if you switch them on, and Customize covers light, dark or system, five accents, six paper tones, density, serif or sans headlines and a switch for every column.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-commands-dark.png">
+  <img alt="The command list opened with the greater-than key: start focus, open tasks, notes or bookmarks, reopen the last closed tab, open a group as a tab group, add a shortcut" src=".github/assets/f-commands.png" width="100%">
+</picture>
+
 <p align="center">
-  <img alt="The command list opened with the greater-than key" src=".github/assets/f-commands.png" width="49%">
-  <img alt="Weather with current conditions, the next 12 hours and 5 days" src=".github/assets/f-weather.png" width="49%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-weather-dark.png">
+    <img alt="Weather for Lisbon: current conditions, the next 12 hours and 5 days" src=".github/assets/f-weather.png" width="49%">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-customize-dark.png">
+    <img alt="The Customize panel: system, light or dark theme, five accents, and paper tones, picture of the day or your own photo as the background" src=".github/assets/f-customize.png" width="49%">
+  </picture>
 </p>
-<p align="center">
-  <img alt="Focus mode: a full-screen timer with an intent line" src=".github/assets/f-focus.png" width="49%">
-  <img alt="The Customize panel: theme, accent, paper tone, background and layout switches" src=".github/assets/f-customize.png" width="49%">
-</p>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-focus-dark.png">
+  <img alt="Focus mode: a large serif countdown, the intent 'Q4 budget memo for Priya', and Pause and Reset buttons" src=".github/assets/f-focus.png" width="100%">
+</picture>
 
 ## Install
 
