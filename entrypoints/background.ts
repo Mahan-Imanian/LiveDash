@@ -2,7 +2,7 @@ import { browser } from 'wxt/browser'
 import { defineBackground } from 'wxt/utils/define-background'
 import { titleFromUrl, toUrl } from '@/lib/url'
 import { parseWhen } from '@/lib/when'
-import { defaultFocus, defaultSettings, PREFIX } from '@/store/defaults'
+import { defaultFocus, defaultSettings, newTask, PREFIX } from '@/store/defaults'
 import { MODE_LABEL, remainingMs, settle } from '@/store/focus-logic'
 import type { FocusState, Settings, Shortcut, Task } from '@/store/types'
 
@@ -114,17 +114,8 @@ export default defineBackground(() => {
 			if (!url) return
 			const tasks = await read<Task[]>('tasks', [])
 			if (!tasks.some((t) => t.url === url && !t.done)) {
-				const task: Task = {
-					id: crypto.randomUUID(),
-					title: tab?.title || titleFromUrl(url),
-					due: null,
-					allDay: false,
-					done: false,
-					doneAt: null,
-					createdAt: Date.now(),
-					order: tasks.reduce((m, t) => Math.max(m, t.order), 0) + 1,
-					url,
-				}
+				const title = tab?.title || titleFromUrl(url)
+				const task = newTask({ title, due: null, allDay: false }, tasks, url)
 				await browser.storage.local.set({ [`${PREFIX}tasks`]: [...tasks, task] })
 			}
 			await flash('✓')
@@ -132,18 +123,8 @@ export default defineBackground(() => {
 		}
 		if (info.menuItemId === 'task' && info.selectionText) {
 			const text = info.selectionText.trim().slice(0, 500)
-			const p = parseWhen(text)
 			const tasks = await read<Task[]>('tasks', [])
-			const task: Task = {
-				id: crypto.randomUUID(),
-				title: p.title,
-				due: p.due,
-				allDay: p.allDay,
-				done: false,
-				doneAt: null,
-				createdAt: Date.now(),
-				order: tasks.reduce((m, t) => Math.max(m, t.order), 0) + 1,
-			}
+			const task = newTask(parseWhen(text), tasks)
 			await browser.storage.local.set({ [`${PREFIX}tasks`]: [...tasks, task] })
 			await flash('✓')
 			return
