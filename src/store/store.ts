@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { browser } from 'wxt/browser'
-import { defaultSettings, defaults, PREFIX } from './defaults'
-import type { Settings, State } from './types'
+import { defaults, mergeSettings, PREFIX } from './defaults'
+import type { State } from './types'
 
 export { defaults, todayKey } from './defaults'
 
@@ -29,18 +29,6 @@ const errorListeners = new Set<(message: string) => void>()
 
 function emit() {
 	for (const l of listeners) l()
-}
-
-function mergeSettings(raw: unknown): Settings {
-	const s = (raw ?? {}) as Partial<Settings>
-	return {
-		...defaultSettings,
-		...s,
-		focus: { ...defaultSettings.focus, ...s.focus },
-		background: { ...defaultSettings.background, ...s.background },
-		modules: { ...defaultSettings.modules, ...s.modules },
-		keywords: Array.isArray(s.keywords) ? s.keywords : defaultSettings.keywords,
-	}
 }
 
 function hydrate(key: Key, value: unknown): State[Key] {
