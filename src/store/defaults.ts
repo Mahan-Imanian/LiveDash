@@ -1,6 +1,23 @@
-import type { FocusState, Settings, State } from './types'
+import type { Parsed } from '@/lib/when'
+import type { FocusState, Settings, State, Task } from './types'
 
 export const PREFIX = 'ld.'
+
+export function newTask(p: Parsed, tasks: Task[], url?: string): Task {
+	return {
+		id: crypto.randomUUID(),
+		title: p.title,
+		due: p.due,
+		allDay: p.allDay,
+		done: false,
+		doneAt: null,
+		createdAt: Date.now(),
+		order: tasks.reduce((m, t) => Math.max(m, t.order), 0) + 1,
+		url,
+		repeat: p.repeat,
+		repeatDay: p.repeatDay,
+	}
+}
 
 export function todayKey(t = Date.now()): string {
 	const d = new Date(t)
