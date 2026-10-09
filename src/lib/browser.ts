@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser'
 import { getState, update } from '@/store/store'
 import type { Closed } from '@/store/types'
+import { hasPermission, requestPermission } from './chrome'
 import { cleanTitle, type Dest, merge, normalize, rankHome, type Source } from './rank'
 
 export const CORE_PERMS = ['history', 'tabs', 'sessions'] as const
@@ -42,24 +43,19 @@ const DAY = 86_400_000
 const HOURS_TTL = 12 * 3_600_000
 
 export async function readAccess(): Promise<Access> {
-	const has = (p: string) =>
-		browser.permissions
-			.contains({ permissions: [p] } as Parameters<typeof browser.permissions.contains>[0])
-			.catch(() => false)
 	const [history, tabs, sessions, bookmarks] = await Promise.all(
-		['history', 'tabs', 'sessions', 'bookmarks'].map(has),
+		['history', 'tabs', 'sessions', 'bookmarks'].map((p) => hasPermission({ permissions: [p] })),
 	)
 	return { history, tabs, sessions, bookmarks }
 }
 
-export async function requestCore(): Promise<boolean> {
-	try {
-		return await browser.permissions.request({ permissions: [...CORE_PERMS] } as Parameters<
-			typeof browser.permissions.request
-		>[0])
-	} catch {
-		return false
-	}
+export function requestCore(): Promise<boolean> {
+	return requestPermission({ permissions: [...CORE_PERMS] })
+}
+
+function titleFor(title: string | undefined, url: string): string {
+	const n = normalize(url)
+	return cleanTitle(title ?? '', n?.host ?? '', n?.path ?? '')
 }
 
 let selfTabId: number | undefined
@@ -98,11 +94,7 @@ async function closedSessions(access: Access): Promise<Closed[]> {
 			out.push({
 				id: s.tab.sessionId,
 				kind: 'tab',
-				title: cleanTitle(
-					s.tab.title ?? '',
-					normalize(s.tab.url)?.host ?? '',
-					normalize(s.tab.url)?.path ?? '',
-				),
+				title: titleFor(s.tab.title, s.tab.url),
 				url: s.tab.url,
 				count: 1,
 				at,
@@ -113,11 +105,7 @@ async function closedSessions(access: Access): Promise<Closed[]> {
 			out.push({
 				id: s.window.sessionId,
 				kind: 'window',
-				title: cleanTitle(
-					tabs[0].title ?? '',
-					normalize(tabs[0].url!)?.host ?? '',
-					normalize(tabs[0].url!)?.path ?? '',
-				),
+				title: titleFor(tabs[0].title, tabs[0].url!),
 				url: tabs[0].url,
 				count: tabs.length,
 				at,
@@ -196,11 +184,10 @@ async function deviceTabs(access: Access): Promise<DeviceTab[]> {
 		for (const s of d.sessions ?? []) {
 			for (const t of s.window?.tabs ?? (s.tab ? [s.tab] : [])) {
 				if (!t.url || !/^https?:/.test(t.url)) continue
-				const n = normalize(t.url)
 				out.push({
 					device: d.deviceName,
 					url: t.url,
-					title: cleanTitle(t.title ?? '', n?.host ?? '', n?.path ?? ''),
+					title: titleFor(t.title, t.url),
 					sessionId: t.sessionId,
 					at: (s.lastModified ?? 0) * 1000,
 				})
@@ -239,21 +226,12 @@ export async function snapshot(access: Access): Promise<Snapshot> {
 }
 
 export async function importTopSites(): Promise<{ url: string; title: string }[]> {
-	const granted =
-		(await browser.permissions
-			.contains({ permissions: ['topSites'] } as Parameters<typeof browser.permissions.contains>[0])
-			.catch(() => false)) ||
-		(await browser.permissions
-			.request({ permissions: ['topSites'] } as Parameters<typeof browser.permissions.request>[0])
-			.catch(() => false))
-	if (!granted) return []
+	const perm = { permissions: ['topSites'] }
+	if (!((await hasPermission(perm)) || (await requestPermission(perm)))) return []
 	const top = await browser.topSites.get()
 	return top
 		.filter((t) => /^https?:/.test(t.url))
-		.map((t) => {
-			const n = normalize(t.url)
-			return { url: t.url, title: cleanTitle(t.title, n?.host ?? '', n?.path ?? '') }
-		})
+		.map((t) => ({ url: t.url, title: titleFor(t.title, t.url) }))
 }
 
 export async function openAll(urls: string[], groupTitle?: string): Promise<void> {
@@ -262,10 +240,7 @@ export async function openAll(urls: string[], groupTitle?: string): Promise<void
 		created.push(await browser.tabs.create({ url, active: i === 0 }))
 	if (!groupTitle) return
 	const ids = created.map((t) => t.id).filter((id): id is number => id !== undefined)
-	const canGroup = await browser.permissions
-		.contains({ permissions: ['tabGroups'] } as Parameters<typeof browser.permissions.contains>[0])
-		.catch(() => false)
-	if (!canGroup || !ids.length) return
+	if (!ids.length || !(await hasPermission({ permissions: ['tabGroups'] }))) return
 	const groupId = await browser.tabs.group({ tabIds: ids as [number, ...number[]] })
 	await browser.tabGroups.update(groupId, { title: groupTitle })
 }
