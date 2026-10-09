@@ -39,7 +39,7 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 	const [now] = useState(() => Date.now())
 	const inputRef = useRef<HTMLInputElement>(null)
 	const listRef = useRef<HTMLDivElement>(null)
-	const [cursor, setCursor] = useState<{ y: number; h: number } | null>(null)
+	const [cursor, setCursor] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
 	const listId = useId()
 
 	const active = command || query.trim().length > 0 || alwaysOpen
@@ -119,8 +119,14 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 
 	useLayoutEffect(() => {
 		const el = listRef.current?.querySelector<HTMLElement>('.result[aria-selected="true"]')
-		const next = el ? { y: el.offsetTop, h: el.offsetHeight } : null
-		setCursor((prev) => (prev?.y === next?.y && prev?.h === next?.h ? prev : next))
+		const next = el
+			? { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight }
+			: null
+		setCursor((prev) =>
+			prev?.x === next?.x && prev?.y === next?.y && prev?.w === next?.w && prev?.h === next?.h
+				? prev
+				: next,
+		)
 		el?.scrollIntoView({ block: 'nearest' })
 	})
 
@@ -256,7 +262,12 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 				{built.chip && <span className="search-chip">{built.chip}</span>}
 				{!active && !isPopup() && (
 					<span className="search-keys" aria-hidden="true">
-						<kbd>/</kbd>
+						<span className="search-key search-key--idle">
+							<kbd>/</kbd> to search
+						</span>
+						<span className="search-key search-key--focus">
+							<kbd>&gt;</kbd> for commands
+						</span>
 					</span>
 				)}
 			</div>
@@ -273,7 +284,11 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 						<div
 							className="results-cursor"
 							aria-hidden="true"
-							style={{ transform: `translateY(${cursor.y}px)`, height: cursor.h }}
+							style={{
+								transform: `translate(${cursor.x}px, ${cursor.y}px)`,
+								width: cursor.w,
+								height: cursor.h,
+							}}
 						/>
 					)}
 					{rows.length === 0 && (
@@ -288,62 +303,64 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 							className="result-group"
 							key={`${gi}-${g.cat}`}
 						>
-							<p className="kicker result-kicker" id={`${listId}-g${gi}`}>
+							<p className="result-source" id={`${listId}-g${gi}`}>
 								{g.cat}
 							</p>
-							{g.rows.map(({ row, index }) => (
-								<div
-									key={row.id}
-									id={optionId(index)}
-									role="option"
-									aria-selected={index === idx}
-									aria-label={[row.verb, row.title, row.sub, row.meta].filter(Boolean).join(', ')}
-									className={`result${row.cat === 'top' ? ' result--top' : ''}`}
-									style={{ '--i': index } as React.CSSProperties}
-									onMouseMove={() => index !== idx && setSel(index)}
-									onMouseDown={(e) => e.preventDefault()}
-									onClick={(e) =>
-										run(row, {
-											newTab: e.ctrlKey || e.metaKey || e.altKey,
-											later: false,
-											web: false,
-										})
-									}
-									onAuxClick={(e) =>
-										e.button === 1 && run(row, { newTab: true, later: false, web: false })
-									}
-									onContextMenu={(e) => {
-										e.preventDefault()
-										setSel(index)
-										showActions(row, e)
-									}}
-								>
-									<span className="result-icon" aria-hidden="true">
-										{'favicon' in row.icon ? (
-											<Favicon url={row.icon.favicon} label={row.icon.label} />
-										) : (
-											<Glyph name={row.icon.glyph} />
+							<div className="result-rows">
+								{g.rows.map(({ row, index }) => (
+									<div
+										key={row.id}
+										id={optionId(index)}
+										role="option"
+										aria-selected={index === idx}
+										aria-label={[row.verb, row.title, row.sub, row.meta].filter(Boolean).join(', ')}
+										className={`result${row.cat === 'top' ? ' result--top' : ''}`}
+										style={{ '--i': index } as React.CSSProperties}
+										onMouseMove={() => index !== idx && setSel(index)}
+										onMouseDown={(e) => e.preventDefault()}
+										onClick={(e) =>
+											run(row, {
+												newTab: e.ctrlKey || e.metaKey || e.altKey,
+												later: false,
+												web: false,
+											})
+										}
+										onAuxClick={(e) =>
+											e.button === 1 && run(row, { newTab: true, later: false, web: false })
+										}
+										onContextMenu={(e) => {
+											e.preventDefault()
+											setSel(index)
+											showActions(row, e)
+										}}
+									>
+										<span className="result-icon" aria-hidden="true">
+											{'favicon' in row.icon ? (
+												<Favicon url={row.icon.favicon} label={row.icon.label} />
+											) : (
+												<Glyph name={row.icon.glyph} />
+											)}
+										</span>
+										<span className="result-text">
+											<span className="result-title">{row.title}</span>
+											{row.sub && <span className="result-sub">{row.sub}</span>}
+										</span>
+										{row.meta && (
+											<span className={`result-meta${row.tone ? ` result-meta--${row.tone}` : ''}`}>
+												{row.meta}
+											</span>
 										)}
-									</span>
-									<span className="result-text">
-										<span className="result-title">{row.title}</span>
-										{row.sub && <span className="result-sub">{row.sub}</span>}
-									</span>
-									{row.meta && (
-										<span className={`result-meta${row.tone ? ` result-meta--${row.tone}` : ''}`}>
-											{row.meta}
+										{row.key && !row.meta && (
+											<span className="result-meta" aria-hidden="true">
+												<kbd>{row.key}</kbd>
+											</span>
+										)}
+										<span className="result-verb" aria-hidden="true">
+											{row.verb} <kbd>↵</kbd>
 										</span>
-									)}
-									{row.key && !row.meta && (
-										<span className="result-meta" aria-hidden="true">
-											<kbd>{row.key}</kbd>
-										</span>
-									)}
-									<span className="result-verb" aria-hidden="true">
-										{row.verb} <kbd>↵</kbd>
-									</span>
-								</div>
-							))}
+									</div>
+								))}
+							</div>
 						</div>
 					))}
 					<p className="results-foot" aria-hidden="true">
