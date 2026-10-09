@@ -68,6 +68,9 @@ export const COMMAND_TOP_HIT_MIN_POINTS = 75
 export const COMMAND_KEYWORD_PENALTY_POINTS = 12
 export const ITEM_MIN_TEXT_POINTS = 55
 
+const TRACKING_PARAM =
+	/^(?:utm_\w+|fbclid|gclid|dclid|gbraid|wbraid|msclkid|mc_cid|mc_eid|igshid|yclid|_ga|_gl|si|ref_src)$/i
+
 const JUNK = [
 	/^https?:\/\/(www\.)?google\.[a-z.]+\/(search|url|webhp)/i,
 	/^https?:\/\/(www\.)?bing\.com\/search/i,
@@ -88,7 +91,9 @@ export function normalize(raw: string): { key: string; host: string; path: strin
 	if (u.protocol !== 'https:' && u.protocol !== 'http:') return null
 	const host = u.hostname.toLowerCase().replace(/^www\./, '')
 	const path = u.pathname.replace(/\/+$/, '')
-	return { key: host + path, host, path }
+	for (const k of [...u.searchParams.keys()]) if (TRACKING_PARAM.test(k)) u.searchParams.delete(k)
+	const query = u.searchParams.size ? `?${u.searchParams}` : ''
+	return { key: host + path + query, host, path }
 }
 
 const SEP = /\s+[-–—|·•»]\s+/
