@@ -1,5 +1,7 @@
 import { browser } from 'wxt/browser'
 
+export const FETCH_TIMEOUT_MS = 10_000
+
 export const isPopup = () => document.documentElement.dataset.surface === 'popup'
 
 export function faviconUrl(pageUrl: string, size = 32): string {
