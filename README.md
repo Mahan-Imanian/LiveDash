@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/cover-dark.png">
-  <img alt="LiveDash, the front page of your browser: one search line for the web, your open tabs, history and bookmarks, and your day on one page" src=".github/assets/cover-light.png" width="100%">
+  <img alt="LiveDash new tab: one search line for the web, your open tabs, history and bookmarks, and your day on one page" src=".github/assets/cover-light.png" width="100%">
 </picture>
 
 <p align="center">
@@ -24,15 +24,15 @@
 
 <img alt="The LiveDash new tab split down the middle, light theme on the left and dark on the right: date and next meeting at the top, the search line, numbered shortcut keys, then Pick up, Today and Notes" src=".github/assets/showcase.png" width="100%">
 
-LiveDash is a Chrome new-tab extension (Manifest V3, React 19, built with WXT). The page has one search box that looks through your open tabs, history, bookmarks, tabs on other devices, tasks and notes before falling back to a web search, a row of shortcut keys, and three columns: recently closed pages, today's tasks and calendar events, and notes. There is no account and no server; everything is computed in the browser from data Chrome already has, and the optional browser permissions are requested only when you turn on the feature that needs them.
+LiveDash is a Chrome new-tab extension (Manifest V3, React 19, built with WXT), laid out like a newspaper front page. It has one search box that looks through your open tabs, history, bookmarks, tabs on other devices, tasks and notes before falling back to a web search, a row of shortcut keys, and three columns: recently closed pages, today's tasks and calendar events, and notes. There is no account and no server; everything is computed in the browser from data Chrome already has, and the optional browser permissions are requested only when you turn on the feature that needs them.
 
 ## Masthead
 
-The top of the page shows today's date as the headline with a live clock under it. Next to it is the current or next calendar event (one starting within three hours or later today) with a countdown, its time range, a Join button when the event contains a Google Meet, Zoom, Teams, Whereby, Webex, Around or Jitsi link, and the event after it. Without such an event it shows the number of tasks due, or a link to connect a calendar. The line above names the time of day (morning, afternoon, evening or late) and the ISO week number. Dark mode has its own palette rather than an inverted light theme.
+The top of the page shows the date, a clock and the current or next calendar event (one starting within three hours or later today) with a countdown and a Join button when the event contains a Google Meet, Zoom, Teams, Whereby, Webex, Around or Jitsi link. Without such an event it shows the number of tasks due, or a link to connect a calendar.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-masthead-dark.png">
-  <img alt="The masthead: Friday, October 9 as the headline with a live clock under it, and the lead story beside it: Design review, a countdown, its time range, a Join button and 1:1 with Sam after it" src=".github/assets/f-masthead.png" width="100%">
+  <img alt="The masthead: Friday, October 9 as the headline with a live clock under it, and the next meeting beside it: Design review, a countdown, its time range, a Join button and 1:1 with Sam after it" src=".github/assets/f-masthead.png" width="100%">
 </picture>
 
 ## Search
@@ -106,7 +106,7 @@ Nine numbered keys open with <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>; further
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-focus-dark.png">
-  <img alt="Focus mode: a large serif countdown, the intent 'Q4 budget memo for Priya', and Pause and Reset buttons" src=".github/assets/f-focus.png" width="100%">
+  <img alt="Focus mode: a large countdown, the intent 'Q4 budget memo for Priya', and Pause and Reset buttons" src=".github/assets/f-focus.png" width="100%">
 </picture>
 
 ## Install
@@ -165,7 +165,7 @@ Single-letter keys work when the cursor is not in a text box; press <kbd>Esc</kb
 
 **Taking focus from the address bar.** Chrome gives new-tab pages no keyboard focus. To let you type into LiveDash's search box straight away, the page reloads itself once as `newtab.html?f`, which Chrome does focus. This costs one extra load per new tab and can be turned off in Settings → Search ("Start typing right away").
 
-**Fonts are bundled.** Newsreader, Schibsted Grotesk and IBM Plex Mono ship inside the extension (about 270 KB of WOFF2) so that the page makes no font requests.
+**Fonts are bundled** (about 270 KB of WOFF2) so that the page makes no font requests.
 
 ## Known limits
 
@@ -223,9 +223,9 @@ The unit tests run TypeScript directly with `node --test` and need Node.js 22.18
 | `tests/edition.test.ts` | Masthead event choice, week numbers and time-of-day names |
 | `tests/contrast.test.ts` | WCAG contrast of text tokens for all 180 combinations of system scheme, theme, paper tone and accent, and that each accent takes effect |
 
-`node --test tests/contrast.test.ts` prints the lowest ratio it found; at the time of writing it is 4.90:1 (`--accent` on `--bg`, clay tone, ember accent, light theme), and every pair it checks is at least 4.5:1 (AA for body text). It checks `--ink-1`, `--ink-2`, `--ink-3`, `--accent` and `--danger` on `--bg` and `--surface`, and `--accent-ink` on `--accent`. It does not cover photo backgrounds, the paper grain overlay, or colours set outside `tokens.css`.
+The contrast test requires at least 4.5:1 (WCAG AA for body text) and prints the lowest ratio it found. It does not cover photo backgrounds, the paper grain overlay, or colours set outside `tokens.css`.
 
-Layout at different widths and zoom levels, keyboard-only use and loading speed have been checked by hand only; there are no browser tests in CI. The CHANGELOG records what was checked for each release and how. Project layout and ground rules are in [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+There are no browser tests in CI; layout, zoom, keyboard-only use and loading speed are checked by hand. Project layout and ground rules are in [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## License
 
