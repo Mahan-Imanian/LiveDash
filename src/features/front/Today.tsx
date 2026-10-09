@@ -42,7 +42,7 @@ export function Today({ now }: { now: number }) {
 
 	return (
 		<section className="col" aria-labelledby="td-title">
-			<h2 className="kicker" id="td-title">
+			<h2 className="col-head" id="td-title">
 				Today
 			</h2>
 			{agenda.length > 0 && (

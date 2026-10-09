@@ -65,7 +65,7 @@ function Section({
 }) {
 	return (
 		<section className="cz-section" aria-labelledby={`cz-${title}`} id={id}>
-			<h3 className="kicker" id={`cz-${title}`}>
+			<h3 className="cz-head" id={`cz-${title}`}>
 				{title}
 			</h3>
 			{children}
