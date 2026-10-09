@@ -1,10 +1,28 @@
-# LiveDash
+# <img src="assets/icon.svg" width="40" height="40" alt="LiveDash icon"> LiveDash
 
-**The front page of your browser.** A new tab that does everything Chrome's does, then gets out of the way.
+**The front page of your browser.** A Chrome new tab that searches your tabs, history and bookmarks, and keeps your day on one page.
 
-One serif search line that reaches the web, your open tabs, history, bookmarks, shortcuts, tasks and notes. Shortcut keys you can group, drag and number. Beneath them, three quiet columns: what to pick up, what's on today, and your notes. Weather, a picture of the day and focus mode are there when you want them. Nothing leaves your browser unless you ask it to.
+[![CI](https://github.com/Mahan-Imanian/LiveDash/actions/workflows/ci.yml/badge.svg)](https://github.com/Mahan-Imanian/LiveDash/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-![LiveDash in dark mode](docs/screenshots/front-dark.png)
+One serif search line that reaches the web, your open tabs, history, bookmarks, shortcuts, tasks and notes. Shortcut keys you can group, drag and number. Beneath them, three quiet columns: what to pick up, what's on today, and your notes. Weather, a picture of the day and focus mode are there when you want them. There is no account, server or analytics, and LiveDash only goes online for your searches and the extras you switch on.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/front-dark.png">
+  <img src="docs/screenshots/front-light.png" alt="The LiveDash new tab: a serif search line, a row of numbered shortcut keys, and three columns below for Pick up, Today and Notes">
+</picture>
+
+## Install
+
+LiveDash isn't on the Chrome Web Store, so you build it once and load it unpacked. You need Chrome 120+ and Node.js 22.18+.
+
+```bash
+git clone https://github.com/Mahan-Imanian/LiveDash.git
+cd LiveDash
+npm ci
+npm run build
+```
+
+Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and select `.output/chrome-mv3`. Open a new tab. `npm run zip` builds a packed copy at `.output/livedash-<version>-chrome.zip`.
 
 ## What it does
 
@@ -14,7 +32,7 @@ One serif search line that reaches the web, your open tabs, history, bookmarks, 
 - **Pick up.** Tabs and windows you just closed, pages open on your other devices, and today's history, minus the junk (search results, sign-in flows, error pages).
 
 **Discoverable**
-- **Today.** Your next meeting with a join link, then due, upcoming and repeating tasks with natural-language dates ("pay rent every month on the 1st", "call mom friday 6pm"). Overdue items are marked, completion has undo, and repeating tasks roll forward.
+- **Today.** Your next meeting with a join link, then due, upcoming and repeating tasks with natural-language dates ("pay rent every month on the 1st", "call mom friday 6pm"). Overdue items are marked, completion has undo, and repeating tasks roll forward. Meetings appear once you paste your calendar's secret iCal link into **Settings → Calendar**.
 - **Notes.** Jot from the page, pin the important ones, search them all.
 - **Bookmarks.** Browse folders, search, open, or turn any bookmark into a shortcut.
 - **Weather.** Pick a city or use your location. You get the current conditions, 12 hours and 5 days, with an "updated" time and an offline state.
@@ -52,48 +70,39 @@ One serif search line that reaches the web, your open tabs, history, bookmarks, 
 
 Single-letter keys work when the cursor isn't in a text box. Press <kbd>Esc</kbd> first.
 
-## Privacy
+## Privacy and permissions
 
-LiveDash has no account, no server, no analytics and no remote code. Access to history, tabs, other devices, bookmarks and top sites is optional and asked for in context, with an explanation. Without it, LiveDash still searches, keeps shortcuts, tasks and notes, and learns from what you open through it. Weather and the picture of the day are off until you turn them on. See [PRIVACY.md](PRIVACY.md).
+No account, no server, no analytics, no remote code. Optional permissions are asked for in context and can be turned off in Settings. Without them, LiveDash still searches and keeps shortcuts, tasks and notes.
 
-## Build from source
-
-Requires Node.js 22.6+ and Chrome 120+.
-
-```bash
-git clone https://github.com/Mahan-Imanian/LiveDash.git
-cd LiveDash
-npm ci
-npm run build
-```
-
-Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and select `.output/chrome-mv3`.
-
-| Command | What it does |
+| Permission | Why |
 |---|---|
-| `npm run dev` | Development build with live reload |
-| `npm run build` | Production build in `.output/chrome-mv3` |
-| `npm run zip` | Store-ready zip in `.output/` |
-| `npm run check` | Type check, lint and unit tests |
+| `storage` | Save shortcuts, tasks, notes and settings |
+| `search` | Send a search to Chrome's default engine |
+| `favicon` | Show site icons from Chrome's own cache |
+| `alarms` | End a focus session on time with no tab open |
+| `contextMenus` | "Save for later" and "Pin to LiveDash" on right-click |
+| `activeTab` | Read the current page's address for quick capture |
+| `history` (optional) | Rank results, suggest shortcuts, show today's history |
+| `tabs` (optional) | Switch to an open tab, close duplicates |
+| `sessions` (optional) | Recently closed tabs, pages on your other devices |
+| `bookmarks` (optional) | Browse and search bookmarks |
+| `topSites` (optional) | Import your most visited sites as shortcuts, once |
+| `tabGroups` (optional) | Open a shortcut group as a tab group |
+| `notifications` (optional) | Say when a focus session ends |
+| `https://*/*` (optional) | Reach the hosts below, each asked for when you turn its feature on |
 
-`LD_TEST=1 npx wxt build` produces a test build in `.output-test/` that has the optional permissions granted up front. It is for automated testing only.
+Network requests, all opt-in and sent without cookies:
 
-## Project layout
+- **Weather:** `geocoding-api.open-meteo.com` and `api.open-meteo.com`. "Use my location" rounds your position to about 1 km first.
+- **Picture of the day:** `en.wikipedia.org` and `upload.wikimedia.org`, once a day.
+- **Calendar:** the iCal address you paste in, at most every 15 minutes.
+- **Searches** go to the engine you picked.
 
-```text
-entrypoints/              new tab, quick-capture popup, background service worker
-src/app/                  page shell, keys, popup
-src/features/search/      the search line, result model, commands
-src/features/shortcuts/   keys, groups, editor
-src/features/front/       masthead, pick up, today, notes
-src/features/panels/      bookmarks, tasks, notes, customize, settings
-src/lib/rank.ts           ranking: frequency, recency, hour of day, learned picks, title cleanup
-src/lib/when.ts           natural-language dates and repeats
-src/lib/ics.ts            iCal parsing with recurrence and meeting links
-src/store/                local store, actions, import/export, migration
-src/ui/                   drawer, menu, glyphs, controls
-tests/                    unit tests (node --test)
-```
+Everything else stays in local extension storage, except settings: they use `chrome.storage.sync`, so Chrome copies them through your Google account when Chrome Sync is on. Details in [PRIVACY.md](PRIVACY.md).
+
+## Development
+
+`npm run check` (type check, lint, unit tests) needs Node.js 22.18+, because the tests run TypeScript directly with `node --test`. `npm run dev` gives a live-reloading build. The project layout and ground rules are in [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## Origins
 
