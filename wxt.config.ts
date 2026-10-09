@@ -18,7 +18,7 @@ export default defineConfig({
 		name: 'LiveDash',
 		short_name: 'LiveDash',
 		description:
-			'The front page of your browser: one box for the web, your tabs, history and bookmarks, shortcuts with groups, what to pick up, today, notes and focus. Private and local.',
+			'New tab with one search over tabs, history, bookmarks and the web, shortcut groups, recently closed tabs, tasks, calendar and notes.',
 		minimum_chrome_version: '120',
 		permissions: [
 			'storage',

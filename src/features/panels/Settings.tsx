@@ -613,7 +613,7 @@ function AboutSection() {
 		<>
 			<h3 className="st-title">About</h3>
 			<p className="lede">
-				LiveDash {browser.runtime.getManifest().version} — the front page of your browser.
+				LiveDash {browser.runtime.getManifest().version}, a new tab page for Chrome.
 			</p>
 			<p className="fine">
 				Open source under the MIT License. LiveDash began as a fork of{' '}
