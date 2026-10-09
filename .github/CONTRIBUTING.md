@@ -1,6 +1,6 @@
 # Contributing
 
-Requirements: Node.js 22.6 or newer and Chrome 120 or newer.
+Requirements: Node.js 22.18 or newer (the unit tests run TypeScript directly with `node --test`) and Chrome 120 or newer.
 
 ```bash
 git clone https://github.com/Mahan-Imanian/LiveDash.git
@@ -18,6 +18,25 @@ npm run check
 ```
 
 That runs the type checker, Biome (lint and formatting) and the unit tests in `tests/`.
+
+`LD_TEST=1 npx wxt build` produces a test build in `.output-test/` that has the optional permissions granted up front. It is for automated testing only.
+
+## Project layout
+
+```text
+entrypoints/              new tab, quick-capture popup, background service worker
+src/app/                  page shell, keys, popup
+src/features/search/      the search line, result model, commands
+src/features/shortcuts/   keys, groups, editor
+src/features/front/       masthead, pick up, today, notes
+src/features/panels/      bookmarks, tasks, notes, customize, settings
+src/lib/rank.ts           ranking: frequency, recency, hour of day, learned picks, title cleanup
+src/lib/when.ts           natural-language dates and repeats
+src/lib/ics.ts            iCal parsing with recurrence and meeting links
+src/store/                local store, actions, import/export, migration
+src/ui/                   drawer, menu, glyphs, controls
+tests/                    unit tests (node --test)
+```
 
 ## Ground rules
 
