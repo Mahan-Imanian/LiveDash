@@ -99,12 +99,46 @@ test(`query: a pin outweighs at most ${QUERY_PINNED_BONUS_POINTS} points of text
 	assert.equal(rankQuery('note', far, ctx)[0].host, 'x.com')
 })
 
-test('normalize collapses www, trailing slash, query and hash', () => {
+test('normalize collapses www, case, trailing slash, hash and tracking parameters', () => {
 	assert.equal(
-		normalize('https://www.GitHub.com/vercel/next.js/?tab=readme#x')?.key,
+		normalize('https://www.GitHub.com/vercel/next.js/#readme')?.key,
 		'github.com/vercel/next.js',
 	)
+	assert.equal(
+		normalize('https://example.com/post/?utm_source=x&utm_medium=y&fbclid=z')?.key,
+		'example.com/post',
+	)
+	assert.equal(normalize('https://youtu.be/abc?si=share')?.key, 'youtu.be/abc')
 	assert.equal(normalize('chrome://settings'), null)
+	assert.equal(normalize('not a url'), null)
+	assert.equal(normalize('ftp://example.com/file'), null)
+})
+
+test('normalize keeps query parameters that identify a page', () => {
+	assert.equal(
+		normalize('https://www.youtube.com/watch?v=abc&utm_source=x')?.key,
+		'youtube.com/watch?v=abc',
+	)
+	assert.equal(
+		normalize('https://news.ycombinator.com/item?id=1')?.key,
+		'news.ycombinator.com/item?id=1',
+	)
+	const d = merge([
+		{
+			url: 'https://www.youtube.com/watch?v=a',
+			title: 'Lecture one',
+			visits: 2,
+			lastVisit: ago(1),
+		},
+		{
+			url: 'https://www.youtube.com/watch?v=b',
+			title: 'Lecture two',
+			visits: 2,
+			lastVisit: ago(2),
+		},
+	])
+	assert.equal(d.length, 2)
+	assert.equal(rankQuery('lecture two', d, ctx)[0].url, 'https://www.youtube.com/watch?v=b')
 })
 
 test('junk filter drops search results and auth flows', () => {
