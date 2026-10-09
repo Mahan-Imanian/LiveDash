@@ -2,6 +2,7 @@ import { formatDue } from '@/lib/format'
 import { titleFromUrl, toUrl } from '@/lib/url'
 import { nextOccurrence, parseWhen, type Repeat } from '@/lib/when'
 import { toast } from '@/ui/toast'
+import { newTask } from './defaults'
 import { getState, uid, update } from './store'
 import type { Group, Note, Shortcut, Task } from './types'
 
@@ -18,20 +19,7 @@ export function addTask(input: string, opts: { quiet?: boolean; url?: string } =
 		toast('Type something first, like “Call Alex tomorrow at 3pm”.', { tone: 'error' })
 		return null
 	}
-	const p = parseWhen(text)
-	const tasks = getState().tasks
-	const task: Task = {
-		id: uid(),
-		title: p.title,
-		due: p.due,
-		allDay: p.allDay,
-		done: false,
-		doneAt: null,
-		createdAt: Date.now(),
-		order: tasks.reduce((m, t) => Math.max(m, t.order), 0) + 1,
-		url: opts.url,
-		repeat: p.repeat,
-	}
+	const task = newTask(parseWhen(text), getState().tasks, opts.url)
 	update('tasks', (list) => [...list, task])
 	if (!opts.quiet) {
 		const when = task.due
@@ -64,8 +52,10 @@ export function completeTask(id: string): void {
 	}
 	if (t.repeat && t.due !== null) {
 		const before = t
-		const due = nextOccurrence(t.due, t.repeat)
-		update('tasks', (list) => list.map((x) => (x.id === id ? { ...x, due } : x)))
+		const repeatDay = t.repeatDay ?? new Date(t.due).getDate()
+		const due = nextOccurrence(t.due, t.repeat, Date.now(), repeatDay)
+		const keepDay = t.repeat === 'monthly' || t.repeat === 'yearly' ? { repeatDay } : {}
+		update('tasks', (list) => list.map((x) => (x.id === id ? { ...x, due, ...keepDay } : x)))
 		toast(`Done. Next: ${formatDue(due, t.allDay, getState().settings.hourCycle).toLowerCase()}`, {
 			tone: 'success',
 			undo: () => update('tasks', (list) => list.map((x) => (x.id === id ? before : x))),
@@ -84,14 +74,6 @@ export function completeTask(id: string): void {
 	})
 }
 
-export function toggleTask(id: string): void {
-	update('tasks', (list) =>
-		list.map((t) =>
-			t.id === id ? { ...t, done: !t.done, doneAt: t.done ? null : Date.now() } : t,
-		),
-	)
-}
-
 export function editTask(id: string, input: string, keepDate: boolean): void {
 	const text = input.trim()
 	if (!text) return
@@ -100,7 +82,14 @@ export function editTask(id: string, input: string, keepDate: boolean): void {
 		list.map((t) => {
 			if (t.id !== id) return t
 			if (p.due === null && keepDate) return { ...t, title: text }
-			return { ...t, title: p.title, due: p.due, allDay: p.allDay, repeat: p.repeat }
+			return {
+				...t,
+				title: p.title,
+				due: p.due,
+				allDay: p.allDay,
+				repeat: p.repeat,
+				repeatDay: p.repeatDay,
+			}
 		}),
 	)
 }

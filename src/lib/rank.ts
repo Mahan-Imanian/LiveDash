@@ -4,7 +4,6 @@ export interface Source {
 	url: string
 	title: string
 	visits?: number
-	typed?: number
 	lastVisit?: number
 	tabId?: number
 	windowId?: number
@@ -42,6 +41,43 @@ export interface RankCtx {
 
 const DAY = 86_400_000
 
+export const HISTORY_WINDOW_DAYS = 60
+export const HISTORY_MAX_PAGES = 5000
+export const HOUR_SAMPLE_PAGES = 40
+export const HOUR_SAMPLE_DAYS = 45
+export const HOURS_TTL_HOURS = 12
+export const LAUNCH_LOG_SIZE = 400
+export const LAUNCH_QUERY_CHARS = 24
+export const VISIT_HALF_LIFE_DAYS = 14
+const UNKNOWN_VISIT_AGE_DAYS = 30
+const HOUR_MIN_SAMPLE_VISITS = 6
+export const HOUR_WEIGHT_FLOOR = 0.6
+export const HOUR_WEIGHT_MAX_BOOST = 1.6
+const HOUR_SHARE_GAIN = 4
+export const LAUNCH_HALF_LIFE_DAYS = 21
+const LAUNCH_SAME_QUERY_MULTIPLIER = 4
+const HOME_LAUNCH_WEIGHT = 1.5
+const HOME_MIN_VISITS = 2
+const HOME_PER_HOST = 1
+const HOME_LIMIT = 9
+const QUERY_LIMIT = 9
+const QUERY_MIN_TEXT_POINTS = 45
+const QUERY_HOST_BONUS_POINTS = 4
+const QUERY_SITE_NAME_BONUS_POINTS = 6
+const QUERY_KEY_PENALTY_POINTS = 10
+const QUERY_VISIT_POINTS_PER_DOUBLING = 3
+export const QUERY_PINNED_BONUS_POINTS = 10
+const QUERY_OPEN_TAB_BONUS_POINTS = 6
+const QUERY_LAUNCH_POINTS = 12
+export const TOP_HIT_MIN_TEXT_POINTS = 70
+export const COMMAND_MIN_POINTS = 62
+export const COMMAND_TOP_HIT_MIN_POINTS = 75
+export const COMMAND_KEYWORD_PENALTY_POINTS = 12
+export const ITEM_MIN_TEXT_POINTS = 55
+
+const TRACKING_PARAM =
+	/^(?:utm_\w+|fbclid|gclid|dclid|gbraid|wbraid|msclkid|mc_cid|mc_eid|igshid|yclid|_ga|_gl|si|ref_src)$/i
+
 const JUNK = [
 	/^https?:\/\/(www\.)?google\.[a-z.]+\/(search|url|webhp)/i,
 	/^https?:\/\/(www\.)?bing\.com\/search/i,
@@ -62,7 +98,9 @@ export function normalize(raw: string): { key: string; host: string; path: strin
 	if (u.protocol !== 'https:' && u.protocol !== 'http:') return null
 	const host = u.hostname.toLowerCase().replace(/^www\./, '')
 	const path = u.pathname.replace(/\/+$/, '')
-	return { key: host + path, host, path }
+	for (const k of [...u.searchParams.keys()]) if (TRACKING_PARAM.test(k)) u.searchParams.delete(k)
+	const query = u.searchParams.size ? `?${u.searchParams}` : ''
+	return { key: host + path + query, host, path }
 }
 
 const SEP = /\s+[-–—|·•»]\s+/
@@ -93,17 +131,17 @@ export function isJunk(url: string): boolean {
 	return JUNK.some((re) => re.test(url))
 }
 
-export function frecency(visits: number, typed: number, lastVisit: number, now: number): number {
-	const age = Math.max(0, now - lastVisit) / DAY
-	return Math.log2(2 + visits + 2 * typed) * 0.5 ** (age / 14)
+export function frecency(visits: number, lastVisit: number, now: number): number {
+	const ageDays = Math.max(0, now - lastVisit) / DAY
+	return Math.log2(2 + visits) * 0.5 ** (ageDays / VISIT_HALF_LIFE_DAYS)
 }
 
 export function hourWeight(hist: number[] | undefined, hour: number): number {
 	if (!hist) return 1
 	const total = hist.reduce((a, b) => a + b, 0)
-	if (total < 6) return 1
+	if (total < HOUR_MIN_SAMPLE_VISITS) return 1
 	const near = hist[(hour + 23) % 24] + hist[hour] + hist[(hour + 1) % 24]
-	return 0.6 + Math.min(1.6, (near / total) * 4)
+	return HOUR_WEIGHT_FLOOR + Math.min(HOUR_WEIGHT_MAX_BOOST, (near / total) * HOUR_SHARE_GAIN)
 }
 
 export function launchWeight(key: string, launches: Launch[], now: number, q = ''): number {
@@ -111,9 +149,10 @@ export function launchWeight(key: string, launches: Launch[], now: number, q = '
 	const ql = q.toLowerCase()
 	for (const l of launches) {
 		if (l.k !== key) continue
-		const decay = 0.5 ** ((now - l.t) / (21 * DAY))
+		const decay = 0.5 ** ((now - l.t) / (LAUNCH_HALF_LIFE_DAYS * DAY))
 		w += decay
-		if (ql && l.q && (l.q.startsWith(ql) || ql.startsWith(l.q))) w += 4 * decay
+		if (ql && l.q && (l.q.startsWith(ql) || ql.startsWith(l.q)))
+			w += LAUNCH_SAME_QUERY_MULTIPLIER * decay
 	}
 	return w
 }
@@ -165,12 +204,12 @@ const ERROR_TITLE =
 	/^(?:error )?[45]\d\d(?:$|\s*[^\w\s]|\s+(?:forbidden|not found|bad gateway|service unavailable|internal server error|unauthorized|gone|too many requests))|^(?:forbidden|not found|access denied|page not found|just a moment\W*)$/i
 
 function base(d: Dest, ctx: RankCtx): number {
-	const f = frecency(d.visits, 0, d.lastVisit || ctx.now - 30 * DAY, ctx.now)
+	const f = frecency(d.visits, d.lastVisit || ctx.now - UNKNOWN_VISIT_AGE_DAYS * DAY, ctx.now)
 	const h = hourWeight(ctx.hours?.[d.key], new Date(ctx.now).getHours())
-	return f * h + launchWeight(d.key, ctx.launches, ctx.now) * 1.5
+	return f * h + launchWeight(d.key, ctx.launches, ctx.now) * HOME_LAUNCH_WEIGHT
 }
 
-export function rankHome(dests: Dest[], ctx: RankCtx, limit = 9): Dest[] {
+export function rankHome(dests: Dest[], ctx: RankCtx, limit = HOME_LIMIT): Dest[] {
 	const hidden = new Set(ctx.hidden)
 	const pins = dests
 		.filter((d) => d.pinned !== undefined)
@@ -180,7 +219,7 @@ export function rankHome(dests: Dest[], ctx: RankCtx, limit = 9): Dest[] {
 			(d) =>
 				d.pinned === undefined &&
 				!hidden.has(d.key) &&
-				(d.visits > 1 || launchWeight(d.key, ctx.launches, ctx.now) > 0),
+				(d.visits >= HOME_MIN_VISITS || launchWeight(d.key, ctx.launches, ctx.now) > 0),
 		)
 		.map((d) => ({ ...d, score: base(d, ctx) }))
 		.sort((a, b) => b.score - a.score)
@@ -190,14 +229,14 @@ export function rankHome(dests: Dest[], ctx: RankCtx, limit = 9): Dest[] {
 	for (const d of rest) {
 		if (out.length >= limit) break
 		const n = perHost.get(d.host) ?? 0
-		if (n >= 1) continue
+		if (n >= HOME_PER_HOST) continue
 		perHost.set(d.host, n + 1)
 		out.push(d)
 	}
 	return out.slice(0, Math.max(limit, pins.length))
 }
 
-export function rankQuery(q: string, dests: Dest[], ctx: RankCtx, limit = 8): Dest[] {
+export function rankQuery(q: string, dests: Dest[], ctx: RankCtx, limit = QUERY_LIMIT): Dest[] {
 	const query = q.trim().toLowerCase()
 	if (!query) return []
 	const hidden = new Set(ctx.hidden)
@@ -206,17 +245,17 @@ export function rankQuery(q: string, dests: Dest[], ctx: RankCtx, limit = 8): De
 		if (hidden.has(d.key) && d.pinned === undefined && d.tabId === undefined) continue
 		const text = Math.max(
 			score(query, d.title),
-			score(query, d.host) + 4,
-			score(query, d.host.split('.')[0]) + 6,
-			score(query, d.key) - 10,
+			score(query, d.host) + QUERY_HOST_BONUS_POINTS,
+			score(query, d.host.split('.')[0]) + QUERY_SITE_NAME_BONUS_POINTS,
+			score(query, d.key) - QUERY_KEY_PENALTY_POINTS,
 		)
-		if (text < 45) continue
+		if (text < QUERY_MIN_TEXT_POINTS) continue
 		const learned = launchWeight(d.key, ctx.launches, ctx.now, query)
 		const usage =
-			Math.log2(2 + d.visits) * 3 +
-			(d.pinned !== undefined ? 10 : 0) +
-			(d.tabId !== undefined ? 6 : 0)
-		scored.push({ ...d, score: text + usage + learned * 12 })
+			Math.log2(2 + d.visits) * QUERY_VISIT_POINTS_PER_DOUBLING +
+			(d.pinned !== undefined ? QUERY_PINNED_BONUS_POINTS : 0) +
+			(d.tabId !== undefined ? QUERY_OPEN_TAB_BONUS_POINTS : 0)
+		scored.push({ ...d, score: text + usage + learned * QUERY_LAUNCH_POINTS })
 	}
 	const seen = new Set<string>()
 	return scored

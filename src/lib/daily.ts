@@ -1,5 +1,5 @@
 import type { Daily } from '@/store/types'
-import { hasPermission, requestPermission } from './chrome'
+import { FETCH_TIMEOUT_MS, hasPermission, requestPermission } from './chrome'
 
 export const DAILY_ORIGINS = ['https://en.wikipedia.org/*', 'https://upload.wikimedia.org/*']
 
@@ -25,7 +25,10 @@ function sized(src: string, width: number): string {
 }
 
 async function toDataUrl(url: string): Promise<string> {
-	const res = await fetch(url, { credentials: 'omit' })
+	const res = await fetch(url, {
+		credentials: 'omit',
+		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+	})
 	if (!res.ok) throw new Error(`Image download failed (${res.status})`)
 	const blob = await res.blob()
 	return await new Promise<string>((resolve, reject) => {
@@ -52,6 +55,7 @@ export async function fetchDaily(now = new Date()): Promise<Daily> {
 		try {
 			res = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/featured/${ymd(d)}`, {
 				credentials: 'omit',
+				signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
 				headers: { 'Api-User-Agent': 'LiveDash new tab (github.com/Mahan-Imanian/LiveDash)' },
 			})
 		} catch {

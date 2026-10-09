@@ -1,17 +1,144 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { hourWeight, isJunk, merge, normalize, rankHome, rankQuery } from '../src/lib/rank.ts'
+import {
+	frecency,
+	HOUR_WEIGHT_FLOOR,
+	HOUR_WEIGHT_MAX_BOOST,
+	hourWeight,
+	isJunk,
+	LAUNCH_HALF_LIFE_DAYS,
+	launchWeight,
+	merge,
+	normalize,
+	QUERY_PINNED_BONUS_POINTS,
+	rankHome,
+	rankQuery,
+	VISIT_HALF_LIFE_DAYS,
+} from '../src/lib/rank.ts'
 
 const now = new Date(2026, 9, 5, 9, 0).getTime()
+const DAY = 86_400_000
 const ago = (h: number) => now - h * 3_600_000
 const ctx = { now, launches: [], hidden: [] as string[] }
 
-test('normalize collapses www, trailing slash, query and hash', () => {
+test('visit weight halves every VISIT_HALF_LIFE_DAYS', () => {
+	const fresh = frecency(10, now, now)
+	assert.ok(Math.abs(frecency(10, now - VISIT_HALF_LIFE_DAYS * DAY, now) - fresh / 2) < 1e-9)
+	assert.ok(Math.abs(frecency(10, now - 2 * VISIT_HALF_LIFE_DAYS * DAY, now) - fresh / 4) < 1e-9)
+	assert.equal(frecency(10, now + DAY, now), fresh)
+})
+
+test('launch weight halves every LAUNCH_HALF_LIFE_DAYS', () => {
+	const launch = (days: number, q = '') => ({ k: 'a.com', q, t: now - days * DAY })
+	assert.equal(launchWeight('a.com', [launch(0)], now), 1)
+	assert.ok(Math.abs(launchWeight('a.com', [launch(LAUNCH_HALF_LIFE_DAYS)], now) - 0.5) < 1e-9)
+	assert.equal(launchWeight('b.com', [launch(0)], now), 0)
+	assert.equal(launchWeight('a.com', [launch(0, 'ab')], now, 'a'), 5)
+	assert.equal(launchWeight('a.com', [launch(0, 'xy')], now, 'a'), 1)
+})
+
+test('hour weight stays within its bounds', () => {
+	const flat = Array(24).fill(1)
+	const peak = Array(24).fill(0)
+	peak[9] = 30
+	assert.equal(hourWeight(undefined, 9), 1)
+	assert.equal(hourWeight([5, ...Array(23).fill(0)], 0), 1)
+	assert.equal(hourWeight(peak, 9), HOUR_WEIGHT_FLOOR + HOUR_WEIGHT_MAX_BOOST)
+	assert.equal(hourWeight(peak, 15), HOUR_WEIGHT_FLOOR)
+	assert.ok(hourWeight(flat, 3) > HOUR_WEIGHT_FLOOR && hourWeight(flat, 3) < 1.2)
+})
+
+test('home: at equal frequency the more recent site ranks first', () => {
+	const d = merge([
+		{ url: 'https://old.com/', title: 'Old', visits: 20, lastVisit: ago(30 * 24) },
+		{ url: 'https://new.com/', title: 'New', visits: 20, lastVisit: ago(24) },
+	])
+	assert.deepEqual(
+		rankHome(d, ctx).map((x) => x.host),
+		['new.com', 'old.com'],
+	)
+})
+
+test('home: a little use yesterday outranks heavy use three weeks ago', () => {
+	const d = merge([
+		{ url: 'https://heavy.com/', title: 'Heavy', visits: 120, lastVisit: ago(21 * 24) },
+		{ url: 'https://light.com/', title: 'Light', visits: 8, lastVisit: ago(24) },
+	])
+	assert.equal(rankHome(d, ctx)[0].host, 'light.com')
+})
+
+test('home: one-visit pages and hidden sites are left out', () => {
+	const d = merge([
+		{ url: 'https://once.com/', title: 'Once', visits: 1, lastVisit: ago(1) },
+		{ url: 'https://twice.com/', title: 'Twice', visits: 2, lastVisit: ago(1) },
+		{ url: 'https://hidden.com/', title: 'Hidden', visits: 50, lastVisit: ago(1) },
+	])
+	assert.deepEqual(
+		rankHome(d, { ...ctx, hidden: ['hidden.com'] }).map((x) => x.host),
+		['twice.com'],
+	)
+	const launched = { ...ctx, launches: [{ k: 'once.com', q: '', t: ago(1) }] }
+	assert.ok(rankHome(d, launched).some((x) => x.host === 'once.com'))
+})
+
+test('query: an open tab beats a bookmark with the same match', () => {
+	for (const visits of [0, 3]) {
+		const d = merge([
+			{ url: 'https://docs.a.com/guide', title: 'Style guide', bookmark: true, visits },
+			{ url: 'https://wiki.b.com/guide', title: 'Style guide', tabId: 3, windowId: 1 },
+		])
+		assert.equal(rankQuery('style', d, ctx)[0].host, 'wiki.b.com', `bookmark visits ${visits}`)
+	}
+})
+
+test(`query: a pin outweighs at most ${QUERY_PINNED_BONUS_POINTS} points of text match`, () => {
+	const unpinned = { url: 'https://x.com/', title: 'Notes' }
+	const close = merge([unpinned, { url: 'https://y.com/', title: 'Notes app', pinned: 0 }])
+	assert.equal(rankQuery('note', close, ctx)[0].host, 'y.com')
+	const far = merge([unpinned, { url: 'https://y.com/', title: 'Field notebook', pinned: 0 }])
+	assert.equal(rankQuery('note', far, ctx)[0].host, 'x.com')
+})
+
+test('normalize collapses www, case, trailing slash, hash and tracking parameters', () => {
 	assert.equal(
-		normalize('https://www.GitHub.com/vercel/next.js/?tab=readme#x')?.key,
+		normalize('https://www.GitHub.com/vercel/next.js/#readme')?.key,
 		'github.com/vercel/next.js',
 	)
+	assert.equal(
+		normalize('https://example.com/post/?utm_source=x&utm_medium=y&fbclid=z')?.key,
+		'example.com/post',
+	)
+	assert.equal(normalize('https://youtu.be/abc?si=share')?.key, 'youtu.be/abc')
 	assert.equal(normalize('chrome://settings'), null)
+	assert.equal(normalize('not a url'), null)
+	assert.equal(normalize('ftp://example.com/file'), null)
+})
+
+test('normalize keeps query parameters that identify a page', () => {
+	assert.equal(
+		normalize('https://www.youtube.com/watch?v=abc&utm_source=x')?.key,
+		'youtube.com/watch?v=abc',
+	)
+	assert.equal(
+		normalize('https://news.ycombinator.com/item?id=1')?.key,
+		'news.ycombinator.com/item?id=1',
+	)
+	const d = merge([
+		{
+			url: 'https://www.youtube.com/watch?v=a',
+			title: 'Lecture one',
+			visits: 2,
+			lastVisit: ago(1),
+		},
+		{
+			url: 'https://www.youtube.com/watch?v=b',
+			title: 'Lecture two',
+			visits: 2,
+			lastVisit: ago(2),
+		},
+	])
+	assert.equal(d.length, 2)
+	assert.equal(rankQuery('lecture two', d, ctx)[0].url, 'https://www.youtube.com/watch?v=b')
 })
 
 test('junk filter drops search results and auth flows', () => {
