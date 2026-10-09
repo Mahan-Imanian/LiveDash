@@ -17,10 +17,10 @@ export const TONES: { id: string; name: string }[] = [
 ]
 
 const ACCENTS: { value: Accent; label: string; color: string }[] = [
-	{ value: 'ember', label: 'Ember', color: '#b33a17' },
-	{ value: 'cobalt', label: 'Cobalt', color: '#2c55d6' },
-	{ value: 'moss', label: 'Moss', color: '#18764a' },
-	{ value: 'iris', label: 'Iris', color: '#6a45d8' },
+	{ value: 'ember', label: 'Ember', color: '#b3381a' },
+	{ value: 'cobalt', label: 'Cobalt', color: '#2a51cc' },
+	{ value: 'moss', label: 'Moss', color: '#16714a' },
+	{ value: 'iris', label: 'Iris', color: '#6541cf' },
 	{ value: 'graphite', label: 'Graphite', color: '#2b2e33' },
 ]
 
