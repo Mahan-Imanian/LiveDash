@@ -3,7 +3,7 @@ import { browser } from 'wxt/browser'
 import { defaultSettings, defaults, PREFIX } from './defaults'
 import type { Settings, State } from './types'
 
-export { defaults, PREFIX, todayKey } from './defaults'
+export { defaults, todayKey } from './defaults'
 
 type Key = keyof State
 const LOCAL: Key[] = [

@@ -2,7 +2,7 @@ import { browser } from 'wxt/browser'
 import { titleFromUrl, toUrl } from '@/lib/url'
 import { toast } from '@/ui/toast'
 import { defaults, getState, uid, update } from './store'
-import type { Group, Note, Shortcut, State, Task } from './types'
+import type { Group, Note, Shortcut, Task } from './types'
 
 const FORMAT = 'livedash-backup'
 
@@ -203,5 +203,3 @@ export async function migrateLegacy(): Promise<void> {
 			tone: 'success',
 		})
 }
-
-export type { State }

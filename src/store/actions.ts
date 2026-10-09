@@ -74,14 +74,6 @@ export function completeTask(id: string): void {
 	})
 }
 
-export function toggleTask(id: string): void {
-	update('tasks', (list) =>
-		list.map((t) =>
-			t.id === id ? { ...t, done: !t.done, doneAt: t.done ? null : Date.now() } : t,
-		),
-	)
-}
-
 export function editTask(id: string, input: string, keepDate: boolean): void {
 	const text = input.trim()
 	if (!text) return
