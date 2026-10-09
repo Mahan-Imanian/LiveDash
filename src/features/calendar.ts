@@ -1,4 +1,4 @@
-import { hasPermission, removePermission, requestPermission } from '@/lib/chrome'
+import { FETCH_TIMEOUT_MS, hasPermission, removePermission, requestPermission } from '@/lib/chrome'
 import { dayStart } from '@/lib/format'
 import { parseIcs } from '@/lib/ics'
 import { getState, update } from '@/store/store'
@@ -22,7 +22,11 @@ export function normalizeCalendarUrl(raw: string): string | null {
 async function fetchCalendar(url: string) {
 	let res: Response
 	try {
-		res = await fetch(url, { cache: 'no-store', credentials: 'omit' })
+		res = await fetch(url, {
+			cache: 'no-store',
+			credentials: 'omit',
+			signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+		})
 	} catch {
 		throw new Error('Couldn’t reach the calendar. You may be offline.')
 	}

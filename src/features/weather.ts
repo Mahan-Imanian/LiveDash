@@ -1,4 +1,4 @@
-import { hasPermission, removePermission, requestPermission } from '@/lib/chrome'
+import { FETCH_TIMEOUT_MS, hasPermission, removePermission, requestPermission } from '@/lib/chrome'
 import { getState, update } from '@/store/store'
 import type { Forecast, Place } from '@/store/types'
 
@@ -27,7 +27,7 @@ export async function searchPlaces(q: string): Promise<Place[]> {
 	u.searchParams.set('name', q)
 	u.searchParams.set('count', '6')
 	u.searchParams.set('language', navigator.language.split('-')[0] || 'en')
-	const res = await fetch(u, { credentials: 'omit', signal: AbortSignal.timeout(10_000) })
+	const res = await fetch(u, { credentials: 'omit', signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
 	if (!res.ok) throw new Error(`Place search failed (${res.status})`)
 	const data = (await res.json()) as {
 		results?: {
@@ -52,7 +52,7 @@ export async function locateMe(): Promise<Place> {
 			resolve,
 			() => reject(new Error('Your location couldn’t be found. Search for a city instead.')),
 			{
-				timeout: 10_000,
+				timeout: FETCH_TIMEOUT_MS,
 				maximumAge: 3_600_000,
 			},
 		),
@@ -90,7 +90,10 @@ export async function refreshWeather(force = false): Promise<void> {
 	u.searchParams.set('timezone', 'auto')
 	if (unit === 'f') u.searchParams.set('temperature_unit', 'fahrenheit')
 	try {
-		const res = await fetch(u, { credentials: 'omit', signal: AbortSignal.timeout(10_000) })
+		const res = await fetch(u, {
+			credentials: 'omit',
+			signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+		})
 		if (!res.ok) throw new Error(`Weather service error (${res.status})`)
 		const d = (await res.json()) as {
 			current: { temperature_2m: number; weather_code: number; is_day: number }

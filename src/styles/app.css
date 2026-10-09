@@ -1779,13 +1779,13 @@ kbd {
 	border-radius: 3px;
 }
 
-:root[data-theme="light"] .fav--light,
-:root[data-theme="dark"] .fav--dark {
+:root[data-theme="light"]:not([data-tone="night"]) .fav--light,
+:root:is([data-theme="dark"], [data-tone="night"]) .fav--dark {
 	filter: invert(1);
 }
 
 @media (prefers-color-scheme: light) {
-	:root:not([data-theme]) .fav--light {
+	:root:not([data-theme]):not([data-tone="night"]) .fav--light {
 		filter: invert(1);
 	}
 }

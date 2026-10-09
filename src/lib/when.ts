@@ -1,11 +1,15 @@
+import { dateOf, dayStart, daysInMonth } from './format.ts'
+
 export interface Parsed {
 	title: string
 	due: number | null
 	allDay: boolean
 	repeat?: Repeat
+	repeatDay?: number
 }
 
 const DAY = 86_400_000
+const LEAP_YEAR_SEARCH_YEARS = 8
 
 const WEEKDAYS: Record<string, number> = {
 	sunday: 0,
@@ -80,9 +84,7 @@ interface Hit {
 }
 
 function startOfDay(t: number): Date {
-	const d = new Date(t)
-	d.setHours(0, 0, 0, 0)
-	return d
+	return new Date(dayStart(t))
 }
 
 function addDays(d: Date, n: number): Date {
@@ -99,6 +101,11 @@ function take(text: string, re: RegExp, hits: Hit[]): RegExpExecArray | null {
 	return m
 }
 
+function drop(hits: Hit[]): null {
+	hits.pop()
+	return null
+}
+
 function parseTime(text: string, hits: Hit[]): { h: number; m: number } | null {
 	const word = take(text, /(?:^|\s)(?:at\s+)?(noon|midnight)\b/i, hits)
 	if (word) return word[1].toLowerCase() === 'noon' ? { h: 12, m: 0 } : { h: 0, m: 0 }
@@ -111,7 +118,7 @@ function parseTime(text: string, hits: Hit[]): { h: number; m: number } | null {
 	if (ampm) {
 		let h = Number(ampm[1])
 		const m = Number(ampm[2] ?? 0)
-		if (h < 1 || h > 12 || m > 59) return null
+		if (h < 1 || h > 12 || m > 59) return drop(hits)
 		const pm = ampm[3].toLowerCase().startsWith('p')
 		if (h === 12) h = pm ? 12 : 0
 		else if (pm) h += 12
@@ -124,7 +131,7 @@ function parseTime(text: string, hits: Hit[]): { h: number; m: number } | null {
 	const bare = take(text, /(?:^|\s)(?:at|@)\s*(\d{1,2})(?=\s|$|[,.!?])/i, hits)
 	if (bare) {
 		let h = Number(bare[1])
-		if (h > 23) return null
+		if (h > 23) return drop(hits)
 		if (h >= 1 && h <= 7) h += 12
 		return { h, m: 0 }
 	}
@@ -135,7 +142,7 @@ function parseDay(
 	text: string,
 	now: number,
 	hits: Hit[],
-): { day: Date; time?: { h: number; m: number } } | null {
+): { day: Date; time?: { h: number; m: number }; repeatDay?: number } | null {
 	const today = startOfDay(now)
 
 	const rel = take(
@@ -146,17 +153,17 @@ function parseDay(
 	if (rel) {
 		const words: Record<string, number> = { a: 1, an: 1, one: 1, two: 2, three: 3 }
 		const n = Number.isNaN(Number(rel[1])) ? words[rel[1].toLowerCase()] : Number(rel[1])
-		const ms = n * UNITS[rel[2].toLowerCase()]
+		const unit = rel[2].toLowerCase()
+		const ms = n * UNITS[unit]
+		if (/^[dw]/.test(unit)) return { day: addDays(today, ms / DAY) }
 		const at = new Date(now + ms)
-		if (ms < DAY)
-			return { day: startOfDay(at.getTime()), time: { h: at.getHours(), m: at.getMinutes() } }
-		return { day: startOfDay(at.getTime()) }
+		return { day: startOfDay(at.getTime()), time: { h: at.getHours(), m: at.getMinutes() } }
 	}
 
 	const iso = take(text, /(?:^|\s)(?:on\s+)?(\d{4})-(\d{2})-(\d{2})(?=\s|$|[,.!?])/i, hits)
 	if (iso) {
-		const d = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
-		return Number.isNaN(d.getTime()) ? null : { day: d }
+		const d = dateOf(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
+		return d ? { day: d } : drop(hits)
 	}
 
 	if (take(text, /(?:^|\s)(?:the\s+)?day\s+after\s+tomorrow\b/i, hits))
@@ -204,11 +211,16 @@ function parseDay(
 	if (dateHit) {
 		const month = MONTHS[(md ? md[1] : dm![2]).toLowerCase()]
 		const date = Number(md ? md[2] : dm![1])
-		const year = dateHit[3] ? Number(dateHit[3]) : today.getFullYear()
-		let d = new Date(year, month, date)
-		if (d.getMonth() !== month) return null
-		if (!dateHit[3] && d < today) d = new Date(year + 1, month, date)
-		return { day: d }
+		if (dateHit[3]) {
+			const d = dateOf(Number(dateHit[3]), month, date)
+			return d ? { day: d } : drop(hits)
+		}
+		const year = today.getFullYear()
+		for (let y = year; y <= year + LEAP_YEAR_SEARCH_YEARS; y++) {
+			const d = dateOf(y, month, date)
+			if (d && d >= today) return { day: d }
+		}
+		return drop(hits)
 	}
 
 	const ord = take(
@@ -218,11 +230,14 @@ function parseDay(
 	)
 	if (ord) {
 		const n = Number(ord[1])
-		if (n < 1 || n > 31) return null
-		const y = today.getFullYear()
-		const inMonth = (m: number) => new Date(y, m, Math.min(n, new Date(y, m + 1, 0).getDate()))
-		const d = inMonth(today.getMonth())
-		return { day: d < today ? inMonth(today.getMonth() + 1) : d }
+		if (n < 1 || n > 31) return drop(hits)
+		const inMonth = (offset: number) => {
+			const first = new Date(today.getFullYear(), today.getMonth() + offset, 1)
+			first.setDate(Math.min(n, daysInMonth(first.getFullYear(), first.getMonth())))
+			return first
+		}
+		const d = inMonth(0) < today ? inMonth(1) : inMonth(0)
+		return d.getDate() === n ? { day: d } : { day: d, repeatDay: n }
 	}
 	return null
 }
@@ -274,14 +289,17 @@ function isWeekend(d: Date): boolean {
 	return d.getDay() === 0 || d.getDay() === 6
 }
 
-export function nextOccurrence(due: number, repeat: Repeat, now = Date.now()): number {
+export function nextOccurrence(
+	due: number,
+	repeat: Repeat,
+	now = Date.now(),
+	repeatDay = new Date(due).getDate(),
+): number {
 	const d = new Date(due)
-	const dom = d.getDate()
 	const today = startOfDay(now).getTime()
 	const addMonths = (n: number) => {
 		const target = new Date(d.getFullYear(), d.getMonth() + n, 1, d.getHours(), d.getMinutes())
-		const last = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate()
-		target.setDate(Math.min(dom, last))
+		target.setDate(Math.min(repeatDay, daysInMonth(target.getFullYear(), target.getMonth())))
 		d.setTime(target.getTime())
 	}
 	const step = () => {
@@ -313,14 +331,19 @@ export function parseWhen(input: string, now = Date.now()): Parsed {
 
 	const title = strip(text, hits) || text
 	let start = day ? new Date(day.day) : startOfDay(now)
-	if (!day && repeat === 'weekdays')
-		while (isWeekend(start)) start = new Date(start.getTime() + DAY)
+	if (!day && repeat === 'weekdays') while (isWeekend(start)) start = addDays(start, 1)
+	const repeatDay =
+		(repeat === 'monthly' || repeat === 'yearly') && day?.repeatDay ? day.repeatDay : undefined
 	const out = (due: number, allDay: boolean): Parsed =>
-		repeat ? { title, due, allDay, repeat } : { title, due, allDay }
+		repeat
+			? { title, due, allDay, repeat, ...(repeatDay ? { repeatDay } : {}) }
+			: { title, due, allDay }
 	if (!time) return out(start.getTime(), true)
 
 	start.setHours(time.h, time.m, 0, 0)
 	if (!day && start.getTime() <= now)
-		start = new Date(nextOccurrence(start.getTime(), repeat ?? 'daily', now + DAY))
+		start = new Date(
+			nextOccurrence(start.getTime(), repeat ?? 'daily', addDays(startOfDay(now), 1).getTime()),
+		)
 	return out(start.getTime(), false)
 }

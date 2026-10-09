@@ -8,6 +8,20 @@ export function dayStart(t: number): number {
 	return d.getTime()
 }
 
+const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+export function daysInMonth(year: number, month: number): number {
+	const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
+	return month === 1 && leap ? 29 : MONTH_DAYS[month]
+}
+
+export function dateOf(year: number, month: number, day: number): Date | null {
+	if (!(month >= 0 && month <= 11 && day >= 1 && day <= daysInMonth(year, month))) return null
+	const d = new Date(2000, 0, 1)
+	d.setFullYear(year, month, day)
+	return d
+}
+
 export function dayDiff(t: number, now = Date.now()): number {
 	return Math.round((dayStart(t) - dayStart(now)) / DAY)
 }

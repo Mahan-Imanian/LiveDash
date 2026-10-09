@@ -14,6 +14,7 @@ export interface Task {
 	order: number
 	url?: string
 	repeat?: Repeat
+	repeatDay?: number
 }
 
 export interface Note {

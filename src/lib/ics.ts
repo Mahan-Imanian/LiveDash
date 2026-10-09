@@ -1,3 +1,5 @@
+import { dateOf, daysInMonth } from './format.ts'
+
 export interface CalEvent {
 	title: string
 	start: number
@@ -25,14 +27,20 @@ function unfold(text: string): string[] {
 }
 
 function unescapeText(v: string): string {
-	return v
-		.replace(/\\n/gi, ' ')
-		.replace(/\\([,;\\])/g, '$1')
-		.trim()
+	return v.replace(/\\([nN,;\\])/g, (_, c: string) => (c === 'n' || c === 'N' ? ' ' : c)).trim()
+}
+
+function valueStart(line: string): number {
+	let quoted = false
+	for (let i = 0; i < line.length; i++) {
+		if (line[i] === '"') quoted = !quoted
+		else if (line[i] === ':' && !quoted) return i
+	}
+	return -1
 }
 
 function parseLine(line: string): [string, Prop] | null {
-	const colon = line.search(/:(?=(?:[^"]*"[^"]*")*[^"]*$)/)
+	const colon = valueStart(line)
 	if (colon < 0) return null
 	const head = line.slice(0, colon).split(';')
 	const params: Record<string, string> = {}
@@ -67,7 +75,7 @@ function zoneOffset(utc: number, tz: string): number {
 	return asUtc - utc
 }
 
-export function parseDate(prop: Prop): { t: number; allDay: boolean } | null {
+function parseDate(prop: Prop): { t: number; allDay: boolean } | null {
 	const v = prop.value.trim()
 	const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/.exec(v)
 	if (!m) return null
@@ -82,21 +90,25 @@ export function parseDate(prop: Prop): { t: number; allDay: boolean } | null {
 		number?,
 	]
 	const z = m[7]
-	if (h === undefined || prop.params.VALUE === 'DATE') {
-		return { t: new Date(y, mo - 1, d).getTime(), allDay: true }
+	const day = dateOf(y, mo - 1, d)
+	if (!day) return null
+	if (h === undefined || prop.params.VALUE === 'DATE') return { t: day.getTime(), allDay: true }
+	if (h > 23 || (mi ?? 0) > 59 || (s ?? 0) > 60) return null
+	const sec = Math.min(s ?? 0, 59)
+	const local = () => {
+		day.setHours(h, mi ?? 0, sec)
+		return { t: day.getTime(), allDay: false }
 	}
-	const wall = Date.UTC(y, mo - 1, d, h, mi ?? 0, s ?? 0)
+	const wall = Date.UTC(y, mo - 1, d, h, mi ?? 0, sec)
 	if (z) return { t: wall, allDay: false }
 	const tz = prop.params.TZID
-	if (tz) {
-		try {
-			const guess = wall - zoneOffset(wall, tz)
-			return { t: wall - zoneOffset(guess, tz), allDay: false }
-		} catch {
-			return { t: new Date(y, mo - 1, d, h, mi ?? 0, s ?? 0).getTime(), allDay: false }
-		}
+	if (!tz) return local()
+	try {
+		const guess = wall - zoneOffset(wall, tz)
+		return { t: wall - zoneOffset(guess, tz), allDay: false }
+	} catch {
+		return local()
 	}
-	return { t: new Date(y, mo - 1, d, h, mi ?? 0, s ?? 0).getTime(), allDay: false }
 }
 
 function parseDuration(v: string): number {
@@ -126,6 +138,54 @@ function shift(t: number, allDay: boolean, f: (d: Date) => void): number {
 	return allDay ? new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() : d.getTime()
 }
 
+const WEEKDAY = /^(SU|MO|TU|WE|TH|FR|SA)$/
+const NTH_WEEKDAY = /^([+-]?[1-5])?(SU|MO|TU|WE|TH|FR|SA)$/
+
+function understood(freq: string, rule: Record<string, string>, start: Date): boolean {
+	const by = Object.keys(rule).filter((k) => k.startsWith('BY'))
+	const days = rule.BYDAY?.split(',') ?? []
+	const monthDays = rule.BYMONTHDAY?.split(',').map(Number) ?? []
+	if (freq === 'DAILY') return by.every((k) => k === 'BYDAY') && days.every((d) => WEEKDAY.test(d))
+	if (freq === 'WEEKLY') return by.every((k) => k === 'BYDAY')
+	if (freq === 'MONTHLY')
+		return (
+			by.length <= 1 &&
+			by.every((k) => k === 'BYDAY' || k === 'BYMONTHDAY') &&
+			days.every((d) => NTH_WEEKDAY.test(d)) &&
+			monthDays.every((d) => Number.isInteger(d) && d !== 0 && Math.abs(d) <= 31)
+		)
+	if (freq === 'YEARLY')
+		return (
+			by.every((k) => k === 'BYMONTH' || k === 'BYMONTHDAY') &&
+			(!rule.BYMONTH || Number(rule.BYMONTH) === start.getMonth() + 1) &&
+			(!rule.BYMONTHDAY || Number(rule.BYMONTHDAY) === start.getDate())
+		)
+	return false
+}
+
+function daysOfMonth(y: number, m: number, rule: Record<string, string>, dom: number): number[] {
+	const last = daysInMonth(y, m)
+	if (rule.BYMONTHDAY)
+		return rule.BYMONTHDAY.split(',')
+			.map((v) => (Number(v) < 0 ? last + 1 + Number(v) : Number(v)))
+			.filter((v) => v >= 1 && v <= last)
+			.sort((a, b) => a - b)
+	if (rule.BYDAY) {
+		const first = new Date(y, m, 1).getDay()
+		const out = new Set<number>()
+		for (const part of rule.BYDAY.split(',')) {
+			const [, nth, wd] = NTH_WEEKDAY.exec(part)!
+			const all: number[] = []
+			for (let d = 1 + ((BYDAY[wd] - first + 7) % 7); d <= last; d += 7) all.push(d)
+			const k = Number(nth ?? 0)
+			const picked = k === 0 ? all : [all[k > 0 ? k - 1 : all.length + k]]
+			for (const d of picked) if (d !== undefined) out.add(d)
+		}
+		return [...out].sort((a, b) => a - b)
+	}
+	return dom <= last ? [dom] : []
+}
+
 function expand(
 	start: number,
 	allDay: boolean,
@@ -134,8 +194,11 @@ function expand(
 	exclude: Set<number>,
 ): number[] {
 	const freq = rule.FREQ
-	const interval = Math.max(1, Number(rule.INTERVAL || 1))
+	const interval = Number(rule.INTERVAL || 1)
 	const count = rule.COUNT ? Number(rule.COUNT) : Number.POSITIVE_INFINITY
+	const s = new Date(start)
+	if (!Number.isInteger(interval) || interval < 1 || !(count >= 1) || !understood(freq, rule, s))
+		return [start]
 	const ruleUntil = rule.UNTIL ? (parseDate({ value: rule.UNTIL, params: {} })?.t ?? until) : until
 	const stop = Math.min(until, ruleUntil + (allDay ? DAY - 1 : 0))
 	const out: number[] = []
@@ -166,17 +229,29 @@ function expand(
 		return out
 	}
 
-	const step: Record<string, (d: Date, k: number) => void> = {
-		DAILY: (d, k) => d.setDate(d.getDate() + k),
-		WEEKLY: (d, k) => d.setDate(d.getDate() + 7 * k),
-		MONTHLY: (d, k) => d.setMonth(d.getMonth() + k),
-		YEARLY: (d, k) => d.setFullYear(d.getFullYear() + k),
+	if (freq === 'MONTHLY' || freq === 'YEARLY') {
+		const months = freq === 'YEARLY' ? 12 * interval : interval
+		const byRule = freq === 'MONTHLY' ? rule : {}
+		for (let i = 0; i < 1200 && n < count; i++) {
+			const month = new Date(s.getFullYear(), s.getMonth() + i * months, 1)
+			const y = month.getFullYear()
+			const m = month.getMonth()
+			for (const day of daysOfMonth(y, m, byRule, s.getDate())) {
+				const t = new Date(y, m, day, s.getHours(), s.getMinutes(), s.getSeconds()).getTime()
+				if (t < start) continue
+				if (t > stop || n >= count) return out
+				push(t)
+			}
+		}
+		return out
 	}
-	const f = step[freq]
-	if (!f) return [start]
+
+	const weekdays = rule.BYDAY ? new Set(rule.BYDAY.split(',').map((d) => BYDAY[d])) : null
+	const days = freq === 'WEEKLY' ? 7 * interval : interval
 	for (let i = 0; i < 20000 && n < count; i++) {
-		const t = shift(start, allDay, (d) => f(d, i * interval))
+		const t = shift(start, allDay, (d) => d.setDate(d.getDate() + i * days))
 		if (t > stop) break
+		if (weekdays && !weekdays.has(new Date(t).getDay())) continue
 		push(t)
 	}
 	return out

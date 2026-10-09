@@ -12,7 +12,15 @@ import { isPopup, openUrl, searchWeb } from '@/lib/chrome'
 import { engineName, engineUrl, matchKeyword } from '@/lib/engines'
 import { formatDue, formatRelative, isOverdue } from '@/lib/format'
 import { score } from '@/lib/fuzzy'
-import { type Dest, rankQuery } from '@/lib/rank'
+import {
+	COMMAND_KEYWORD_PENALTY_POINTS,
+	COMMAND_MIN_POINTS,
+	COMMAND_TOP_HIT_MIN_POINTS,
+	type Dest,
+	ITEM_MIN_TEXT_POINTS,
+	rankQuery,
+	TOP_HIT_MIN_TEXT_POINTS,
+} from '@/lib/rank'
 import { hostOf, looksLikeUrl, toUrl } from '@/lib/url'
 import { parseWhen } from '@/lib/when'
 import {
@@ -476,6 +484,10 @@ function cmdRow(c: Command): Row {
 	}
 }
 
+function commandScore(q: string, c: Command): number {
+	return Math.max(score(q, c.label), score(q, c.words) - COMMAND_KEYWORD_PENALTY_POINTS)
+}
+
 export interface Built {
 	rows: Row[]
 	chip?: string
@@ -489,7 +501,7 @@ export function buildCommands(
 	q: string,
 ): Row[] {
 	return commands(s, snap, page, q)
-		.map((c) => ({ c, v: q ? Math.max(score(q, c.label), score(q, c.words) - 12) : 50 }))
+		.map((c) => ({ c, v: q ? commandScore(q, c) : 50 }))
 		.filter((x) => x.v > 0)
 		.sort((a, b) => b.v - a.v)
 		.map((x) => cmdRow(x.c))
@@ -542,31 +554,31 @@ export function buildQuery(
 	}
 
 	const ctx = { now, launches: s.launches, hidden: s.hidden }
-	const dests = rankQuery(text, [...(snap?.dests ?? s.cache.home), ...extra], ctx, 9)
+	const dests = rankQuery(text, [...(snap?.dests ?? s.cache.home), ...extra], ctx)
 	const strong =
 		dests.length > 0 &&
 		Math.max(
 			score(text, dests[0].title),
 			score(text, dests[0].host),
 			score(text, dests[0].host.split('.')[0]),
-		) >= 70
+		) >= TOP_HIT_MIN_TEXT_POINTS
 	const destRows = dests.map((d) => destRow(d, text))
 
 	const scoredCmds = commands(s, snap, page, text)
-		.map((c) => ({ c, v: Math.max(score(text, c.label), score(text, c.words) - 12) }))
-		.filter((x) => x.v >= 62)
+		.map((c) => ({ c, v: commandScore(text, c) }))
+		.filter((x) => x.v >= COMMAND_MIN_POINTS)
 		.sort((a, b) => b.v - a.v)
 		.slice(0, 3)
 	const cmdRows = scoredCmds.map((x) => cmdRow(x.c))
 
 	const taskRows = s.tasks
-		.filter((t) => !t.done && score(text, t.title) >= 55)
+		.filter((t) => !t.done && score(text, t.title) >= ITEM_MIN_TEXT_POINTS)
 		.slice(0, 3)
 		.map((t) => taskRow(t, now))
 	const noteRows = s.notes
 		.filter(
 			(n) =>
-				score(text, noteTitle(n)) >= 55 ||
+				score(text, noteTitle(n)) >= ITEM_MIN_TEXT_POINTS ||
 				(text.length > 2 && n.text.toLowerCase().includes(text.toLowerCase())),
 		)
 		.slice(0, 3)
@@ -580,7 +592,9 @@ export function buildQuery(
 			run: () => emit({ type: 'open', panel: 'notes', arg: n.id }),
 		}))
 	const deviceRows = (snap?.devices ?? [])
-		.filter((t) => Math.max(score(text, t.title), score(text, hostOf(t.url))) >= 55)
+		.filter(
+			(t) => Math.max(score(text, t.title), score(text, hostOf(t.url))) >= ITEM_MIN_TEXT_POINTS,
+		)
 		.slice(0, 3)
 		.map((t) => deviceRow(t, text))
 
@@ -622,7 +636,7 @@ export function buildQuery(
 		},
 	}
 
-	const cmdStrong = (scoredCmds[0]?.v ?? 0) >= 75
+	const cmdStrong = (scoredCmds[0]?.v ?? 0) >= COMMAND_TOP_HIT_MIN_POINTS
 	const question =
 		/\?$/.test(text) || /^(what|how|why|who|when|where|is|are|can|does|define)\b/i.test(text)
 	let rest: Row[] = [...destRows, ...deviceRows, ...taskRows, ...noteRows, ...cmdRows]
