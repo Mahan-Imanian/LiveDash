@@ -41,6 +41,13 @@ export interface RankCtx {
 
 const DAY = 86_400_000
 
+export const HISTORY_WINDOW_DAYS = 60
+export const HISTORY_MAX_PAGES = 5000
+export const HOUR_SAMPLE_PAGES = 40
+export const HOUR_SAMPLE_DAYS = 45
+export const HOURS_TTL_HOURS = 12
+export const LAUNCH_LOG_SIZE = 400
+export const LAUNCH_QUERY_CHARS = 24
 export const VISIT_HALF_LIFE_DAYS = 14
 const UNKNOWN_VISIT_AGE_DAYS = 30
 const HOUR_MIN_SAMPLE_VISITS = 6

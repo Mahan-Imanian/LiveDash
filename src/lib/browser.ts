@@ -2,7 +2,21 @@ import { browser } from 'wxt/browser'
 import { getState, update } from '@/store/store'
 import type { Closed } from '@/store/types'
 import { hasPermission, requestPermission } from './chrome'
-import { cleanTitle, type Dest, merge, normalize, rankHome, type Source } from './rank'
+import {
+	cleanTitle,
+	type Dest,
+	HISTORY_MAX_PAGES,
+	HISTORY_WINDOW_DAYS,
+	HOUR_SAMPLE_DAYS,
+	HOUR_SAMPLE_PAGES,
+	HOURS_TTL_HOURS,
+	LAUNCH_LOG_SIZE,
+	LAUNCH_QUERY_CHARS,
+	merge,
+	normalize,
+	rankHome,
+	type Source,
+} from './rank'
 
 export const CORE_PERMS = ['history', 'tabs', 'sessions'] as const
 
@@ -40,7 +54,7 @@ export interface Snapshot {
 }
 
 const DAY = 86_400_000
-const HOURS_TTL = 12 * 3_600_000
+const HOURS_TTL = HOURS_TTL_HOURS * 3_600_000
 
 export async function readAccess(): Promise<Access> {
 	const [history, tabs, sessions, bookmarks] = await Promise.all(
@@ -127,8 +141,8 @@ async function history(access: Access): Promise<Source[]> {
 	if (access.history) {
 		const items = await browser.history.search({
 			text: '',
-			startTime: Date.now() - 60 * DAY,
-			maxResults: 5000,
+			startTime: Date.now() - HISTORY_WINDOW_DAYS * DAY,
+			maxResults: HISTORY_MAX_PAGES,
 		})
 		return items
 			.filter((h) => h.url)
@@ -145,8 +159,8 @@ async function history(access: Access): Promise<Source[]> {
 async function refreshHours(dests: Dest[], access: Access): Promise<void> {
 	const h = getState().hours
 	if (!access.history || Date.now() - h.at < HOURS_TTL) return
-	const top = [...dests].sort((a, b) => b.visits - a.visits).slice(0, 40)
-	const since = Date.now() - 45 * DAY
+	const top = [...dests].sort((a, b) => b.visits - a.visits).slice(0, HOUR_SAMPLE_PAGES)
+	const since = Date.now() - HOUR_SAMPLE_DAYS * DAY
 	const data: Record<string, number[]> = {}
 	await Promise.all(
 		top.map(async (d) => {
@@ -258,8 +272,8 @@ export function logLaunch(url: string, q: string): void {
 	const n = normalize(url)
 	if (!n) return
 	update('launches', (l) => [
-		...l.slice(-399),
-		{ k: n.key, q: q.trim().toLowerCase().slice(0, 24), t: Date.now() },
+		...l.slice(-(LAUNCH_LOG_SIZE - 1)),
+		{ k: n.key, q: q.trim().toLowerCase().slice(0, LAUNCH_QUERY_CHARS), t: Date.now() },
 	])
 }
 

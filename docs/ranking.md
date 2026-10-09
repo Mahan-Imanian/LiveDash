@@ -5,7 +5,7 @@ LiveDash ranks pages in two places:
 - **Home** (`rankHome` in `src/lib/rank.ts`): the history suggestions that fill empty shortcut slots and the cached list the search box uses before history has loaded.
 - **Query** (`rankQuery`): the page results in the search box while you type. `src/features/search/model.ts` then decides which row becomes the top hit and mixes in tasks, notes, devices and commands.
 
-Everything runs locally on data Chrome already has: `chrome.history.search` (last 60 days, at most 5,000 pages), `chrome.history.getVisits` for the 40 most-visited pages (hour-of-day counts, refreshed every 12 hours), open tabs, bookmarks matching the query, your shortcuts, and a log of the last 400 results you opened from LiveDash ("launches") with the letters you had typed.
+Everything runs locally on data Chrome already has: `chrome.history.search` over the last `HISTORY_WINDOW_DAYS` (60) days, at most `HISTORY_MAX_PAGES` (5,000) pages; `chrome.history.getVisits` for the `HOUR_SAMPLE_PAGES` (40) most-visited pages over `HOUR_SAMPLE_DAYS` (45) days, refreshed every `HOURS_TTL_HOURS` (12) hours, for hour-of-day counts; open tabs; bookmarks matching the query; your shortcuts; and a log of the last `LAUNCH_LOG_SIZE` (400) results you opened from LiveDash ("launches"), each with the first `LAUNCH_QUERY_CHARS` (24) characters you had typed. These bound the work done on each new tab; they were set by hand like the weights below.
 
 All constants live in one block at the top of `src/lib/rank.ts`.
 
