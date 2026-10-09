@@ -208,10 +208,6 @@ export function Favicon({
 	)
 }
 
-export function Kbd({ children }: { children: ReactNode }) {
-	return <kbd>{children}</kbd>
-}
-
 export function CheckMark() {
 	return (
 		<svg
