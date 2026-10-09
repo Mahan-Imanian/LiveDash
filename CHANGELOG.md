@@ -59,7 +59,7 @@ LiveDash is no longer a dashboard. The new tab is now a single instrument built 
 - Everything from 1.x that wasn't about getting somewhere: accounts and sign-in, LiveCoin and the store, missions, referrals, friends, leaderboard, pets, mood log, IP lookup, YouTube stats, prayer times, crypto and currency rates (including hardcoded prices shown as live), RSS, translator, image and voice search, Explorer directory, wallpapers and themes for sale.
 - Google Analytics (including a secret shipped in the bundle and an opt-out that did nothing) and the dependency on an API that returned 404s.
 - The widget grid, clock hero, weather, shortcut tiles and every card. The icon library, Tailwind, daisyUI, moment and about 30 other dependencies.
-- Region-specific defaults and all Widgetify-era code, names, assets and templates.
+- Region-specific defaults and all remaining 1.x code, names, assets and templates.
 
 ### Under the hood
 
