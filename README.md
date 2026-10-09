@@ -25,6 +25,10 @@
 
 A new tab should get you somewhere. LiveDash's search box knows which tabs you have open, what you visit at this hour and what you bookmarked, and ranks those above a web search. Under it sit the shortcuts you use most, what you closed by accident, today's tasks and meeting, and your notes. Nothing else.
 
+## The masthead
+
+The page is laid out like a front page. Today's date is the headline, set in Newsreader and sized to fit the column, with a live clock under it. The lead story is your next meeting: a countdown, its time range, a Join button and the meeting after it. With no meeting left today it shows what's due instead, or offers to connect a calendar. The top line names the edition (morning, afternoon, evening or late) and the week of the year. In dark mode the page switches to a night edition with its own blue-black paper and ivory rules, not an inverted copy of the light one.
+
 ## Search
 
 Type two letters. If the page is already open in a tab, the top hit switches to it instead of opening a duplicate. Otherwise it's the site you usually visit at this hour, or a bookmark. A full address opens directly, `yt jazz` or `w typography` goes straight to that site, and anything else goes to the engine you chose. Type "call mom friday 6pm" and press <kbd>⇧</kbd> <kbd>↵</kbd> to file it as a task.
@@ -40,7 +44,7 @@ Nine numbered keys, opened with <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>, and 
 
 ## Today
 
-The next meeting with its join link sits at the top of the page once you paste your calendar's secret iCal link into **Settings → Calendar**. Below it are tasks written the way you'd say them, "pay rent every month on the 1st" or "call mom friday 6pm", with overdue ones marked, undo on every completion, and repeating ones rolling forward on their own. Next to it, **Pick up** lists tabs you closed, pages open on your other devices and today's history without the noise (search results, sign-in pages, errors), and **Notes** holds whatever you jotted.
+Meetings come from your calendar once you paste its secret iCal link into **Settings → Calendar**, listed with their times next to your tasks. The tasks are written the way you'd say them, "pay rent every month on the 1st" or "call mom friday 6pm", with overdue ones marked, undo on every completion, and repeating ones rolling forward on their own. Next to it, **Pick up** lists tabs you closed, pages open on your other devices and today's history without the noise (search results, sign-in pages, errors), and **Notes** holds whatever you jotted.
 
 ## Everything else is one key away
 
