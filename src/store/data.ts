@@ -29,49 +29,45 @@ export function exportData(): void {
 	toast('Backup downloaded', { tone: 'success' })
 }
 
-function isArrayOf<T>(v: unknown, check: (x: Record<string, unknown>) => boolean): v is T[] {
-	return (
-		Array.isArray(v) &&
-		v.every((x) => x && typeof x === 'object' && check(x as Record<string, unknown>))
-	)
+function validItems<T>(v: unknown, check: (x: Record<string, unknown>) => boolean): T[] {
+	if (!Array.isArray(v)) return []
+	return v.filter((x) => x && typeof x === 'object' && check(x)) as T[]
 }
 
 export async function importData(file: File): Promise<void> {
-	let raw: Record<string, unknown>
+	let raw: Record<string, unknown> | null
 	try {
 		raw = JSON.parse(await file.text())
 	} catch {
 		toast('That file isn’t a LiveDash backup (not valid JSON).', { tone: 'error' })
 		return
 	}
-	if (raw.format !== FORMAT) {
+	if (!raw || typeof raw !== 'object' || raw.format !== FORMAT) {
 		toast('That file isn’t a LiveDash backup.', { tone: 'error' })
 		return
 	}
-	const tasks = isArrayOf<Task>(
+	const tasks = validItems<Task>(
 		raw.tasks,
-		(t) => typeof t.id === 'string' && typeof t.title === 'string',
+		(t) =>
+			typeof t.id === 'string' &&
+			typeof t.title === 'string' &&
+			(t.due === null || Number.isFinite(t.due)) &&
+			typeof t.allDay === 'boolean' &&
+			typeof t.done === 'boolean' &&
+			Number.isFinite(t.order),
 	)
-		? raw.tasks
-		: []
-	const notes = isArrayOf<Note>(
+	const notes = validItems<Note>(
 		raw.notes,
 		(n) => typeof n.id === 'string' && typeof n.text === 'string',
 	)
-		? raw.notes
-		: []
-	const shortcuts = isArrayOf<Shortcut>(
+	const shortcuts = validItems<Shortcut>(
 		raw.shortcuts,
 		(x) => typeof x.id === 'string' && typeof x.url === 'string' && !!toUrl(x.url),
 	)
-		? raw.shortcuts
-		: []
-	const groups = isArrayOf<Group>(
+	const groups = validItems<Group>(
 		raw.groups,
 		(g) => typeof g.id === 'string' && typeof g.name === 'string',
 	)
-		? raw.groups
-		: []
 	const before = getState()
 	const merge = <T extends { id: string }>(cur: T[], inc: T[]) => [
 		...cur,
@@ -96,6 +92,7 @@ export async function importData(file: File): Promise<void> {
 			tone: 'success',
 			undo: added
 				? () => {
+						update('groups', () => before.groups)
 						update('tasks', () => before.tasks)
 						update('notes', () => before.notes)
 						update('shortcuts', () => before.shortcuts)
