@@ -214,82 +214,86 @@ export function Shortcuts() {
 				Shortcuts
 			</h2>
 			{(groups.length > 0 || shortcuts.length > 0) && (
-				<div className="groups" role="tablist" aria-label="Shortcut groups">
-					{[{ id: 'all', name: 'All' }, ...groups].map((g) =>
-						naming === g.id ? (
-							<input
-								key={g.id}
-								className="group-input"
-								aria-label="Group name"
-								defaultValue={g.id === 'new' ? '' : g.name}
-								autoFocus
-								onBlur={(e) => {
-									if (g.id !== 'all') renameGroup(g.id, e.target.value)
-									setNaming(null)
-								}}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') e.currentTarget.blur()
-									if (e.key === 'Escape') setNaming(null)
-								}}
-							/>
-						) : (
-							<button
-								key={g.id}
-								type="button"
-								role="tab"
-								aria-selected={current === g.id}
-								tabIndex={
-									current === g.id || (g.id === 'all' && !tabIds.includes(current)) ? 0 : -1
-								}
-								className="group-tab"
-								data-drop={drag?.group === g.id}
-								onClick={() => update('ui', (u) => ({ ...u, group: g.id }))}
-								onKeyDown={(e) => {
-									const i = tabIds.indexOf(g.id)
-									const n = tabIds.length
-									const next = {
-										ArrowRight: tabIds[(i + 1) % n],
-										ArrowLeft: tabIds[(i - 1 + n) % n],
-										Home: tabIds[0],
-										End: tabIds[n - 1],
-									}[e.key]
-									if (!next) return
-									e.preventDefault()
-									const list = e.currentTarget.parentElement
-									update('ui', (u) => ({ ...u, group: next }))
-									requestAnimationFrame(() =>
-										list?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus(),
-									)
-								}}
-								onContextMenu={(e) => {
-									if (g.id === 'all') return
-									e.preventDefault()
-									openMenu(e, groupMenu(g.id, g.name), `Group ${g.name}`)
-								}}
-								onDoubleClick={() => g.id !== 'all' && setNaming(g.id)}
-								onDragOver={(e) => {
-									if (!drag) return
-									e.preventDefault()
-									if (drag.group !== g.id) setDrag({ ...drag, group: g.id })
-								}}
-								onDragLeave={() => drag && setDrag({ ...drag, group: undefined })}
-								onDrop={(e) => {
-									e.preventDefault()
-									if (!drag) return
-									editShortcut(drag.id, { group: g.id === 'all' ? undefined : g.id })
-									toast(g.id === 'all' ? 'Removed from group' : `Moved to ${g.name}`)
-									setDrag(null)
-								}}
-							>
-								{g.name}
-								{g.id !== 'all' && (
-									<span className="group-count">
-										{shortcuts.filter((s) => s.group === g.id).length}
-									</span>
-								)}
-							</button>
-						),
-					)}
+				<div className="groups">
+					<div className="groups-tabs" role="tablist" aria-label="Shortcut groups">
+						{[{ id: 'all', name: 'All' }, ...groups].map((g) =>
+							naming === g.id ? (
+								<input
+									key={g.id}
+									className="group-input"
+									aria-label="Group name"
+									defaultValue={g.id === 'new' ? '' : g.name}
+									autoFocus
+									onBlur={(e) => {
+										if (g.id !== 'all') renameGroup(g.id, e.target.value)
+										setNaming(null)
+									}}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter') e.currentTarget.blur()
+										if (e.key === 'Escape') setNaming(null)
+									}}
+								/>
+							) : (
+								<button
+									key={g.id}
+									type="button"
+									role="tab"
+									aria-selected={current === g.id}
+									tabIndex={
+										current === g.id || (g.id === 'all' && !tabIds.includes(current)) ? 0 : -1
+									}
+									className="group-tab"
+									data-drop={drag?.group === g.id}
+									onClick={() => update('ui', (u) => ({ ...u, group: g.id }))}
+									onKeyDown={(e) => {
+										const i = tabIds.indexOf(g.id)
+										const n = tabIds.length
+										const next = {
+											ArrowRight: tabIds[(i + 1) % n],
+											ArrowLeft: tabIds[(i - 1 + n) % n],
+											Home: tabIds[0],
+											End: tabIds[n - 1],
+										}[e.key]
+										if (!next) return
+										e.preventDefault()
+										const list = e.currentTarget.parentElement
+										update('ui', (u) => ({ ...u, group: next }))
+										requestAnimationFrame(() =>
+											list
+												?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
+												?.focus(),
+										)
+									}}
+									onContextMenu={(e) => {
+										if (g.id === 'all') return
+										e.preventDefault()
+										openMenu(e, groupMenu(g.id, g.name), `Group ${g.name}`)
+									}}
+									onDoubleClick={() => g.id !== 'all' && setNaming(g.id)}
+									onDragOver={(e) => {
+										if (!drag) return
+										e.preventDefault()
+										if (drag.group !== g.id) setDrag({ ...drag, group: g.id })
+									}}
+									onDragLeave={() => drag && setDrag({ ...drag, group: undefined })}
+									onDrop={(e) => {
+										e.preventDefault()
+										if (!drag) return
+										editShortcut(drag.id, { group: g.id === 'all' ? undefined : g.id })
+										toast(g.id === 'all' ? 'Removed from group' : `Moved to ${g.name}`)
+										setDrag(null)
+									}}
+								>
+									{g.name}
+									{g.id !== 'all' && (
+										<span className="group-count">
+											{shortcuts.filter((s) => s.group === g.id).length}
+										</span>
+									)}
+								</button>
+							),
+						)}
+					</div>
 					<button
 						type="button"
 						className="group-tab group-tab--add"

@@ -98,6 +98,7 @@ function SearchSection() {
 			>
 				<select
 					className="select"
+					aria-label="Search engine"
 					value={s.engine}
 					onChange={(e) =>
 						update('settings', (x) => ({ ...x, engine: e.target.value as EngineId }))

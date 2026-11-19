@@ -40,15 +40,15 @@ export function Popup() {
 	if (page === undefined) return null
 
 	return (
-		<div className="popup-shell">
+		<main className="popup-shell">
 			<header className="popup-head">
-				<span className="nameplate">LiveDash</span>
+				<h1 className="nameplate">LiveDash</h1>
 				<span className="popup-what">Quick capture</span>
 				{page && <span className="popup-page">{new URL(page.url).host}</span>}
 			</header>
 			<Search page={page} alwaysOpen onDone={setDone} />
 			<MenuHost />
 			<ToastHost />
-		</div>
+		</main>
 	)
 }
