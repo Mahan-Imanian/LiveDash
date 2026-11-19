@@ -66,7 +66,7 @@ export function FocusMode({ onClose }: { onClose: () => void }) {
 			}}
 			tabIndex={-1}
 		>
-			<header className="focus-top">
+			<div className="focus-top">
 				<p className="focus-label" data-status={focus.status}>
 					<span className="focus-dot" aria-hidden="true" />
 					{MODE_LABEL[focus.mode]}
@@ -86,7 +86,7 @@ export function FocusMode({ onClose }: { onClose: () => void }) {
 					<kbd>esc</kbd>
 					<Glyph name="close" />
 				</button>
-			</header>
+			</div>
 			<div className="focus-inner">
 				<p className="focus-time" role="timer" aria-live="off">
 					{formatDuration(left)}

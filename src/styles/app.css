@@ -1400,7 +1400,7 @@ kbd {
 }
 
 .result-title {
-	flex: none;
+	flex: 0 1 auto;
 	max-width: 70%;
 	min-width: 0;
 	overflow: hidden;
@@ -3601,4 +3601,31 @@ body.popup {
 	.focus-bar span {
 		transition: none;
 	}
+}
+
+.groups-tabs {
+	display: contents;
+}
+
+@media (max-width: 520px) {
+	.result-text {
+		flex-wrap: wrap;
+		row-gap: 2px;
+	}
+	.result-title {
+		max-width: 100%;
+		white-space: normal;
+	}
+}
+
+.popup-shell .results-foot {
+	column-gap: var(--space-3);
+}
+
+.popup-shell .results-foot span:nth-last-child(2) {
+	display: none;
+}
+
+.popup-head .nameplate {
+	margin: 0;
 }
