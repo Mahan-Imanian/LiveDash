@@ -822,7 +822,7 @@ kbd {
 	margin: 0;
 	color: var(--ink-1);
 	font-family: var(--font-head);
-	font-size: clamp(40px, calc(100cqi / (var(--len, 17) * 0.5)), 92px);
+	font-size: clamp(26px, calc(100cqi / (var(--len, 17) * 0.5)), 92px);
 	font-weight: 500;
 	line-height: 0.98;
 	letter-spacing: -0.028em;
