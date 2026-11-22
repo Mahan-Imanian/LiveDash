@@ -259,6 +259,30 @@ export async function openAll(urls: string[], groupTitle?: string): Promise<void
 	await browser.tabGroups.update(groupId, { title: groupTitle })
 }
 
+/** Pages visited inside a time window ("figma yesterday"), matching `text` if given. */
+export async function historyBetween(
+	text: string,
+	start: number,
+	end: number,
+	access: Access,
+): Promise<Source[]> {
+	if (!access.history) return []
+	const items = await browser.history.search({
+		text,
+		startTime: start,
+		endTime: end,
+		maxResults: 200,
+	})
+	return items
+		.filter((h) => h.url)
+		.map((h) => ({
+			url: h.url!,
+			title: h.title ?? '',
+			visits: h.visitCount ?? 0,
+			lastVisit: h.lastVisitTime ?? 0,
+		}))
+}
+
 export async function bookmarkSources(q: string, access: Access): Promise<Source[]> {
 	if (!access.bookmarks || q.trim().length < 2) return []
 	const found = await browser.bookmarks.search(q).catch(() => [])
