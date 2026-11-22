@@ -5,7 +5,7 @@
 }
 
 html {
-	background: var(--paper-light), var(--bg);
+	background: var(--bg);
 	background-attachment: fixed;
 	-webkit-text-size-adjust: 100%;
 }
@@ -21,21 +21,6 @@ body {
 	-webkit-font-smoothing: antialiased;
 	text-rendering: optimizeLegibility;
 	font-feature-settings: "kern", "liga";
-}
-
-body::before {
-	content: "";
-	position: fixed;
-	inset: 0;
-	z-index: -1;
-	background-image: var(--grain);
-	background-size: 240px 240px;
-	opacity: var(--grain-opacity);
-	pointer-events: none;
-}
-
-:root[data-photo] body::before {
-	display: none;
 }
 
 button,
@@ -120,7 +105,8 @@ kbd {
 	border-radius: 4px;
 	background: color-mix(in srgb, var(--surface) 70%, transparent);
 	color: var(--ink-2);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: 10.5px;
 	font-weight: var(--weight-medium);
 	line-height: 1;
@@ -153,7 +139,8 @@ kbd {
 
 .count {
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 	font-weight: var(--weight-regular);
 }
@@ -360,7 +347,8 @@ kbd {
 }
 
 .line-input--mono {
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-sm);
 }
 
@@ -381,7 +369,8 @@ kbd {
 	border-bottom: 1px solid var(--line-strong);
 	background: transparent;
 	text-align: right;
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-variant-numeric: tabular-nums;
 }
 
@@ -594,7 +583,6 @@ kbd {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	animation: fade 700ms var(--ease-out);
 }
 
 .backdrop-dim {
@@ -644,34 +632,10 @@ kbd {
 	}
 }
 
-@keyframes headline {
-	from {
-		opacity: 0;
-		transform: translateY(0.16em);
-		filter: blur(6px);
-	}
-}
-
-@keyframes draw {
-	from {
-		transform: scaleX(0);
-	}
-}
-
 @keyframes pop {
 	from {
 		opacity: 0;
 		transform: translateY(-4px) scale(0.98);
-	}
-}
-
-@keyframes pulse {
-	0% {
-		box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent);
-	}
-	70%,
-	100% {
-		box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 0%, transparent);
 	}
 }
 
@@ -691,7 +655,6 @@ kbd {
 	gap: var(--space-4);
 	min-height: 52px;
 	border-bottom: 1px solid var(--line);
-	animation: fade 360ms var(--ease-out) both;
 }
 
 .edition-name {
@@ -706,7 +669,6 @@ kbd {
 	color: var(--ink-1);
 	font-family: var(--font-serif);
 	font-size: 20px;
-	font-style: italic;
 	font-weight: 600;
 	letter-spacing: -0.015em;
 	line-height: 1;
@@ -767,7 +729,8 @@ kbd {
 
 .tool-timer {
 	color: var(--accent);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 }
 
 .tool-place {
@@ -777,7 +740,6 @@ kbd {
 .tool-stale {
 	color: var(--ink-3);
 	font-size: var(--text-xs);
-	font-style: italic;
 }
 
 .edition-focus {
@@ -808,7 +770,6 @@ kbd {
 	border-top: 3px solid var(--rule);
 	border-bottom: 1px solid var(--rule);
 	transform-origin: left center;
-	animation: draw 700ms var(--ease-expo) 80ms both;
 }
 
 .mast-headline {
@@ -827,7 +788,6 @@ kbd {
 	line-height: 0.98;
 	letter-spacing: -0.028em;
 	white-space: nowrap;
-	animation: headline 640ms var(--ease-expo) 40ms both;
 }
 
 :root[data-headline="sans"] .mast-date {
@@ -845,7 +805,6 @@ kbd {
 	line-height: 1;
 	font-variant-numeric: lining-nums tabular-nums;
 	letter-spacing: -0.01em;
-	animation: rise 420ms var(--ease-expo) 160ms both;
 }
 
 .clock-sec {
@@ -869,7 +828,6 @@ kbd {
 	min-width: 0;
 	padding-left: var(--space-7);
 	border-left: 1px solid var(--line);
-	animation: rise 480ms var(--ease-expo) 180ms both;
 }
 
 .lead-label {
@@ -887,10 +845,6 @@ kbd {
 	height: 7px;
 	border-radius: 50%;
 	background: currentColor;
-}
-
-.lead[data-hot="true"] .lead-dot {
-	animation: pulse 2s var(--ease-out) infinite;
 }
 
 .lead--quiet .lead-label {
@@ -1054,7 +1008,8 @@ kbd {
 	justify-items: center;
 	gap: 6px;
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 	font-variant-numeric: tabular-nums;
 }
@@ -1096,7 +1051,8 @@ kbd {
 
 .wx-rain {
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 }
 
@@ -1154,22 +1110,10 @@ kbd {
 	padding-top: calc(30px * var(--rhythm));
 }
 
-.below {
-	transition:
-		opacity var(--dur-2) var(--ease-out),
-		transform var(--dur-3) var(--ease-out),
-		visibility 0s linear;
-}
-
+/* Typing hides the panels at once: keyboard-initiated, so it never animates. */
 .front[data-searching="true"] .below {
-	opacity: 0;
-	transform: translateY(14px);
 	visibility: hidden;
 	pointer-events: none;
-	transition:
-		opacity var(--dur-1) var(--ease-in),
-		transform var(--dur-2) var(--ease-in),
-		visibility 0s linear var(--dur-2);
 }
 
 .search-field {
@@ -1194,13 +1138,11 @@ kbd {
 
 .search-field::before {
 	background: var(--ink-1);
-	animation: draw 800ms var(--ease-expo) 160ms both;
 }
 
 .search-field::after {
 	background: var(--accent);
 	transform: scaleX(0);
-	transition: transform 420ms var(--ease-expo);
 }
 
 .search-field:focus-within::after {
@@ -1237,7 +1179,8 @@ kbd {
 	border-radius: var(--radius-sm);
 	background: var(--ink-1);
 	color: var(--bg);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-xs);
 	font-weight: var(--weight-medium);
 	text-shadow: none;
@@ -1260,7 +1203,6 @@ kbd {
 
 .search-input::placeholder {
 	color: var(--ink-3);
-	font-style: italic;
 }
 
 .search-input:focus-visible {
@@ -1273,7 +1215,8 @@ kbd {
 	border-radius: var(--radius-full);
 	background: var(--accent-soft);
 	color: var(--accent);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-xs);
 	font-weight: var(--weight-medium);
 	white-space: nowrap;
@@ -1310,7 +1253,6 @@ kbd {
 .results {
 	position: relative;
 	margin-top: var(--space-3);
-	animation: rise var(--dur-2) var(--ease-expo);
 }
 
 .results-cursor {
@@ -1320,10 +1262,6 @@ kbd {
 	border-radius: 7px;
 	background: var(--sel);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent);
-	transition:
-		transform 150ms var(--ease-expo),
-		height 150ms var(--ease-expo),
-		width 150ms var(--ease-expo);
 	pointer-events: none;
 }
 
@@ -1338,7 +1276,8 @@ kbd {
 	margin: 0;
 	padding: 12px var(--space-3) 4px;
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 	line-height: 1.3;
 	white-space: nowrap;
@@ -1364,8 +1303,6 @@ kbd {
 	min-height: 46px;
 	padding: 4px var(--space-3);
 	cursor: pointer;
-	animation: rise 200ms var(--ease-expo) both;
-	animation-delay: calc(min(var(--i, 0), 10) * 14ms);
 }
 
 .result--top {
@@ -1415,7 +1352,8 @@ kbd {
 	min-width: 0;
 	overflow: hidden;
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-xs);
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -1488,7 +1426,6 @@ kbd {
 	align-items: center;
 	gap: var(--space-1) var(--space-5);
 	margin-bottom: calc(var(--space-5) * var(--rhythm));
-	animation: fade 400ms var(--ease-out) 200ms both;
 }
 
 .group-tab {
@@ -1539,7 +1476,8 @@ kbd {
 
 .group-count {
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 	font-weight: var(--weight-regular);
 	font-variant-numeric: tabular-nums;
@@ -1567,8 +1505,6 @@ kbd {
 .keycap {
 	position: relative;
 	width: calc(var(--key) + 34px);
-	animation: rise 380ms var(--ease-expo) both;
-	animation-delay: calc(200ms + min(var(--i, 9), 12) * 24ms);
 }
 
 .keycap[draggable="true"] {
@@ -1667,7 +1603,8 @@ kbd {
 	top: 5px;
 	left: 7px;
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: 10px;
 	font-weight: var(--weight-medium);
 	line-height: 1;
@@ -1823,7 +1760,6 @@ kbd {
 	gap: var(--space-4);
 	max-width: 620px;
 	padding: var(--space-2) 0;
-	animation: rise 420ms var(--ease-expo) 200ms both;
 }
 
 .starter-lede {
@@ -1865,7 +1801,6 @@ kbd {
 	border-top: 3px solid var(--rule);
 	border-bottom: 1px solid var(--rule);
 	transform-origin: left center;
-	animation: draw 800ms var(--ease-expo) 260ms both;
 }
 
 .columns[data-count="2"] {
@@ -1880,16 +1815,6 @@ kbd {
 .col {
 	min-width: 0;
 	padding: var(--space-5) var(--space-7) var(--space-2);
-	animation: rise 460ms var(--ease-expo) both;
-	animation-delay: 320ms;
-}
-
-.col:nth-child(2) {
-	animation-delay: 380ms;
-}
-
-.col:nth-child(3) {
-	animation-delay: 440ms;
 }
 
 .col:first-child {
@@ -1951,6 +1876,21 @@ kbd {
 	margin: 0 0 var(--space-2);
 	padding: 0;
 	list-style: none;
+}
+
+/* Waiting state: three quiet rows the height of real items. No shimmer. */
+.col-list--waiting li {
+	height: 58px;
+	border-bottom: 1px solid var(--line);
+}
+
+.col-list--waiting li::before {
+	content: "";
+	display: block;
+	width: 62%;
+	height: 10px;
+	margin-top: 14px;
+	background: var(--surface-2);
 }
 
 .col-item {
@@ -2043,7 +1983,8 @@ kbd {
 
 .agenda-time {
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-xs);
 	font-variant-numeric: tabular-nums;
 }
@@ -2104,7 +2045,7 @@ a.todo-title:hover {
 }
 
 .todo[data-done="true"] {
-	animation: leave var(--dur-3) var(--ease-in) 160ms forwards;
+	animation: leave var(--dur-2) var(--ease-out) 160ms forwards;
 }
 
 @keyframes leave {
@@ -2211,10 +2152,6 @@ a.todo-title:hover {
 	font-size: 17px;
 }
 
-.quick-input::placeholder {
-	font-style: italic;
-}
-
 .quick-input:focus-visible {
 	outline: none;
 }
@@ -2225,7 +2162,8 @@ a.todo-title:hover {
 	border-radius: var(--radius-full);
 	background: var(--accent-soft);
 	color: var(--accent);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 	font-weight: var(--weight-medium);
 	white-space: nowrap;
@@ -2564,19 +2502,8 @@ dialog {
 	z-index: var(--z-focus);
 	display: grid;
 	grid-template-rows: auto 1fr;
-	background: var(--paper-light), var(--bg);
+	background: var(--bg);
 	animation: fade var(--dur-3) var(--ease-out);
-}
-
-.focus::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: -1;
-	background-image: var(--grain);
-	background-size: 240px 240px;
-	opacity: var(--grain-opacity);
-	pointer-events: none;
 }
 
 .focus:focus {
@@ -2617,7 +2544,6 @@ dialog {
 
 .focus-label[data-status="running"] .focus-dot {
 	background: var(--accent);
-	animation: pulse 2s var(--ease-out) infinite;
 }
 
 .focus-label[data-status="paused"] .focus-dot {
@@ -2662,7 +2588,6 @@ dialog {
 	line-height: 0.82;
 	letter-spacing: -0.04em;
 	font-variant-numeric: tabular-nums lining-nums;
-	animation: headline 600ms var(--ease-expo) both;
 }
 
 .focus-bar {
@@ -2694,10 +2619,6 @@ dialog {
 	font-family: var(--font-head);
 	font-size: 28px;
 	letter-spacing: -0.01em;
-}
-
-.focus-intent::placeholder {
-	font-style: italic;
 }
 
 .focus-intent:focus-visible {
@@ -2809,7 +2730,8 @@ dialog {
 
 .bm-host {
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 	white-space: nowrap;
 }
@@ -2861,7 +2783,7 @@ dialog {
 }
 
 .task[data-leaving="true"] {
-	animation: leave var(--dur-3) var(--ease-in) 260ms forwards;
+	animation: leave var(--dur-2) var(--ease-out) 260ms forwards;
 }
 
 .task-body {
@@ -2898,7 +2820,8 @@ dialog {
 }
 
 .task-link {
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 }
 
@@ -3346,7 +3269,8 @@ dialog {
 .kw-url {
 	overflow: hidden;
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-xs);
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -3457,7 +3381,8 @@ body.popup {
 	margin-left: auto;
 	overflow: hidden;
 	color: var(--ink-3);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
+	font-variant-numeric: tabular-nums;
 	font-size: var(--text-2xs);
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -3600,6 +3525,20 @@ body.popup {
 	.result-verb,
 	.focus-bar span {
 		transition: none;
+	}
+	/* No travel or scale under reduced motion: these keep colour and opacity only. */
+	.bg-swatch,
+	.btn,
+	.check,
+	.disclose .glyph,
+	.drawer,
+	.key-face,
+	.result-verb,
+	.st-tab::before,
+	.swatch,
+	.switch::after,
+	.icon-btn {
+		transition-property: opacity, color, background-color, border-color;
 	}
 }
 
