@@ -7,16 +7,18 @@ import {
 	useRef,
 	useState,
 } from 'react'
-import { bookmarkSources } from '@/lib/browser'
+import { bookmarkSources, historyBetween } from '@/lib/browser'
 import { on } from '@/lib/bus'
 import { isPopup } from '@/lib/chrome'
 import { ENGINES, engineName } from '@/lib/engines'
 import { type Dest, merge } from '@/lib/rank'
+import { parseSince } from '@/lib/since'
 import { update, useStore } from '@/store/store'
 import { Favicon } from '@/ui/controls'
 import { Glyph } from '@/ui/Glyph'
 import { openMenu } from '@/ui/Menu'
 import { useLive } from '../snapshot'
+import { Marked } from './Marked'
 import { buildCommands, buildQuery, type Mods, type Page, type Row } from './model'
 
 interface Props {
@@ -39,7 +41,8 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 	const [now] = useState(() => Date.now())
 	const inputRef = useRef<HTMLInputElement>(null)
 	const listRef = useRef<HTMLDivElement>(null)
-	const [cursor, setCursor] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
+	const [scopedDests, setScopedDests] = useState<Dest[] | null>(null)
+	const [announce, setAnnounce] = useState('')
 	const listId = useId()
 
 	const active = command || query.trim().length > 0 || alwaysOpen
@@ -75,6 +78,27 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 		}
 	}, [query, access, command])
 
+	const events = state.calendar.events
+	const scope = useMemo(
+		() => (command || !access?.history ? null : parseSince(query, Date.now(), events)),
+		[query, command, access, events],
+	)
+	useEffect(() => {
+		if (!scope || !access) {
+			setScopedDests(null)
+			return
+		}
+		let alive = true
+		const t = setTimeout(async () => {
+			const found = await historyBetween(scope.text, scope.start, scope.end, access).catch(() => [])
+			if (alive) setScopedDests(merge(found))
+		}, 60)
+		return () => {
+			alive = false
+			clearTimeout(t)
+		}
+	}, [scope, access])
+
 	const built = useMemo(() => {
 		if (command)
 			return {
@@ -91,8 +115,16 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 				mode: 'command' as const,
 			}
 		if (!query.trim()) return { rows: [] as Row[], chip: undefined, mode: 'search' as const }
-		return buildQuery(query, state, snap, extra, page, now)
-	}, [query, command, state, snap, extra, page, now, alwaysOpen])
+		return buildQuery(
+			query,
+			state,
+			snap,
+			extra,
+			page,
+			now,
+			scope && scopedDests ? { scope, dests: scopedDests } : undefined,
+		)
+	}, [query, command, state, snap, extra, page, now, alwaysOpen, scope, scopedDests])
 	const rows = built.rows
 	const idx = Math.min(sel, Math.max(0, rows.length - 1))
 	const selected = rows[idx]
@@ -108,27 +140,43 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 							: 'Quick actions'
 						: command
 							? 'Commands'
-							: 'Top hit'
-					: row.cat
+							: row.id === 'i:search'
+								? 'Leave LiveDash'
+								: 'Top hit'
+					: row.cat === 'Web'
+						? 'Leave LiveDash'
+						: row.cat === 'Visited'
+							? `Visited ${scope?.label ?? ''}`.trim()
+							: row.cat
 			const last = out[out.length - 1]
 			if (last && last.cat === cat) last.rows.push({ row, index })
 			else out.push({ cat, rows: [{ row, index }] })
 		})
 		return out
-	}, [rows, command, page, query, alwaysOpen])
+	}, [rows, command, page, query, alwaysOpen, scope])
 
 	useLayoutEffect(() => {
-		const el = listRef.current?.querySelector<HTMLElement>('.result[aria-selected="true"]')
-		const next = el
-			? { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight }
-			: null
-		setCursor((prev) =>
-			prev?.x === next?.x && prev?.y === next?.y && prev?.w === next?.w && prev?.h === next?.h
-				? prev
-				: next,
-		)
-		el?.scrollIntoView({ block: 'nearest' })
+		listRef.current
+			?.querySelector<HTMLElement>('.result[aria-selected="true"]')
+			?.scrollIntoView({ block: 'nearest' })
 	})
+
+	// One polite announcement once typing settles: how many results and the top hit.
+	const topRow = rows[0]
+	useEffect(() => {
+		if (!active || (!query.trim() && !command)) {
+			setAnnounce('')
+			return
+		}
+		const t = setTimeout(() => {
+			if (!topRow) return setAnnounce(command ? 'No commands match' : '')
+			const n = rows.length
+			setAnnounce(
+				`${n} ${command ? (n === 1 ? 'command' : 'commands') : n === 1 ? 'result' : 'results'}. ${topRow.verb}: ${topRow.title}`,
+			)
+		}, 450)
+		return () => clearTimeout(t)
+	}, [active, query, command, rows.length, topRow])
 
 	function reset() {
 		setQuery('')
@@ -259,19 +307,38 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 					}}
 					onKeyDown={onKeyDown}
 				/>
-				{built.chip && <span className="search-chip">{built.chip}</span>}
 				{!active && !isPopup() && (
 					<span className="search-keys" aria-hidden="true">
 						<span className="search-key search-key--idle">
 							<kbd>/</kbd> to search
 						</span>
-						<span className="search-key search-key--focus">
+						<span className="search-key">
 							<kbd>&gt;</kbd> for commands
+						</span>
+						<span className="search-key search-key--idle">
+							<kbd>?</kbd> all keys
 						</span>
 					</span>
 				)}
 			</div>
-
+			{built.preview && !command && (
+				<p className="search-preview">
+					{built.preview.kind === 'task' ? (
+						<>
+							New task “{built.preview.title}”, due <b>{built.preview.due}</b>. <kbd>↵</kbd> adds
+							it, <kbd>{MOD}</kbd> <kbd>↵</kbd> searches the web instead.
+						</>
+					) : (
+						<>
+							Pages from <b>{built.preview.label}</b> ({built.preview.detail})
+							{built.preview.text ? <> matching “{built.preview.text}”</> : null}.
+						</>
+					)}
+				</p>
+			)}
+			<p className="sr-only" aria-live="polite" aria-atomic="true">
+				{announce}
+			</p>
 			{active && (
 				<div
 					className="results"
@@ -280,27 +347,18 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 					aria-label={command ? 'Commands' : 'Results'}
 					ref={listRef}
 				>
-					{cursor && rows.length > 0 && (
-						<div
-							className="results-cursor"
-							aria-hidden="true"
-							style={{
-								transform: `translate(${cursor.x}px, ${cursor.y}px)`,
-								width: cursor.w,
-								height: cursor.h,
-							}}
-						/>
-					)}
 					{rows.length === 0 && (
 						<p className="results-empty">
-							No commands match “{query}”. Press Backspace to search instead.
+							{command
+								? `No commands match “${query}”. Press Backspace to search instead.`
+								: `Nothing matches “${query}”.`}
 						</p>
 					)}
 					{groups.map((g, gi) => (
 						<div
 							role="group"
 							aria-labelledby={`${listId}-g${gi}`}
-							className="result-group"
+							className={`result-group${g.cat === 'Leave LiveDash' ? ' result-group--leave' : ''}`}
 							key={`${gi}-${g.cat}`}
 						>
 							<p className="result-source" id={`${listId}-g${gi}`}>
@@ -313,9 +371,16 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 										id={optionId(index)}
 										role="option"
 										aria-selected={index === idx}
-										aria-label={[row.verb, row.title, row.sub, row.meta].filter(Boolean).join(', ')}
+										aria-label={[
+											row.verb,
+											row.title,
+											row.sub,
+											row.meta,
+											index === idx ? row.why : '',
+										]
+											.filter(Boolean)
+											.join(', ')}
 										className={`result${row.cat === 'top' ? ' result--top' : ''}`}
-										style={{ '--i': index } as React.CSSProperties}
 										onMouseMove={() => index !== idx && setSel(index)}
 										onMouseDown={(e) => e.preventDefault()}
 										onClick={(e) =>
@@ -342,21 +407,34 @@ export function Search({ page = null, alwaysOpen = false, onActive, onDone }: Pr
 											)}
 										</span>
 										<span className="result-text">
-											<span className="result-title">{row.title}</span>
-											{row.sub && <span className="result-sub">{row.sub}</span>}
+											<span className="result-title" dir="auto">
+												<Marked text={row.title} ranges={row.match} />
+											</span>
+											{row.sub && (
+												<span className="result-sub" dir="auto">
+													{row.sub}
+												</span>
+											)}
+											{row.why && index === idx && (
+												<span className="result-why">Ranked first: {row.why}</span>
+											)}
 										</span>
-										{row.meta && (
-											<span className={`result-meta${row.tone ? ` result-meta--${row.tone}` : ''}`}>
-												{row.meta}
+										<span className="result-end" aria-hidden="true">
+											{row.meta && (
+												<span
+													className={`result-meta${row.tone ? ` result-meta--${row.tone}` : ''}`}
+												>
+													{row.meta}
+												</span>
+											)}
+											{row.key && !row.meta && (
+												<span className="result-meta">
+													<kbd>{row.key}</kbd>
+												</span>
+											)}
+											<span className="result-verb">
+												{row.verb} <kbd>↵</kbd>
 											</span>
-										)}
-										{row.key && !row.meta && (
-											<span className="result-meta" aria-hidden="true">
-												<kbd>{row.key}</kbd>
-											</span>
-										)}
-										<span className="result-verb" aria-hidden="true">
-											{row.verb} <kbd>↵</kbd>
 										</span>
 									</div>
 								))}

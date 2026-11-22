@@ -10,17 +10,19 @@ import {
 import { emit } from '@/lib/bus'
 import { isPopup, openUrl, searchWeb } from '@/lib/chrome'
 import { engineName, engineUrl, matchKeyword } from '@/lib/engines'
-import { formatDue, formatRelative, isOverdue } from '@/lib/format'
-import { score } from '@/lib/fuzzy'
+import { formatDue, formatRelative, formatTime, isOverdue } from '@/lib/format'
+import { matchRanges, score } from '@/lib/fuzzy'
 import {
 	COMMAND_KEYWORD_PENALTY_POINTS,
 	COMMAND_MIN_POINTS,
 	COMMAND_TOP_HIT_MIN_POINTS,
 	type Dest,
+	explain,
 	ITEM_MIN_TEXT_POINTS,
 	rankQuery,
 	TOP_HIT_MIN_TEXT_POINTS,
 } from '@/lib/rank'
+import type { Scope } from '@/lib/since'
 import { hostOf, looksLikeUrl, toUrl } from '@/lib/url'
 import { parseWhen } from '@/lib/when'
 import {
@@ -56,6 +58,7 @@ export interface Action {
 
 export type Cat =
 	| 'top'
+	| 'Visited'
 	| 'Open tabs'
 	| 'Shortcuts'
 	| 'History'
@@ -65,14 +68,19 @@ export type Cat =
 	| 'Notes'
 	| 'Commands'
 	| 'Also'
+	| 'Web'
 
 export interface Row {
 	id: string
 	cat: Cat
 	icon: Icon
 	title: string
+	/** Matched characters of `title`, as [start, end) ranges. */
+	match?: [number, number][]
 	sub?: string
 	meta?: string
+	/** Why the top hit ranked first, from the ranking terms. */
+	why?: string
 	tone?: 'live' | 'due'
 	key?: string
 	verb: string
@@ -86,6 +94,7 @@ export interface Page {
 }
 
 const ORDER: Cat[] = [
+	'Visited',
 	'Open tabs',
 	'Shortcuts',
 	'History',
@@ -95,6 +104,7 @@ const ORDER: Cat[] = [
 	'Notes',
 	'Commands',
 	'Also',
+	'Web',
 ]
 
 function webUrl(s: State, q: string): string | null {
@@ -166,6 +176,7 @@ function destRow(d: Dest, q: string): Row {
 					: 'History',
 		icon: { favicon: d.url, label: d.title },
 		title: d.title,
+		match: matchRanges(q, d.title),
 		sub: d.host + d.path,
 		meta: switching ? 'open' : d.lastVisit ? formatRelative(d.lastVisit) : undefined,
 		tone: switching ? 'live' : undefined,
@@ -223,6 +234,7 @@ function deviceRow(t: DeviceTab, q: string): Row {
 		cat: 'Other devices',
 		icon: { favicon: t.url, label: t.title },
 		title: t.title,
+		match: matchRanges(q, t.title),
 		sub: `${hostOf(t.url)} · ${t.device}`,
 		meta: formatRelative(t.at),
 		verb: 'Open',
@@ -488,9 +500,15 @@ function commandScore(q: string, c: Command): number {
 	return Math.max(score(q, c.label), score(q, c.words) - COMMAND_KEYWORD_PENALTY_POINTS)
 }
 
+export type Preview =
+	| { kind: 'task'; title: string; due: string; phrase: string }
+	| { kind: 'time'; label: string; detail: string; text: string; phrase: string }
+
 export interface Built {
 	rows: Row[]
 	chip?: string
+	/** A plain-language reading of what the query will do, shown under the field. */
+	preview?: Preview
 	mode: 'search' | 'command'
 }
 
@@ -514,10 +532,13 @@ export function buildQuery(
 	extra: Dest[],
 	page: Page | null,
 	now: number,
+	scoped?: { scope: Scope; dests: Dest[] },
 ): Built {
 	const text = query.trim()
 	if (text.startsWith('>'))
 		return { rows: buildCommands(s, snap, page, text.slice(1).trim()), mode: 'command' }
+
+	if (scoped) return buildScoped(text, scoped.scope, scoped.dests, s, snap, now)
 
 	const top: Row[] = []
 	const kw = matchKeyword(text, s.settings.keywords)
@@ -600,7 +621,7 @@ export function buildQuery(
 
 	const searchRow: Row = {
 		id: 'i:search',
-		cat: 'Also',
+		cat: 'Web',
 		icon: { glyph: 'search' },
 		title: text,
 		sub: `search ${s.settings.engine === 'default' ? 'the web' : engine}`,
@@ -647,8 +668,80 @@ export function buildQuery(
 		else top.push({ ...searchRow, cat: 'top' })
 	}
 	const topId = top[0].id
+	if (strong && topId === destRows[0]?.id) {
+		const why = explain(dests[0], text, ctx)
+		if (why.length) top[0] = { ...top[0], why: why.join(' · ') }
+	}
 	rest = rest.filter((r) => r.id !== topId)
-	const also = [searchRow, laterRow, noteRow].filter((r) => r.id !== topId)
+	const also = [laterRow, noteRow, searchRow].filter((r) => r.id !== topId)
 	rest.sort((a, b) => ORDER.indexOf(a.cat) - ORDER.indexOf(b.cat))
-	return { rows: [...top, ...rest, ...also], chip, mode: 'search' }
+	const preview: Preview | undefined =
+		p.due && chip
+			? { kind: 'task', title: p.title, due: chip, phrase: dueWords(text, p.title) }
+			: undefined
+	return { rows: [...top, ...rest, ...also], chip, preview, mode: 'search' }
+}
+
+/** The words the task parser read as a date: everything that is not the title. */
+function dueWords(text: string, title: string): string {
+	const t = title.trim()
+	if (t && text.toLowerCase().startsWith(t.toLowerCase())) return text.slice(t.length).trim()
+	return ''
+}
+
+/** "figma yesterday": pages visited inside the window, newest first, then the web. */
+function buildScoped(
+	text: string,
+	scope: Scope,
+	dests: Dest[],
+	s: State,
+	snap: Snapshot | null,
+	now: number,
+): Built {
+	const ctx = { now, launches: s.launches, hidden: s.hidden }
+	const q = scope.text
+	const inside = (t: number) => t >= scope.start && t < scope.end
+	const ranked = q
+		? rankQuery(q, dests, ctx, 12)
+		: [...dests].sort((a, b) => b.lastVisit - a.lastVisit).slice(0, 12)
+	const cycle = s.settings.hourCycle
+	const visited: Row[] = ranked.map((d) => ({
+		...destRow(d, q),
+		cat: 'Visited',
+		meta: inside(d.lastVisit) ? formatTime(d.lastVisit, cycle) : scope.label,
+	}))
+	const closed: Row[] = (snap?.closed ?? [])
+		.filter((c) => c.url && inside(c.at) && (!q || score(q, c.title) >= ITEM_MIN_TEXT_POINTS))
+		.map((c) => ({
+			id: `c:${c.id}`,
+			cat: 'Visited',
+			icon: { favicon: c.url!, label: c.title },
+			title: c.title,
+			match: matchRanges(q, c.title),
+			sub: hostOf(c.url!),
+			meta: `closed at ${formatTime(c.at, cycle)}`,
+			verb: 'Reopen',
+			run: () => restoreClosed(c.id),
+		}))
+	const rows = [...closed, ...visited]
+	const web: Row = {
+		id: 'i:search',
+		cat: 'Web',
+		icon: { glyph: 'search' },
+		title: text,
+		sub: `search ${s.settings.engine === 'default' ? 'the web' : engineName(s.settings.engine)}`,
+		verb: 'Search',
+		run: (m) => searchWeb(text, m.newTab, webUrl(s, text)),
+	}
+	return {
+		rows: rows.length ? [{ ...rows[0], cat: 'top' }, ...rows.slice(1), web] : [web],
+		preview: {
+			kind: 'time',
+			label: scope.label,
+			detail: scope.detail,
+			text: q,
+			phrase: scope.phrase,
+		},
+		mode: 'search',
+	}
 }
