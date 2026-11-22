@@ -23,6 +23,8 @@ function applyTheme(s: Settings) {
 		localStorage.setItem('ld-accent', s.accent)
 		localStorage.setItem('ld-type', s.typeOnOpen ? '1' : '0')
 		localStorage.setItem('ld-tone', s.background.kind === 'tone' ? s.background.tone : '')
+		localStorage.setItem('ld-density', s.density)
+		localStorage.setItem('ld-headline', s.headline)
 	} catch {}
 }
 

@@ -5,6 +5,10 @@ try {
 	if (a && a !== 'ember') document.documentElement.dataset.accent = a
 	const tone = localStorage.getItem('ld-tone')
 	if (tone) document.documentElement.dataset.tone = tone
+	const density = localStorage.getItem('ld-density')
+	if (density) document.documentElement.dataset.density = density
+	const headline = localStorage.getItem('ld-headline')
+	if (headline) document.documentElement.dataset.headline = headline
 	if (
 		location.pathname.endsWith('/newtab.html') &&
 		!new URLSearchParams(location.search).has('f') &&
