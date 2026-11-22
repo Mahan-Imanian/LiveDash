@@ -44,7 +44,13 @@ export function NotesCol({ now }: { now: number }) {
 			{list.length > 0 && (
 				<ul className="col-list">
 					{list.map((n) => {
-						const rest = n.text.trim().split('\n').slice(1).join(' ').trim()
+						const rest = n.text
+							.trim()
+							.split('\n')
+							.slice(1)
+							.map((l) => l.replace(/^\s*(?:[-*•]|\d+[.)]|\[[ x]\])\s+/i, '').trim())
+							.filter(Boolean)
+							.join('; ')
 						return (
 							<li key={n.id}>
 								<button
