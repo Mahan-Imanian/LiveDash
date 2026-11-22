@@ -248,3 +248,24 @@ test('titles lose site-name noise', async () => {
 		'google.com',
 	)
 })
+
+test('the ranking reason names only the terms that scored', async () => {
+	const { explain } = await import('../src/lib/rank.ts')
+	const [tab] = merge([
+		{ url: 'https://github.com/vercel/next.js', title: 'Next.js', visits: 140, lastVisit: ago(1) },
+		{ url: 'https://github.com/vercel/next.js', title: 'Next.js', tabId: 3, windowId: 1 },
+	])
+	assert.deepEqual(explain(tab, 'next', ctx), ['title match', 'open in a tab', 'visited 140 times'])
+	const picks = [
+		{ k: tab.key, q: 'ne', t: now },
+		{ k: tab.key, q: 'nex', t: now },
+		{ k: tab.key, q: 'docs', t: now },
+	]
+	assert.deepEqual(explain(tab, 'ne', { ...ctx, launches: picks }).slice(2, 3), [
+		'you picked it for “ne” 2 times',
+	])
+	const [quiet] = merge([
+		{ url: 'https://example.com/a', title: 'Alpha', visits: 1, lastVisit: ago(2) },
+	])
+	assert.deepEqual(explain(quiet, 'example', ctx), ['site match'])
+})

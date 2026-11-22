@@ -268,3 +268,25 @@ export function rankQuery(q: string, dests: Dest[], ctx: RankCtx, limit = QUERY_
 		})
 		.slice(0, limit)
 }
+
+/**
+ * Why a page ranked where it did for a query, in plain words, built from the
+ * same terms `rankQuery` scores. Used for the line under the selected top hit.
+ */
+export function explain(d: Dest, q: string, ctx: RankCtx): string[] {
+	const query = q.trim().toLowerCase()
+	const parts: string[] = []
+	const title = score(query, d.title)
+	const site = Math.max(score(query, d.host), score(query, d.host.split('.')[0]))
+	if (title >= TOP_HIT_MIN_TEXT_POINTS) parts.push('title match')
+	else if (site >= TOP_HIT_MIN_TEXT_POINTS) parts.push('site match')
+	if (d.tabId !== undefined) parts.push('open in a tab')
+	if (d.pinned !== undefined) parts.push('in your shortcuts')
+	const picked = ctx.launches.filter(
+		(l) => l.k === d.key && l.q && query && (l.q.startsWith(query) || query.startsWith(l.q)),
+	).length
+	if (picked)
+		parts.push(`you picked it for “${query}” ${picked === 1 ? 'once' : `${picked} times`}`)
+	if (d.visits > 1) parts.push(`visited ${d.visits} times`)
+	return parts
+}
