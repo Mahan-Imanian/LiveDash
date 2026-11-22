@@ -37,7 +37,7 @@ The top of the page shows the date, a clock and the current or next calendar eve
 
 ## Search
 
-Results are grouped as open tabs, shortcuts, history, bookmarks, other devices, tasks, notes and commands. The top hit is picked in this order:
+Results are grouped as open tabs, shortcuts, history, bookmarks, other devices, tasks, notes and commands, with the web search last under "Leave LiveDash". The top hit is picked in this order:
 
 1. A site keyword: `yt jazz` searches YouTube, `w typography` Wikipedia. Keywords are editable in Settings.
 2. Something that looks like an address opens directly.
@@ -46,7 +46,9 @@ Results are grouped as open tabs, shortcuts, history, bookmarks, other devices, 
 5. A command whose name matches well.
 6. Otherwise, a web search with the engine chosen in Settings. Questions ("how …", "… ?") skip steps 4 and 5.
 
-Page results are ranked by text match, visit count, whether the page is pinned or open, and which result you picked before for the same letters. [docs/ranking.md](docs/ranking.md) lists every term and constant.
+Page results are ranked by text match, visit count, whether the page is pinned or open, and which result you picked before for the same letters. Matched letters are underlined, and the selected top hit says why it ranked first. [docs/ranking.md](docs/ranking.md) lists every term and constant.
+
+Add a time phrase to search only what you visited then: `figma yesterday`, `docs this morning`, `last night`, `3 days ago`, `last week`, `on monday`, or `during design review` for a meeting from today's calendar that has started. Recently closed tabs from that window are included. Words that name the future, such as "today", "tonight" or a bare weekday, still make a task.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-search-dark.png">
@@ -165,10 +167,11 @@ Single-letter keys work when the cursor is not in a text box; press <kbd>Esc</kb
 
 **Taking focus from the address bar.** Chrome gives new-tab pages no keyboard focus. To let you type into LiveDash's search box straight away, the page reloads itself once as `newtab.html?f`, which Chrome does focus. This costs one extra load per new tab and can be turned off in Settings → Search ("Start typing right away").
 
-**Fonts are bundled** (about 270 KB of WOFF2) so that the page makes no font requests.
+**Fonts are bundled** (about 180 KB of WOFF2: Newsreader and Schibsted Grotesk) so that the page makes no font requests.
 
 ## Known limits
 
+- Time phrases in search are English only and need the history permission; weeks start on Monday.
 - Date phrases are English only. Supported: today, tonight, tomorrow, weekdays, "next week", "weekend", month-name dates, ISO dates, "the 5th", "in N minutes/hours/days/weeks", clock and am/pm times, and daily, weekday, weekly, monthly and yearly repeats. Not supported: "in 2 months", ranges, durations and time zones.
 - iCal: `DAILY`, `WEEKLY` with `BYDAY`, `MONTHLY` with `BYDAY` or `BYMONTHDAY`, and `YEARLY` are expanded. Rules with `BYSETPOS`, `BYWEEKNO`, `BYYEARDAY`, `BYHOUR` or other combinations show only their first occurrence. `WKST` is ignored (weeks start on Sunday). Recurrences are expanded in your own time zone, so an event defined in a zone whose daylight-saving dates differ from yours can be an hour off for part of the year. Windows zone names such as `Pacific Standard Time` are not recognised and are read as local time.
 - Something with a dot and two or more letters after it, such as `node.js`, is treated as an address; the web search row is still one key down.
@@ -219,7 +222,9 @@ The unit tests run TypeScript directly with `node --test` and need Node.js 22.18
 | --- | --- |
 | `tests/when.test.ts`, `tests/when-dst.test.ts` | Date phrases, impossible and boundary dates and times, repeats, and daylight-saving changes (run in `America/New_York`) |
 | `tests/ics.test.ts`, `tests/lib.test.ts` | iCal values, folding, escapes, time zones, malformed input, recurrence, meeting links; URL detection and fuzzy matching |
-| `tests/rank.test.ts` | Page identity, merging, filters and the orderings the ranking constants are meant to produce |
+| `tests/rank.test.ts` | Page identity, merging, filters, the orderings the ranking constants are meant to produce, and the reasons shown for the top hit |
+| `tests/since.test.ts`, `tests/since-dst.test.ts` | Time phrases in search, which words are left to the task parser, and daylight-saving days (run in `America/New_York`) |
+| `tests/match.test.ts` | Which letters of a title are underlined as matched |
 | `tests/edition.test.ts` | Masthead event choice, week numbers and time-of-day names |
 | `tests/contrast.test.ts` | WCAG contrast of text tokens for all 180 combinations of system scheme, theme, paper tone and accent, and that each accent takes effect |
 
