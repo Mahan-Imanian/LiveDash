@@ -26,7 +26,21 @@ export function PickUp() {
 	const { access, snap } = useLive()
 	const asked = useStore((s) => s.ui.asked)
 
-	if (!access) return null
+	// Hold the column's place while Chrome answers the permission check, so the
+	// columns beside it never move (CLS) when it fills in.
+	if (!access)
+		return (
+			<section className="col" aria-labelledby="pu-title" aria-busy="true">
+				<h2 className="col-head" id="pu-title">
+					Pick up
+				</h2>
+				<ul className="col-list col-list--waiting" aria-hidden="true">
+					<li />
+					<li />
+					<li />
+				</ul>
+			</section>
+		)
 
 	if (!access.history && !access.tabs) {
 		if (asked) return null
