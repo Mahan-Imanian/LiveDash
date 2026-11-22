@@ -22,7 +22,7 @@
 
 <br>
 
-<img alt="The LiveDash new tab split down the middle, light theme on the left and dark on the right: date and next meeting at the top, the search line, numbered shortcut keys, then Pick up, Today and Notes" src=".github/assets/showcase.png" width="100%">
+<img alt="The LiveDash new tab split down the middle, the light theme on the left and the dark theme on the right: the date and next meeting at the top, the search line, numbered shortcut keys, then Pick up, Today and Notes" src=".github/assets/showcase.png" width="100%">
 
 LiveDash is a Chrome new-tab extension (Manifest V3, React 19, built with WXT), laid out like a newspaper front page. It has one search box that looks through your open tabs, history, bookmarks, tabs on other devices, tasks and notes before falling back to a web search, a row of shortcut keys, and three columns: recently closed pages, today's tasks and calendar events, and notes. There is no account and no server; everything is computed in the browser from data Chrome already has, and the optional browser permissions are requested only when you turn on the feature that needs them.
 
@@ -32,7 +32,7 @@ The top of the page shows the date, a clock and the current or next calendar eve
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-masthead-dark.png">
-  <img alt="The masthead: Friday, October 9 as the headline with a live clock under it, and the next meeting beside it: Design review, a countdown, its time range, a Join button and 1:1 with Sam after it" src=".github/assets/f-masthead.png" width="100%">
+  <img alt="The masthead: Sunday, November 22 as the headline with a live clock under it, and the next meeting beside it: Design review in 38 minutes, its time range, a Join button and 1:1 with Sam after it" src=".github/assets/f-masthead.png" width="100%">
 </picture>
 
 ## Search
@@ -51,13 +51,18 @@ Page results are ranked by text match, visit count, whether the page is pinned o
 Add a time phrase to search only what you visited then: `figma yesterday`, `docs this morning`, `last night`, `3 days ago`, `last week`, `on monday`, or `during design review` for a meeting from today's calendar that has started. Recently closed tabs from that window are included. Words that name the future, such as "today", "tonight" or a bare weekday, still make a task.
 
 <picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-time-search-dark.png">
+  <img alt="Typing 'figma yesterday': a line under the field says it shows pages from yesterday matching figma, followed by three Figma pages visited yesterday with their times, and the web search last" src=".github/assets/f-time-search.png" width="100%">
+</picture>
+
+<picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-search-dark.png">
-  <img alt="Typing 'next' in search: the top hit is the Next.js tab already open on GitHub, with Switch to tab, and web search, task and note options below" src=".github/assets/f-search.png" width="100%">
+  <img alt="Typing 'next' in search: the top hit is the Next.js tab already open on GitHub, with the matched letters underlined and the reason it ranked first, then a history result, task and note options, and the web search last under Leave LiveDash" src=".github/assets/f-search.png" width="100%">
 </picture>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-quick-task-dark.png">
-  <img alt="Typing 'pay rent every month on the 1st': the top hit adds 'pay rent' as a task on Nov 1, repeating monthly" src=".github/assets/f-quick-task.png" width="100%">
+  <img alt="Typing 'pay rent every month on the 1st': a line under the field reads it as a new task 'pay rent' due Tue, Dec 1, repeating monthly, and the top hit adds it" src=".github/assets/f-quick-task.png" width="100%">
 </picture>
 
 ## Shortcut keys
@@ -66,7 +71,7 @@ Nine numbered keys open with <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>; further
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-keys-dark.png">
-  <img alt="Nine numbered shortcut keys drawn as keycaps, from Next.js to Stack Overflow, with All, Work and Reading group tabs above them" src=".github/assets/f-keys.png" width="100%">
+  <img alt="Nine numbered shortcut keys with site icons, from Next.js to Stack Overflow, then YouTube, Spotify and Add, with All, Work and Reading group tabs above them" src=".github/assets/f-keys.png" width="100%">
 </picture>
 
 ## Today, Pick up and Notes
@@ -78,11 +83,11 @@ Nine numbered keys open with <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>; further
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-pickup-dark.png">
-    <img alt="The Pick up column: two tabs and a window closed minutes ago, then pages from today's history" src=".github/assets/f-pickup.png" width="49%">
+    <img alt="The Pick up column: two tabs and a window closed minutes ago, a page open on a phone, then pages from today's history" src=".github/assets/f-pickup.png" width="49%">
   </picture>
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-today-dark.png">
-    <img alt="The Today column: an all-day event and three meetings, two with Join links, then tasks with an overdue date, a daily repeat and due times" src=".github/assets/f-today.png" width="49%">
+    <img alt="The Today column: an all-day event and two meetings with Join links, then tasks with an overdue date and due times" src=".github/assets/f-today.png" width="49%">
   </picture>
 </p>
 
@@ -92,7 +97,7 @@ Nine numbered keys open with <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>; further
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-commands-dark.png">
-  <img alt="The command list opened with the greater-than key: start focus, open tasks, notes or bookmarks, reopen the last closed tab, open a group as a tab group, add a shortcut" src=".github/assets/f-commands.png" width="100%">
+  <img alt="The command list opened with the greater-than key: start focus, open tasks, notes or bookmarks, reopen the last closed tab, open a group as a tab group, add a shortcut, customize and change the theme" src=".github/assets/f-commands.png" width="100%">
 </picture>
 
 <p align="center">
@@ -108,7 +113,7 @@ Nine numbered keys open with <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>; further
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-focus-dark.png">
-  <img alt="Focus mode: a large countdown, the intent 'Q4 budget memo for Priya', and Pause and Reset buttons" src=".github/assets/f-focus.png" width="100%">
+  <img alt="Focus mode: a large 25:00 countdown, the intent 'Q4 budget memo for Priya', a Start button and duration choices" src=".github/assets/f-focus.png" width="100%">
 </picture>
 
 ## Install
