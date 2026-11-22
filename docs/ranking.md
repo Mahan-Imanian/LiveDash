@@ -108,3 +108,12 @@ The tiers order match kinds; the gaps between them are what the bonuses above ar
 - Visit counts come from Chrome's per-URL `visitCount`, which includes redirects and reloads.
 - The hour histogram covers only the 40 most-visited pages and the last 45 days.
 - Launch history is capped at 400 entries and stays on the device. Clearing it is under Settings → Data & privacy.
+
+## Why the top hit ranked first
+
+When the selected top hit is a page, the search list shows a short reason under it. `explain()` in `src/lib/rank.ts` builds it from the same terms `rankQuery` scores, in this order: a title or site match at or above `TOP_HIT_MIN_TEXT_POINTS`, an open tab, a shortcut, past picks of this page for the same letters (counted from the launch log), and the visit count when above one. It never names a term that did not contribute. `tests/rank.test.ts` checks the wording against known inputs.
+
+## Time phrases
+
+A query such as "figma yesterday" bypasses the 60-day snapshot: `src/lib/since.ts` turns the phrase into a start and end time, and `chrome.history.search` is asked for pages visited inside that window. Those pages are then ranked with `rankQuery` on the rest of the query, or by most recent visit when the phrase is the whole query.
+
