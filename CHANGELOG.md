@@ -2,8 +2,17 @@
 
 ## Unreleased
 
+### Added
+
+- Search by time: add a phrase such as "yesterday", "this morning", "last week", "3 days ago" or "during design review" to see only pages visited then.
+- Search underlines the letters that matched and says why the top hit ranked first.
+- A line under the search field says what Enter will do with a date phrase or a time phrase.
+- Screen readers hear the number of results and the top hit once typing settles.
+
 ### Fixed
 
+- Pick up held its column while loading, so Today and Notes no longer jumped sideways.
+- Note previews dropped list markers instead of showing "- - item".
 - Impossible dates and times such as `2026-02-31` or `25:00` were rejected instead of rolling over.
 - Relative dates and repeating tasks kept the right day across daylight-saving changes and short months.
 - Repeating tasks saved from the right-click menu kept their repeat.
@@ -15,6 +24,12 @@
 
 ### Changed
 
+- New palette: cool newsprint in light mode and a warm charcoal night edition in dark mode; paper tones are easier to tell apart.
+- The web search is the last result group, "Leave LiveDash", separated from your own pages.
+- Sites without a favicon get a quiet monogram colour instead of a bright fixed palette.
+- Nothing animates when a new tab opens or while you type.
+- Dropped the Newsreader italic and IBM Plex Mono fonts; fonts are about 180 KB instead of 270 KB.
+- Requires Node.js 22.18 or newer to run the tests, as the README already said.
 - Documented the ranking constants in [docs/ranking.md](docs/ranking.md) and added tests for the orderings they produce.
 - Added a contrast test for every theme, paper tone and accent.
 - Removed unused and duplicated code.
