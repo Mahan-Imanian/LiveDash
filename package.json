@@ -10,7 +10,7 @@
 		"url": "https://github.com/Mahan-Imanian/LiveDash.git"
 	},
 	"engines": {
-		"node": ">=22.6"
+		"node": ">=22.18"
 	},
 	"scripts": {
 		"dev": "wxt",
