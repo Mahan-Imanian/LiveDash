@@ -147,11 +147,12 @@ export const LETTER_COLORS = [
 	'#3f4349',
 ]
 
-export function letterColor(url: string): string {
-	const h = hostOf(url)
+/** A stable hue for a site with no favicon, from its host name. */
+export function letterHue(url: string): number {
+	const h = hostOf(url).replace(/^www./, '')
 	let n = 0
 	for (const c of h) n = (n * 31 + c.charCodeAt(0)) >>> 0
-	return LETTER_COLORS[n % LETTER_COLORS.length]
+	return n % 360
 }
 
 export function Favicon({
@@ -190,10 +191,13 @@ export function Favicon({
 			<span
 				className="fav fav--letter"
 				aria-hidden="true"
-				style={{
-					background: icon?.kind === 'letter' ? icon.color : letterColor(url),
-					opacity: icon?.kind !== 'letter' && real === undefined ? 0 : 1,
-				}}
+				style={
+					{
+						'--mono-h': letterHue(url),
+						background: icon?.kind === 'letter' ? icon.color : undefined,
+						opacity: icon?.kind !== 'letter' && real === undefined ? 0 : 1,
+					} as React.CSSProperties
+				}
 			>
 				{(label.trim()[0] ?? '?').toUpperCase()}
 			</span>
