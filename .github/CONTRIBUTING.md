@@ -32,15 +32,19 @@ src/features/front/       masthead, pick up, today, notes
 src/features/panels/      bookmarks, tasks, notes, customize, settings
 src/lib/rank.ts           ranking constants and scoring: frequency, recency, hour of day, learned picks, title cleanup
 src/lib/when.ts           natural-language dates and repeats
+src/lib/since.ts          time phrases in search ("figma yesterday")
+src/lib/fuzzy.ts          text match score and the matched letters to underline
 src/lib/ics.ts            iCal parsing with recurrence and meeting links
 src/store/                local store, actions, import/export, migration
 src/styles/tokens.css     colour, type, spacing and motion tokens
 src/ui/                   drawer, menu, glyphs, controls
 tests/                    unit tests (node --test), including token contrast
 docs/ranking.md           every ranking constant, what it does and how it was chosen
+DESIGN.md                 the design system: type, colour, space, motion and the search list
+PRODUCT.md                who LiveDash is for and the constraints every change keeps
 ```
 
-If you change a ranking constant, update `docs/ranking.md` and expect `tests/rank.test.ts` to tell you which intended ordering changed. If you change a colour token, `tests/contrast.test.ts` checks WCAG AA for every theme, tone and accent. Parser changes in `when.ts` and `ics.ts` need a test for the invalid and boundary input they touch, not only the happy path.
+If you change a ranking constant, update `docs/ranking.md` and expect `tests/rank.test.ts` to tell you which intended ordering changed. If you change a colour token, `tests/contrast.test.ts` checks WCAG AA for every theme, tone and accent. Design changes keep `DESIGN.md` and `src/styles/tokens.css` in step. Parser changes in `when.ts`, `since.ts` and `ics.ts` need a test for the invalid and boundary input they touch, not only the happy path.
 
 ## Ground rules
 
