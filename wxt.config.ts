@@ -13,6 +13,30 @@ export default defineConfig({
 			sourcemap: false,
 			target: 'chrome120',
 		},
+		plugins: [
+			{
+				// The faces are font-display: block, so text waits for them. Preloading
+				// the bundled files lets them load alongside the CSS instead of after it.
+				name: 'livedash-preload-fonts',
+				transformIndexHtml: {
+					order: 'post',
+					handler(_html, ctx) {
+						const fonts = Object.keys(ctx.bundle ?? {}).filter((f) => f.endsWith('.woff2'))
+						return fonts.map((f) => ({
+							tag: 'link',
+							attrs: {
+								rel: 'preload',
+								as: 'font',
+								type: 'font/woff2',
+								href: `/${f}`,
+								crossorigin: '',
+							},
+							injectTo: 'head-prepend' as const,
+						}))
+					},
+				},
+			},
+		],
 	}),
 	manifest: {
 		name: 'LiveDash',
