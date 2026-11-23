@@ -1,232 +1,87 @@
 # LiveDash design system
 
-The system of record for how LiveDash looks and moves. `src/styles/tokens.css` holds the values; this file says what they are for. Both change in the same commit.
+How LiveDash looks and behaves. The values live in `src/styles/app.css`; this file says what they are for. Both change in the same commit.
 
-**Direction: Front Page, edition.** LiveDash is laid out as a newspaper's front page, and the page reports news about the reader's own day: the next meeting as the lead story, what they were working on, what is open. The metaphor is carried by structure and content, not by ornament.
-
-**Status:** this document describes the redesign as built so far (gates 1 and 2: foundations, search). Sections marked *planned* are decided but not yet in code.
+**Direction: one sentence over one photo.** The approved comp (`comp1`, idle) and its search state (`comp3`) set the page: a full-bleed photo, a veil measured from it, white type, and nothing else on first view. The page has one job: find what you read. Restraint follows the new tabs people keep (Bonjourr shows 4 controls, Tabliss 6): a clock, the search line, one sentence and a settings button.
 
 ## Principles
 
-1. **Design for the thousandth open.** The page paints complete and typable. Nothing animates on load.
-2. **The search line is the product.** Everything else supports getting somewhere or capturing something.
-3. **Structure, not ornament.** Rules, columns and type hierarchy do the editorial work. No texture, grain, washes, glows or decorative italic.
-4. **Colour means something.** The accent marks only live things: now, overdue, selection, the primary action.
-5. **Every state is designed.** Loading, empty, error, offline, permission not granted, stale.
+1. **Design for the thousandth open.** The page paints complete and typable. Nothing animates while you type.
+2. **The search line is the product.** Everything else is evidence that it works (the resurfaced sentence) or a way to control it (settings).
+3. **Show the sentence, not the page.** Results lead with the sentence you remembered, then say where and when you read it.
+4. **Privacy is visible.** "Remembered on this device", the count in settings and the never-kept list are always one look away.
+5. **Every state is designed.** First run, nothing kept yet, no match, time phrase only, site access removed, page forgotten.
+
+## Layout
+
+Measured from the comp (1536 × 1024) and scaled with the viewport through one unit, `--u: min(1vw, 1.6vh)`: 3:2 and 16:10 screens scale with the width, wider or shorter ones with the height, so type never outgrows the first viewport.
+
+| Region | Position | Notes |
+| --- | --- | --- |
+| Clock and date | top left, 1.95% in | Time without AM/PM, as on a phone lock screen |
+| Search line | left 9.11%, top 16%, 81.9% wide | Icon, field, 2 px white rule under it |
+| Sentence and source | starts 3.78u under the rule | The sentence is at most 21.5em wide, so it wraps to two or three lines. "You read this …" and the site never break inside; under 480 px the site takes its own line |
+| Results | replace the sentence while typing | Scroll inside the column; the field never moves |
+| Footer | bottom, 1.4% in | Photo title or match count on the left; status and settings on the right |
 
 ## Type
 
-Two faces, both OFL, bundled locally (`src/styles/fonts.css`, about 179 KB):
+One face, Yantramanav (OFL, bundled, 300/400/500, about 50 KB), chosen by measuring the comp's cap height, width and weight against the catalogue.
 
-| Face | Role |
-| --- | --- |
-| Newsreader (upright, variable `opsz` 6–72, `wght` 200–800) | Nameplate, headlines, briefs, note text |
-| Schibsted Grotesk (variable `wght` 400–900) | Every label, control, time and count |
+| Role | Size | Weight |
+| --- | --- | --- |
+| Resurfaced sentence | 3.9u (60 px at the comp size) | 300 |
+| Top result sentence | 2.6u | 400 |
+| Clock | 2.6u | 500, tabular figures |
+| Source line, result meta | 2.2u, 1.65u | 400 |
+| Result title | 2u | 500 |
+| Search field | 2.1u | 300 |
+| Date | 1.69u | 400 |
+| Row sentence, footer | 1.42u, 1.17u | 400 |
 
-There is no monospace face and no italic. Times, counts and figures use Schibsted with `font-variant-numeric: tabular-nums`. If a fallback face is ever substituted, it must be upright: synthesised italic is not allowed.
-
-**Roles** (`tokens.css`):
-
-| Token | Use |
-| --- | --- |
-| `--text-nameplate` | The LiveDash nameplate (`opsz` 72) |
-| `--text-hed` | The lead headline (next event) |
-| `--text-dek` | The line under a headline |
-| `--text-brief` | Titles in Pick up, Notes and other columns |
-| `--text-search` | The search line |
-| `--text-md` | Body and controls (14.5 px) |
-| `--text-sm`, `--text-xs`, `--text-2xs` | Labels and meta. **12 px is the floor.** |
-
-**Rules:**
-
-- Sentence case everywhere.
-- No tracked uppercase labels.
-- No middle-dot chains of more than two items.
-- En dash in ranges (7:04–7:49 PM).
-- Headings use `text-wrap: balance`.
+Every size has a pixel floor for small windows (13 px at the smallest). Sentence case everywhere, no tracked capitals.
 
 ## Colour
 
-Light is **newsprint**: cool and grey, deliberately not cream. Dark is the **night edition**: warm charcoal with newsprint ink, designed on its own rather than inverted.
-
-| Token | Light | Night edition | Use |
-| --- | --- | --- | --- |
-| `--bg` | `#f1f0eb` | `#14130f` | Page |
-| `--surface` | `#f8f7f3` | `#1c1a16` | Drawers, popovers, raised panels |
-| `--surface-2` | `#e6e4dd` | `#24221c` | Wells, hover |
-| `--line` | `#cfccc3` | `#36322a` | Hairlines |
-| `--rule` | `#141412` | `#ece6d8` | Section and masthead rules |
-| `--ink-1` | `#141412` | `#ece6d8` | Primary text |
-| `--ink-2` | `#3d3b36` | `#c3bba9` | Secondary text |
-| `--ink-3` | `#5c5952` | `#9d9584` | Meta (still AA) |
-| `--accent` (ember, default) | `#ad2817` printer's red | `#ff8b63` | Live things only |
-
-**Accents** (cobalt, moss, iris, graphite) replace the red everywhere it appears.
-
-**Paper tones** are distinct stocks:
-
-| Tone | Light | Dark |
+| Token | Value | Use |
 | --- | --- | --- |
-| Stone | Neutral grey `#e9e9e6` | `#131414` |
-| Sage | `#e2e8dc` | `#10140f` |
-| Mist | `#e0e7ee` | `#0f1318` |
-| Clay | `#efe1d4` | `#17110d` |
-| Night | — | Deep blue-black stock `#0d1017` (forces the night edition) |
+| `--ink` | `#ffffff` | Primary text over the photo |
+| `--ink-2` | white at 86% | Source lines, meta, footer |
+| `--ink-3` | white at 72% | Placeholder, key hints |
+| `--hit` | `#c8f560` | Matched words in results, text selection, the caret, focus rings |
+| `--panel`, `--panel-2`, `--panel-line` | `#121417`, `#1b1e22`, `#2c3036` | Settings panel and popup |
+| `--danger` | `#ffb4a8` | "Forget everything" |
+| `--tint` | per photo | Painted before the photo decodes, remembered for the next open |
 
-`tests/contrast.test.ts` checks all 180 combinations of system scheme, theme, tone and accent against WCAG AA for text tokens. Lowest at gate 1: **5.30:1** (accent on clay).
+The page is dark only. Its type sits on photographs, not on a theme.
 
-## Space and shape
+## The photo and the veil
 
-- **Spacing:** a 4 px scale (`--space-1` to `--space-10`). `--col-gap` is 24 px (20 px compact).
-- **Radii:** small and by size (4 px for controls, 8 px for large panels). Print is mostly square.
-- **Page width:** `--page-max: 2480px`. Wide screens get more columns, never a stretched column (*planned* in gate 3).
+The first run carries more copy than the comp, so while remembering is off the veil holds at about 0.5 down to 58% of the height and fades out by 80%.
+
+
+Six generated pictures ship in `public/photos` (dusk and night scenes with calm sky in the upper half, where the text sits). The day picks one, or the user fixes one.
+
+When the photo decodes, `Photo.tsx` draws it at 96 × 64, takes the band behind the text, and finds the 90th-percentile luminance. `scrimFor()` returns the black veil needed for white text to reach 4.5:1 against that bright tail (never below 0.12, never above 0.85). The veil is strongest at the top and fades out by 68% of the height, so the photo's subject stays bright. While typing, the photo dims to 16% brightness over 160 ms so results read as a list, as in comp 3.
+
+## Results
+
+- **Top result:** the sentence, up to four lines, matched words in `--hit` and underlined; then the section heading, site and "read Tuesday for 11 minutes"; "Enter to open" (or "Enter to switch to it" when the page is open) on the right.
+- **Other results:** title, then "read Tuesday" or "Open in a tab" on the right, and the matching sentence on one line, starting near its first match.
+- **Last row:** "Search the web for …" with a globe. An address adds "Go to …" first.
+- **Selection:** a white 8% fill with a 6 px radius that runs 16 px past the column on each side; the text stays on the column edge.
+- **Dividers:** 1 px white at 22%, inset to start and end with the search rule; none under the selected row.
+- **Keys** are listed in the settings panel, not under the results, so typing shows nothing the comp doesn't.
+- **No match:** "Nothing you've read matches "…"", then the web row.
 
 ## Motion
 
-Three durations and three curves, from Emil Kowalski's values:
+The photo fades in over 240 ms once decoded, dims over 160 ms when you start typing, and the settings panel slides 24 px in 220 ms. Nothing else moves; results appear without animation so typing never waits on motion. `prefers-reduced-motion` removes both.
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `--dur-1` | 120 ms | Hover and press colour |
-| `--dur-2` | 200 ms | Small popovers, row collapse after undo |
-| `--dur-3` | 280 ms | Drawers |
-| `--ease-out` | `cubic-bezier(0.23, 1, 0.32, 1)` | Enter, exit, default |
-| `--ease-in-out` | `cubic-bezier(0.77, 0, 0.175, 1)` | On-screen movement |
-| `--ease-drawer` | `cubic-bezier(0.32, 0.72, 0, 1)` | Drawers |
+## Accessibility
 
-**Rules:**
-
-- **Nothing animates on page load.**
-- **Nothing triggered from the keyboard animates:** opening search, result selection, hiding the panels while typing, `/` and `>`.
-- **No `ease-in` on UI.**
-- **No looping motion.** No blur, glow or `box-shadow` animation.
-- **Animate only `transform` and `opacity`.** Colour changes may transition.
-- **Reduced motion:** listed components drop `transform` from their transitions and keep colour and opacity changes. Per-component treatment arrives in the motion gate.
-
-## Search
-
-The search line is the product. The result list is set like a newspaper's index.
-
-**Row anatomy**, left to right:
-
-- a 3 px selection rule;
-- the site icon or monogram;
-- the title, in Newsreader at `--text-brief`;
-- under it, the address in Schibsted, muted;
-- on the selected top hit, a third line, "Ranked first: …";
-- on the right, state words (open, a time, "closed at 6:44 PM");
-- the verb with ↵, shown only on the selected row.
-
-**Matched letters** are underlined in the accent, 2 px, like a proofreader's mark. Never a background block. Ranges come from `matchRanges` in `src/lib/fuzzy.ts`, which follows the same tiers as the score, so what is underlined is what matched.
-
-**Sections** sit in a 150 px left lane when the list is at least 720 px wide (a container query), and stack above their rows when narrower. The order:
-
-1. Top hit
-2. Visited … (time-scoped)
-3. Open tabs
-4. Shortcuts
-5. History
-6. Bookmarks
-7. Other devices
-8. Tasks
-9. Notes
-10. Commands
-11. Also (add as task, write as note)
-12. Leave LiveDash
-
-**Leave LiveDash.** The web search is its own last section, under a double rule, so it is always clear when Enter takes you off your own data. When nothing local is a strong match, the top hit itself is the web search, and its section says "Leave LiveDash".
-
-**Selection** is a style on the row (`aria-selected`): an accent rule and a 6% ink fill. It never animates, because it moves with the arrow keys.
-
-**Why it ranked first.** `explain()` in `src/lib/rank.ts` builds the reason from the same terms `rankQuery` scores:
-
-- title or site match;
-- open in a tab;
-- in your shortcuts;
-- past picks for this query;
-- visit count.
-
-It never states a reason that did not score.
-
-**Reading the query.** A line under the field says what Enter will do:
-
-- for a date phrase: "New task “call mom”, due Friday, 6:00 PM. ↵ adds it, Ctrl ↵ searches the web instead";
-- for a time phrase: "Pages from yesterday (Saturday, November 21) matching “figma”".
-
-This replaces the coloured date chip, which repeated the same fact the row already showed.
-
-**Time-aware search.** `parseSince` (`src/lib/since.ts`) reads past-only phrases at the start or end of the query:
-
-- yesterday, optionally morning, afternoon or evening;
-- last night, this morning, this afternoon, earlier today;
-- N days ago;
-- this week, last week (weeks start on Monday);
-- on or last *weekday*;
-- during *event*, for today's calendar events that have started.
-
-"Today", "tonight" and bare weekdays stay with the task parser, so "call mom friday 6pm" is still a task. With a phrase, results come from `chrome.history.search` with that start and end time, plus recently closed tabs inside the window. It needs the history permission, which is already optional; without it, the phrase is ordinary text.
-
-**Announcements.** One polite live-region message about 450 ms after typing stops: "5 results. Switch to tab: Next.js". The selected option's accessible name includes the ranking reason.
-
-**Missing favicons.** The monogram is the site's initial on `oklch(0.47 0.07 h)`, with the hue from a hash of the host. Lightness and chroma are the same for every site, so no tile shouts, and white text is above 4.5:1 on every hue. A real favicon replaces it as soon as Chrome's cache has one.
-
-**Right-to-left and long titles.** Titles and addresses use `dir="auto"` for correct bidirectional rendering, aligned to the list edge so the column holds. They truncate with an ellipsis on one line.
-
-## Cold start
-
-- `public/early.js` restores theme, accent, tone, density and headline face from localStorage before first paint, so none of them flash.
-- `color-scheme` is set on `:root` and in the page's meta tag.
-
-## Placeholder copy awaiting approval
-
-New strings introduced by the redesign. Each needs a yes before release; until then they ship as written here.
-
-| Where | String |
-| --- | --- |
-| Search, web section | "Leave LiveDash" |
-| Search, top hit | "Ranked first: …" with "title match", "site match", "open in a tab", "in your shortcuts", "you picked it for “q” N times", "visited N times" |
-| Search, task preview | "New task “…”, due … ↵ adds it, Ctrl ↵ searches the web instead." |
-| Search, time preview | "Pages from … (…) matching “…”." |
-| Search, time section | "Visited yesterday" and the other phrase labels |
-| Search, closed tab in a time window | "closed at 6:44 PM" |
-| Search, idle hint | "? all keys" |
-| Search, no results | "Nothing matches “…”." |
-| Search, announcement | "N results. Verb: title" |
-
-## Killed from the previous design, and why
-
-| Removed | Why |
-| --- | --- |
-| Cream `#f3f0e8` paper | The stock AI-editorial ground; replaced by newsprint |
-| Grain overlay and radial colour wash | Texture as decoration; a full-screen layer on every paint |
-| Newsreader italic | Used only as decoration (placeholder, nameplate, notes); 65 KB |
-| IBM Plex Mono | Monospace labels were a generic tell; tabular figures do the job; 30 KB |
-| On-load choreography (11 elements, staggered keycaps and columns, rule draws, blurred headline) | Seen 100+ times a day; delayed perceived readiness |
-| Pulsing dots | Infinite paint loop with no meaning beyond "soon" |
-| Animated result cursor and result rise | Keyboard-driven, every keystroke; the cursor also animated `width` and `height` |
-| Panels sliding away when typing starts | Keyboard-driven |
-| Search underline draw on focus | Ran on every new tab |
-| `ease-in` exits | Starts slow at the moment the eye is on it |
-| 11 px text | Below the 12 px floor |
-| The date chip in the search field | Said the same thing as the row; replaced by the preview line |
-| The gliding selection cursor | Keyboard-driven; selection is now a row style |
-| Monospace group labels and serif-only top hit | Two voices in one list; every title is now the same serif |
-| The fixed eight-colour monogram palette | Clashed with every accent and tone |
-| 3D keycap shading | Box inside box inside box; flattened now, replaced by the skybox in gate 4 |
-
-## Planned (decided in phase 1, not yet built)
-
-- **Gate 3, masthead and Today:**
-  - nameplate with ears;
-  - folio with edition number and tab briefing;
-  - lead story with meeting context;
-  - columns added by width;
-  - CLS 0.
-- **Gate 4:** shortcut keys as the skybox index strip.
-- **Gate 5 and later:**
-  - Pick up recap, Notes, Commands, weather, focus timer, Customize;
-  - the 380 px popup;
-  - the settings matrix;
-  - photo legibility;
-  - motion, accessibility, cold-start pass;
-  - README, screenshots, store assets.
+- The field is a combobox controlling a listbox; arrow keys move `aria-activedescendant`.
+- A polite live region announces how many pages matched.
+- Settings is a modal `<dialog>` with labelled sections; Esc closes it and focus returns to the field.
+- White text keeps 4.5:1 over every photo through the measured veil (`tests/photos.test.ts`).
+- Focus rings are 2 px `--hit` with a 3 px offset.

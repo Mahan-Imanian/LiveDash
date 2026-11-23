@@ -1,6 +1,29 @@
 # Changelog
 
-## Unreleased
+## 3.0.0 (unreleased)
+
+LiveDash is now a new tab for finding any page you've read by a sentence you remember. The dashboard is gone.
+
+### Added
+
+- With your permission, pages you read in Chrome are kept as plain text on this device and searched by their words. Results show the best-matching sentence, its section, the site, and when and how long you read it.
+- Enter opens the page scrolled to the sentence, or switches to it if it's already open in a tab.
+- Time phrases narrow a search to what you read then; a time phrase alone lists what you read in that window.
+- The empty new tab shows one sentence from a page you read two days to two months ago.
+- Never-keep rules for incognito, banking, health, mail and chat, sign-in and checkout pages, and pages with password or card fields; paused sites; forgetting a page, a site, the last hour, the last day or everything.
+- The toolbar popup shows what happens to the current page and pauses its site or forgets it.
+- Six bundled background pictures, with a veil measured from each photo so white text keeps 4.5:1 contrast.
+
+### Removed
+
+- Shortcut keys and groups, tasks, notes, the calendar, Pick up, weather, the focus timer, picture of the day, themes and paper tones, bookmarks, commands and data export. They remain in the history of this repository up to version 2.2.0.
+- The history, tabs, sessions, bookmarks, top sites, tab groups, notifications, alarms, context menus, favicon and active tab permissions.
+
+### Changed
+
+- One face, Yantramanav, replaces Newsreader and Schibsted Grotesk.
+
+## Earlier unreleased work on 2.x
 
 ### Added
 

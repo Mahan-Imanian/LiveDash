@@ -1,124 +1,44 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/cover-dark.png">
-  <img alt="LiveDash new tab: one search line for the web, your open tabs, history and bookmarks, and your day on one page" src=".github/assets/cover-light.png" width="100%">
-</picture>
+<img alt="LiveDash new tab: the time and date, a search line asking 'What did you read?', and a sentence from a page read six days ago, over a photo of a river city at dusk" src=".github/assets/cover.png" width="100%">
 
-<p align="center">
-  <a href="https://github.com/Mahan-Imanian/LiveDash/actions/workflows/ci.yml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/Mahan-Imanian/LiveDash/ci.yml?branch=main&style=flat-square&label=CI&labelColor=1b1916"></a>
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1b1916?style=flat-square"></a>
-  <img alt="Chrome 120 or newer" src="https://img.shields.io/badge/Chrome-120%2B-1b1916?style=flat-square">
-  <img alt="No account and no analytics" src="https://img.shields.io/badge/no_account-no_analytics-ff7a4d?style=flat-square&labelColor=1b1916">
-</p>
+# LiveDash
 
-<p align="center">
-  <a href="#install"><b>Install</b></a> ·
-  <a href="#search">Search</a> ·
-  <a href="#shortcut-keys">Shortcuts</a> ·
-  <a href="#today-pick-up-and-notes">Today</a> ·
-  <a href="#keys">Keys</a> ·
-  <a href="#how-it-works">How it works</a> ·
-  <a href="#privacy">Privacy</a>
-</p>
+A Chrome new tab that finds any page you've read by a sentence you remember.
 
-<br>
+You read something useful last week and can't find it again. The title is forgotten, the history entry says "Untitled", and a web search returns everything except that page. With LiveDash on, you type what you remember, "partial index where clause", and it shows the sentence from the page you read, when you read it, and opens the page scrolled to that sentence. The text of what you read stays on your computer. There is no account, no server and no AI model.
 
-<img alt="The LiveDash new tab split down the middle, the light theme on the left and the dark theme on the right: the date and next meeting at the top, the search line, numbered shortcut keys, then Pick up, Today and Notes" src=".github/assets/showcase.png" width="100%">
+LiveDash is not on the Chrome Web Store yet. [Install it from source](#install).
 
-LiveDash is a Chrome new-tab extension (Manifest V3, React 19, built with WXT), laid out like a newspaper front page. It has one search box that looks through your open tabs, history, bookmarks, tabs on other devices, tasks and notes before falling back to a web search, a row of shortcut keys, and three columns: recently closed pages, today's tasks and calendar events, and notes. There is no account and no server; everything is computed in the browser from data Chrome already has, and the optional browser permissions are requested only when you turn on the feature that needs them.
+## What it does
 
-## Masthead
+- **Search pages by what they said.** Once a page has been open and visible for about eight seconds, LiveDash keeps its readable text. Results show the best-matching sentence, with your words highlighted, the section it was under, the site, and when and how long you read it.
+- **Opens at the sentence.** Enter opens the page with the sentence highlighted (Chrome's text fragments). If the page is already open in a tab, Enter switches to that tab instead.
+- **Time phrases.** Add `yesterday`, `this morning`, `last week`, `3 days ago` or `on monday` to search only what you read then. A time phrase on its own lists what you read in that window.
+- **A sentence from something you read.** The empty new tab shows one sentence from a page you spent at least a minute on, two days to two months ago, with when and where you read it. You can turn this off.
+- **Addresses and the web.** Typing an address offers to go there; the last row searches the web with Chrome's engine or the one you pick.
 
-The top of the page shows the date, a clock and the current or next calendar event (one starting within three hours or later today) with a countdown and a Join button when the event contains a Google Meet, Zoom, Teams, Whereby, Webex, Around or Jitsi link. Without such an event it shows the number of tasks due, or a link to connect a calendar.
+<img alt="Typing 'partial index': the top result is the sentence 'A partial index only covers the rows that satisfy its WHERE clause, so it stays small and fits in memory' with the words highlighted, its section, site and 'read Tuesday for 11 minutes', then three more pages with their matching sentences, and a web search row" src=".github/assets/search.png" width="100%">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-masthead-dark.png">
-  <img alt="The masthead: Sunday, November 22 as the headline with a live clock under it, and the next meeting beside it: Design review in 38 minutes, its time range, a Join button and 1:1 with Sam after it" src=".github/assets/f-masthead.png" width="100%">
-</picture>
+<img alt="Typing 'pricing yesterday': the time phrase is recognised, and the one page read yesterday about pricing is shown" src=".github/assets/time-search.png" width="100%">
 
-## Search
+## Privacy
 
-Results are grouped as open tabs, shortcuts, history, bookmarks, other devices, tasks, notes and commands, with the web search last under "Leave LiveDash". The top hit is picked in this order:
+Remembering is off until you turn it on. Turning it on asks Chrome for access to read `https` sites, the broadest permission an extension can ask for, so here is exactly what it is used for:
 
-1. A site keyword: `yt jazz` searches YouTube, `w typography` Wikipedia. Keywords are editable in Settings.
-2. Something that looks like an address opens directly.
-3. Text containing a date, such as "call mom friday 6pm", becomes a task, unless a page matches strongly. <kbd>⇧</kbd> <kbd>↵</kbd> adds any text as a task.
-4. A page whose title or site name matches well. If it is already open, the top hit switches to that tab instead of opening a duplicate.
-5. A command whose name matches well.
-6. Otherwise, a web search with the engine chosen in Settings. Questions ("how …", "… ?") skip steps 4 and 5.
+- The page text is stored in this browser's extension storage (IndexedDB) and is never sent anywhere. LiveDash makes no network requests of its own.
+- Never kept, whatever your settings: incognito windows; banking, payment, crypto, health, insurance and tax sites; webmail, chat and file-storage apps; sign-in, account, checkout and settings pages; and any page showing a password, card number or one-time code field.
+- The toolbar button shows what happens to the page in front of you, and pauses that site or forgets that page.
+- Settings shows how many pages are kept and how much space they take, pauses any site, and forgets the last hour, the last day, one site or everything.
+- Turning remembering off also removes the site access.
 
-Page results are ranked by text match, visit count, whether the page is pinned or open, and which result you picked before for the same letters. Matched letters are underlined, and the selected top hit says why it ranked first. [docs/ranking.md](docs/ranking.md) lists every term and constant.
+<img alt="The first-run screen: 'Find any page you've read by a sentence you remember. Pages are kept on this device and never uploaded.' with a Turn on remembering button and a note about what is never kept" src=".github/assets/first-run.png" width="100%">
 
-Add a time phrase to search only what you visited then: `figma yesterday`, `docs this morning`, `last night`, `3 days ago`, `last week`, `on monday`, or `during design review` for a meeting from today's calendar that has started. Recently closed tabs from that window are included. Words that name the future, such as "today", "tonight" or a bare weekday, still make a task.
+<img alt="The settings panel over the new tab: the remembering switch with 5 pages from 5 sites kept, the list of what is never kept, paused sites, forget buttons, and the picture choice" src=".github/assets/settings.png" width="100%">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-time-search-dark.png">
-  <img alt="Typing 'figma yesterday': a line under the field says it shows pages from yesterday matching figma, followed by three Figma pages visited yesterday with their times, and the web search last" src=".github/assets/f-time-search.png" width="100%">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-search-dark.png">
-  <img alt="Typing 'next' in search: the top hit is the Next.js tab already open on GitHub, with the matched letters underlined and the reason it ranked first, then a history result, task and note options, and the web search last under Leave LiveDash" src=".github/assets/f-search.png" width="100%">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-quick-task-dark.png">
-  <img alt="Typing 'pay rent every month on the 1st': a line under the field reads it as a new task 'pay rent' due Tue, Dec 1, repeating monthly, and the top hit adds it" src=".github/assets/f-quick-task.png" width="100%">
-</picture>
-
-## Shortcut keys
-
-Nine numbered keys open with <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd>; further keys are unnumbered. Keys can be sorted into groups, dragged, given a site icon, a coloured letter or an uploaded image, and a group can be opened as a Chrome tab group. Empty slots show faded suggestions ranked from your history; each can be dismissed, and suggestions can be turned off in Settings.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-keys-dark.png">
-  <img alt="Nine numbered shortcut keys with site icons, from Next.js to Stack Overflow, then YouTube, Spotify and Add, with All, Work and Reading group tabs above them" src=".github/assets/f-keys.png" width="100%">
-</picture>
-
-## Today, Pick up and Notes
-
-**Today** lists calendar events next to your tasks. Events come from a secret iCal address pasted into **Settings → Calendar**; the file is fetched again when it is more than 15 minutes old, and events from today through the next 15 days are kept. Tasks are typed as phrases ("pay rent every month on the 1st", "call mom friday 6pm"); overdue ones are marked, every completion can be undone, and repeating tasks move to their next date when completed.
-
-**Pick up** shows up to six entries: recently closed tabs and windows, pages open on your other signed-in devices, then pages from the last 24 hours of history, with search result pages, sign-in pages and error pages filtered out. **Notes** holds plain-text notes; pinned ones stay on top.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-pickup-dark.png">
-    <img alt="The Pick up column: two tabs and a window closed minutes ago, a page open on a phone, then pages from today's history" src=".github/assets/f-pickup.png" width="49%">
-  </picture>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-today-dark.png">
-    <img alt="The Today column: an all-day event and two meetings with Join links, then tasks with an overdue date and due times" src=".github/assets/f-today.png" width="49%">
-  </picture>
-</p>
-
-## Commands and optional panels
-
-<kbd>></kbd> opens a command list (theme, focus timer, reopen the last closed tab, close duplicate tabs, open a group as a tab group, export data). <kbd>?</kbd> lists every key. Weather (Open-Meteo), a full-screen focus timer and Wikipedia's picture of the day as background are off until you turn them on. Customize covers light, dark or system theme, five accents, six paper tones or a photo, density, serif or sans headlines, and a switch for each column.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-commands-dark.png">
-  <img alt="The command list opened with the greater-than key: start focus, open tasks, notes or bookmarks, reopen the last closed tab, open a group as a tab group, add a shortcut, customize and change the theme" src=".github/assets/f-commands.png" width="100%">
-</picture>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-weather-dark.png">
-    <img alt="Weather for Lisbon: current conditions, the next 12 hours and 5 days" src=".github/assets/f-weather.png" width="49%">
-  </picture>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-customize-dark.png">
-    <img alt="The Customize panel: system, light or dark theme, five accents, and paper tones, picture of the day or your own photo as the background" src=".github/assets/f-customize.png" width="49%">
-  </picture>
-</p>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/f-focus-dark.png">
-  <img alt="Focus mode: a large 25:00 countdown, the intent 'Q4 budget memo for Priya', a Start button and duration choices" src=".github/assets/f-focus.png" width="100%">
-</picture>
+Full details are in [PRIVACY.md](PRIVACY.md).
 
 ## Install
 
-LiveDash is not on the Chrome Web Store. Build it once and load it unpacked. You need Chrome 120+ and Node.js 22.18+.
+You need Chrome 120 or newer and Node.js 22.18 or newer.
 
 ```bash
 git clone https://github.com/Mahan-Imanian/LiveDash.git
@@ -127,91 +47,44 @@ npm ci
 npm run build
 ```
 
-Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and select `.output/chrome-mv3`, then open a new tab. `npm run zip` builds a packed copy at `.output/livedash-<version>-chrome.zip`.
+Open `chrome://extensions`, turn on **Developer mode**, choose **Load unpacked** and select `.output/chrome-mv3`. Open a new tab and press **Turn on remembering**. Pages open in other tabs at that moment are read too.
 
 ## Keys
 
 | Action | Key |
 | --- | --- |
-| Search from anywhere on the page | <kbd>/</kbd> |
-| Commands | <kbd>></kbd> |
-| Open shortcut 1–9 | <kbd>Alt</kbd> <kbd>1</kbd>…<kbd>9</kbd> |
-| Open a result in a new tab | <kbd>Alt</kbd> <kbd>↵</kbd> |
-| Add what you typed as a task | <kbd>⇧</kbd> <kbd>↵</kbd> |
-| Search the web for what you typed | <kbd>Ctrl</kbd> <kbd>↵</kbd> |
-| More actions for a result or shortcut | <kbd>→</kbd> or right-click |
-| Focus mode · Bookmarks · Tasks · Notes | <kbd>F</kbd> · <kbd>B</kbd> · <kbd>T</kbd> · <kbd>N</kbd> |
-| Customize · Settings · All keys | <kbd>C</kbd> · <kbd>,</kbd> · <kbd>?</kbd> |
-| Undo | <kbd>Ctrl</kbd> <kbd>Z</kbd> |
-| Quick capture on any page | <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd> |
-
-Single-letter keys work when the cursor is not in a text box; press <kbd>Esc</kbd> first.
+| Focus the search line | <kbd>/</kbd> |
+| Move through results | <kbd>↑</kbd> <kbd>↓</kbd> |
+| Open, or switch to the open tab | <kbd>Enter</kbd> |
+| Open in a new background tab | <kbd>Ctrl</kbd> <kbd>Enter</kbd> or middle-click |
+| Forget the selected page | <kbd>Shift</kbd> <kbd>Delete</kbd> |
+| Clear the search | <kbd>Esc</kbd> |
+| What happens to this page (toolbar popup) | <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd> |
 
 ## How it works
 
 | Part | Files | What it does |
 | --- | --- | --- |
-| Entry points | `entrypoints/newtab`, `entrypoints/popup`, `entrypoints/background.ts` | The new tab, the quick-capture popup (<kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd>), and a service worker that runs focus-timer alarms, the toolbar badge and the right-click menu items. |
-| Store and sync | `src/store/` | One in-memory state object. Each key is saved to `chrome.storage.local`, except settings, which go to `chrome.storage.sync`. `storage.onChanged` pushes changes to every open LiveDash tab, so two new tabs never disagree. `data.ts` handles export, import, erase and the one-time 1.x migration. |
-| Browser data and permissions | `src/lib/browser.ts`, `src/features/snapshot.ts`, `src/lib/chrome.ts` | Reads open tabs, history, recently closed sessions, other devices and bookmarks, each only if its optional permission is granted, and re-reads when the page becomes visible or a permission changes. |
-| Search and ranking | `src/lib/rank.ts`, `src/lib/fuzzy.ts`, `src/features/search/model.ts` | Merges all sources into one entry per page, filters noise, scores entries for the home suggestions and for typed queries, and builds the result rows. See [docs/ranking.md](docs/ranking.md). |
-| Date phrases | `src/lib/when.ts` | Turns "call mom friday 6pm" or "pay rent every month on the 1st" into a title, a due time and an optional repeat, and computes the next date of a repeating task. |
-| Calendar | `src/lib/ics.ts`, `src/features/calendar.ts` | Fetches the iCal file (host permission for that one origin), unfolds and parses it, expands recurrences into the next 15 days, applies exceptions and finds meeting links. |
-| Network features | `src/features/weather.ts`, `src/lib/daily.ts` | Open-Meteo weather and Wikipedia's picture of the day, each behind its own host permission, with a 10-second timeout. |
-| Design tokens | `src/styles/tokens.css` | Colours, type, spacing and motion for every theme, tone and accent. |
+| Page reader | `entrypoints/reader.content.ts` | Registered only while remembering is on. Waits until the page has been visible for eight seconds, takes the text of paragraphs, list items, headings and quotes from the article or main content, skips navigation, forms and hidden text, and reports reading time when you leave. |
+| Service worker | `entrypoints/background.ts` | Registers or removes the reader as permission and settings change, checks every page against the never-keep rules again, and writes to the index. |
+| Index | `src/memory/db.ts` | One IndexedDB database: each page's text, visits and reading time, plus a word-to-pages table. A search intersects the pages holding every word (the last word as a prefix, since you're still typing). |
+| Ranking | `src/memory/rank.ts`, `src/memory/text.ts` | Picks the sentence with the most query words, words in order and side by side counting extra, then orders pages by that sentence, the title, how recent the visit was, how often and how long you read. See [docs/ranking.md](docs/ranking.md). |
+| Rules | `src/memory/privacy.ts` | The never-keep list, address cleanup and title cleanup. |
+| Time phrases | `src/lib/since.ts` | Reads "yesterday", "last week", "3 days ago" and similar at either end of the search. |
+| New tab | `src/app/` | The photo, the veil over it, the search line, results, settings and the toolbar popup. |
 
-## Design decisions
-
-**No date or calendar library.** `when.ts` and `ics.ts` are small hand-written parsers. The extension needs English task phrases and the subset of iCal that Google Calendar, Outlook and Apple Calendar export, and a general library for either would be larger than the rest of the logic. The cost is that every edge case has to be found and tested here: impossible dates, leap years, daylight-saving changes, folding, escapes and recurrence rules are covered in `tests/when.test.ts`, `tests/when-dst.test.ts` and `tests/ics.test.ts`, and the gaps are listed under Known limits.
-
-**Ranking runs locally with hand-set weights.** Visits, recency, hour of day and past picks are combined in `rank.ts` from data Chrome already stores, so nothing about your browsing leaves the device and nothing needs a server. The weights were chosen by hand and never measured against real usage; `docs/ranking.md` states each one, and `tests/rank.test.ts` fixes the orderings they are supposed to produce.
-
-**Optional permissions.** Only `storage`, `search`, `favicon`, `alarms`, `contextMenus` and `activeTab` are required. History, tabs, sessions, bookmarks, top sites, tab groups, notifications and each network host are requested when you turn on the feature that uses them. Browser permissions are removed with their switch in Settings, and calendar and weather host access is removed when you disconnect them; access to Wikipedia stays granted after you switch away from the picture of the day until you remove it in `chrome://extensions`. Without them LiveDash still searches the web and keeps shortcuts, tasks and notes. The cost is extra code paths for missing access and a permission prompt the first time a feature is used.
-
-**Settings sync, data stays local.** Settings are small and go to `chrome.storage.sync`, so they follow you when Chrome Sync is on. Tasks, notes, shortcuts, the launch log and caches stay in `chrome.storage.local` on one device; moving them is done with export and import.
-
-**Taking focus from the address bar.** Chrome gives new-tab pages no keyboard focus. To let you type into LiveDash's search box straight away, the page reloads itself once as `newtab.html?f`, which Chrome does focus. This costs one extra load per new tab and can be turned off in Settings → Search ("Start typing right away").
-
-**Fonts are bundled** (about 180 KB of WOFF2: Newsreader and Schibsted Grotesk) so that the page makes no font requests.
+The six background pictures were generated for this project and ship with the extension. Over each one, LiveDash samples the pixels behind the text and darkens them just enough for white text to reach at least 4.5:1 contrast.
 
 ## Known limits
 
-- Time phrases in search are English only and need the history permission; weeks start on Monday.
-- Date phrases are English only. Supported: today, tonight, tomorrow, weekdays, "next week", "weekend", month-name dates, ISO dates, "the 5th", "in N minutes/hours/days/weeks", clock and am/pm times, and daily, weekday, weekly, monthly and yearly repeats. Not supported: "in 2 months", ranges, durations and time zones.
-- iCal: `DAILY`, `WEEKLY` with `BYDAY`, `MONTHLY` with `BYDAY` or `BYMONTHDAY`, and `YEARLY` are expanded. Rules with `BYSETPOS`, `BYWEEKNO`, `BYYEARDAY`, `BYHOUR` or other combinations show only their first occurrence. `WKST` is ignored (weeks start on Sunday). Recurrences are expanded in your own time zone, so an event defined in a zone whose daylight-saving dates differ from yours can be an hour off for part of the year. Windows zone names such as `Pacific Standard Time` are not recognised and are read as local time.
-- Something with a dot and two or more letters after it, such as `node.js`, is treated as an address; the web search row is still one key down.
-- The ranking weights are not validated against anyone's usage.
-- Chrome only. LiveDash uses Chrome APIs (`favicon`, `sessions`, `tabGroups`, `search`) that other browsers lack or implement differently.
-
-## Privacy
-
-No account, no server, no analytics, no remote code. Optional permissions are requested when you turn on the feature that needs them and can be turned off again in Settings. Without any of them, LiveDash still searches and keeps your shortcuts, tasks and notes.
-
-| Permission | Used for |
-| --- | --- |
-| `storage` | Shortcuts, tasks, notes and settings |
-| `search` | Sending a search to Chrome's default engine |
-| `favicon` | Site icons from Chrome's own cache |
-| `alarms` | Ending a focus session on time with no tab open |
-| `contextMenus` | "Save for later" and "Pin to LiveDash" on right-click |
-| `activeTab` | The current page's address for quick capture |
-| `history` (optional) | Ranking results, suggesting shortcuts, today's history |
-| `tabs` (optional) | Switching to an open tab, closing duplicates |
-| `sessions` (optional) | Recently closed tabs, pages on your other devices |
-| `bookmarks` (optional) | Browsing and searching bookmarks |
-| `topSites` (optional) | Importing your most visited sites as shortcuts, once |
-| `tabGroups` (optional) | Opening a shortcut group as a tab group |
-| `notifications` (optional) | Saying when a focus session ends |
-| `https://*/*` (optional) | The hosts below, each requested when you turn its feature on |
-
-Network requests, all opt-in and sent without cookies:
-
-- **Weather:** `geocoding-api.open-meteo.com` and `api.open-meteo.com`. "Use my location" rounds your position to two decimal places (about 1 km) first.
-- **Picture of the day:** `en.wikipedia.org` and `upload.wikimedia.org`, once a day.
-- **Calendar:** the iCal address you paste in, at most every 15 minutes.
-- **Searches** go to the engine you picked.
-
-Everything else stays in local extension storage, except settings, which use `chrome.storage.sync` and so travel through your Google account when Chrome Sync is on. Details in [PRIVACY.md](PRIVACY.md).
+- Only `https` pages are read. Pages that render their text in a canvas or inside cross-origin frames, PDFs and video transcripts are not.
+- Pages you read before turning remembering on can't be found.
+- Words are split on letters and digits, so Chinese, Japanese and Thai text, which has no spaces, only matches whole runs of characters.
+- Time phrases are English only.
+- A page is stored again only when its text changes; up to about 120,000 characters of text are kept per page.
+- The never-keep list works from the address alone and can't know every bank or clinic. Pause any site it misses from the toolbar button.
+- The ranking weights were set by hand and have not been measured against real use.
+- Chrome only.
 
 ## Development
 
@@ -219,24 +92,20 @@ Everything else stays in local extension storage, except settings, which use `ch
 npm run dev     # live-reloading build in a Chrome instance
 npm run check   # type check, Biome lint and format, unit tests
 npm run build   # production build in .output/chrome-mv3
+npm run zip     # packed copy in .output/
 ```
 
-The unit tests run TypeScript directly with `node --test` and need Node.js 22.18+. What they cover:
+The unit tests run TypeScript directly with `node --test`:
 
 | Test | Covers |
 | --- | --- |
-| `tests/when.test.ts`, `tests/when-dst.test.ts` | Date phrases, impossible and boundary dates and times, repeats, and daylight-saving changes (run in `America/New_York`) |
-| `tests/ics.test.ts`, `tests/lib.test.ts` | iCal values, folding, escapes, time zones, malformed input, recurrence, meeting links; URL detection and fuzzy matching |
-| `tests/rank.test.ts` | Page identity, merging, filters, the orderings the ranking constants are meant to produce, and the reasons shown for the top hit |
-| `tests/since.test.ts`, `tests/since-dst.test.ts` | Time phrases in search, which words are left to the task parser, and daylight-saving days (run in `America/New_York`) |
-| `tests/match.test.ts` | Which letters of a title are underlined as matched |
-| `tests/edition.test.ts` | Masthead event choice, week numbers and time-of-day names |
-| `tests/contrast.test.ts` | WCAG contrast of text tokens for all 180 combinations of system scheme, theme, paper tone and accent, and that each accent takes effect |
+| `tests/memory-text.test.ts` | Words, sentences, the best sentence for a query, highlighting, text-fragment links, which sentences can be shown on their own, the never-keep rules, address and title cleanup |
+| `tests/memory-rank.test.ts` | Result order and the "read Tuesday for 11 minutes" labels |
+| `tests/photos.test.ts` | The veil reaching 4.5:1 and the daily picture rotation |
+| `tests/since.test.ts`, `tests/since-dst.test.ts` | Time phrases, including daylight-saving days |
 
-The contrast test requires at least 4.5:1 (WCAG AA for body text) and prints the lowest ratio it found. It does not cover photo backgrounds, the paper grain overlay, or colours set outside `tokens.css`.
-
-There are no browser tests in CI; layout, zoom, keyboard-only use and loading speed are checked by hand. Project layout and ground rules are in [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+There are no browser tests in CI; the reader, layout and keyboard use are checked by hand. Project layout and ground rules are in [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Bundled third-party licenses, including the fonts (SIL Open Font License), are in [public/THIRD_PARTY_NOTICES.txt](public/THIRD_PARTY_NOTICES.txt).
+MIT, see [LICENSE](LICENSE). Bundled third-party licences, including the Yantramanav font (SIL Open Font License), are in [public/THIRD_PARTY_NOTICES.txt](public/THIRD_PARTY_NOTICES.txt).

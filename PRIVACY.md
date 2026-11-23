@@ -1,44 +1,50 @@
 # Privacy policy
 
-LiveDash runs entirely in your browser. There is no LiveDash account, server, analytics, advertising or remote code.
+LiveDash runs entirely in your browser. There is no LiveDash account, server, analytics, advertising, AI model or remote code, and LiveDash makes no network requests of its own.
 
-## What LiveDash reads
+## Permissions
 
 | Permission | Why | When |
 |---|---|---|
-| Storage | Save your shortcuts, groups, tasks, notes, settings and what you've opened through LiveDash | Always |
-| Search | Send what you search to Chrome's default search engine | When you search |
-| Favicon | Show site icons from Chrome's own cache | Always |
-| Alarms | End focus sessions on time, even with no tab open | Always |
-| Context menus | "Save page for later" and "Pin to LiveDash" in the right-click menu | Always |
-| Active tab | Read the current page's address when you open quick capture | Only when you open it |
-| History, tabs, recently closed tabs | Rank results, switch to open tabs, offer recently closed tabs, find duplicates | Only if you allow it |
-| Other devices (sessions) | Show pages open on your other signed-in devices | Only if you allow it |
-| Bookmarks | Browse and search bookmarks | Only if you allow it |
-| Top sites | Bring in Chrome's most visited sites as shortcuts, once | Only if you ask |
-| Tab groups | Open a shortcut group as a Chrome tab group | Only if you ask |
-| Notifications | Tell you when a focus session ends | Only if you allow it |
-| Your location | Find weather for where you are | Only when you press "Use my location" |
+| Storage | Save your settings | Always |
+| Scripting | Add the page reader to sites once you turn remembering on, and remove it when you turn it off | Only while remembering is on |
+| Search | Send a web search to Chrome's default engine | When you search the web |
+| Read `https` sites (optional) | Read the text of pages you visit so you can search them later, and see which pages are open in tabs | Only after you turn remembering on and Chrome asks you |
 
-Everything LiveDash computes from your history (rankings, time-of-day patterns, which result you picked for which letters) is stored in this browser's extension storage and never transmitted. Settings use Chrome's sync storage, so they follow you only if Chrome Sync is on.
+## What is kept
+
+With remembering on, after a page has been open and visible for about eight seconds, LiveDash keeps:
+
+- its address, title and site;
+- the readable text of its paragraphs, lists, headings and quotes (up to about 120,000 characters);
+- when you visited it (the last 30 visits) and how long it was visible.
+
+This is stored in this browser's extension storage (IndexedDB) on this device. It is not synced and never sent anywhere. Settings, such as paused sites, use Chrome's sync storage, so they follow you only if Chrome Sync is on.
+
+## What is never kept
+
+- Anything in an incognito window.
+- Pages that are not `https`.
+- Banking, payment, brokerage, crypto, health, pharmacy, insurance and tax sites, recognised by their address.
+- Webmail, chat, office and file-storage apps such as Gmail, Google Docs, Slack, Discord, WhatsApp Web and Dropbox.
+- Sign-in, sign-up, account, billing, checkout, cart, password, settings, inbox and admin pages.
+- Any page showing a password, card number or one-time code field.
+- Sites you pause.
+
+These checks run in the page before any text is read, and again in the service worker before anything is stored.
 
 ## What leaves your device
 
-- **Searches.** These go to the engine you chose (Chrome's default unless you picked another), or to the site a keyword names, such as `yt` for YouTube. It is the same as typing the search into the address bar.
-- **Weather, if you turn it on.** The city name you search for goes to Open-Meteo's geocoding service. The chosen place's coordinates go to Open-Meteo's forecast service. "Use my location" rounds your position to about 1 km before sending it. LiveDash asks for access to open-meteo.com when you first set a place, and removes that access when you turn weather off.
-- **Picture of the day, if you choose it.** LiveDash requests that day's featured picture from Wikipedia (en.wikipedia.org and upload.wikimedia.org), once a day. Nothing about you is sent.
-- **Calendar, if you add one.** LiveDash requests that one iCal file from the address you gave.
+- **Web searches** go to the engine you chose (Chrome's default unless you picked another), the same as typing them into the address bar.
 
-Nothing else. Requests carry no cookies and no identifiers.
+Nothing else.
 
 ## Your control
 
-From Settings you can:
-- Turn off history, tab, device, bookmark or other access. This also removes the permission.
-- Forget everything LiveDash learned.
-- Hide any suggestion permanently.
-- Export your data as JSON, import it, or erase it all.
-
-Uninstalling removes all LiveDash data.
+- The toolbar button shows what happens to the current page, pauses its site or forgets the page.
+- Settings shows how many pages are kept and the space they use, pauses sites, and forgets the last hour, the last day, one site or everything.
+- <kbd>Shift</kbd> <kbd>Delete</kbd> on a search result forgets that page.
+- Turning remembering off stops reading pages and removes the site access. Pages already kept stay until you forget them.
+- Uninstalling LiveDash removes everything it kept.
 
 Questions: https://github.com/Mahan-Imanian/LiveDash/issues
