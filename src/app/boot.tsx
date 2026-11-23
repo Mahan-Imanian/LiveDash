@@ -1,48 +1,11 @@
 import type { ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { migrateLegacy } from '@/store/data'
-import { getState, loadStore, onStoreError, subscribe } from '@/store/store'
-import type { Settings } from '@/store/types'
-import { toast } from '@/ui/toast'
 import '@/styles/fonts.css'
-import '@/styles/tokens.css'
 import '@/styles/app.css'
 
-function applyTheme(s: Settings) {
-	const root = document.documentElement
-	if (s.theme === 'auto') delete root.dataset.theme
-	else root.dataset.theme = s.theme
-	if (s.accent === 'ember') delete root.dataset.accent
-	else root.dataset.accent = s.accent
-	root.dataset.density = s.density
-	root.dataset.headline = s.headline
-	if (s.background.kind === 'tone') root.dataset.tone = s.background.tone
-	else delete root.dataset.tone
-	try {
-		localStorage.setItem('ld-theme', s.theme)
-		localStorage.setItem('ld-accent', s.accent)
-		localStorage.setItem('ld-type', s.typeOnOpen ? '1' : '0')
-		localStorage.setItem('ld-tone', s.background.kind === 'tone' ? s.background.tone : '')
-		localStorage.setItem('ld-density', s.density)
-		localStorage.setItem('ld-headline', s.headline)
-	} catch {}
-}
-
-export async function boot(surface: 'newtab' | 'popup', app: ReactNode) {
-	document.documentElement.dataset.surface = surface
+export async function boot(app: ReactNode) {
+	// early.js may be reopening this tab so the search field gets focus instead of the address bar.
 	if ((window as { __ldRedirect?: boolean }).__ldRedirect)
 		await new Promise((r) => setTimeout(r, 800))
-	await loadStore()
-	let last = getState().settings
-	applyTheme(last)
-	subscribe(() => {
-		const s = getState().settings
-		if (s !== last) {
-			last = s
-			applyTheme(s)
-		}
-	})
-	onStoreError((m) => toast(m, { tone: 'error' }))
 	createRoot(document.getElementById('root')!).render(app)
-	if (surface === 'newtab') migrateLegacy().catch(() => {})
 }

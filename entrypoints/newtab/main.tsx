@@ -1,4 +1,4 @@
 import { boot } from '@/app/boot'
-import { Home } from '@/app/Home'
+import { NewTab } from '@/app/NewTab'
 
-boot('newtab', <Home />)
+boot(<NewTab />)

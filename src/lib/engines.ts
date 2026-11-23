@@ -1,4 +1,13 @@
-import type { EngineId, Keyword } from '@/store/types'
+export type EngineId =
+	| 'default'
+	| 'google'
+	| 'duckduckgo'
+	| 'bing'
+	| 'brave'
+	| 'kagi'
+	| 'ecosia'
+	| 'startpage'
+	| 'custom'
 
 export interface Engine {
 	id: EngineId
@@ -32,14 +41,4 @@ export function engineUrl(id: EngineId, custom: string, q: string): string | nul
 	if (id === 'default') return null
 	if (id === 'custom') return fill(custom, q)
 	return fill(ENGINES.find((e) => e.id === id)?.url ?? '', q)
-}
-
-export function matchKeyword(
-	text: string,
-	keywords: Keyword[],
-): { kw: Keyword; query: string } | null {
-	const m = /^(\S+)\s+(.+)$/.exec(text.trim())
-	if (!m) return null
-	const kw = keywords.find((k) => k.key.toLowerCase() === m[1].toLowerCase())
-	return kw ? { kw, query: m[2] } : null
 }

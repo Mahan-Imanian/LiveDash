@@ -1,8 +1,8 @@
 {
 	"name": "livedash",
-	"description": "New tab with one search over tabs, history, bookmarks and the web, shortcut groups, recently closed tabs, tasks, calendar and notes.",
+	"description": "A Chrome new tab that finds any page you have read by a sentence you remember. Kept on your device.",
 	"private": true,
-	"version": "2.2.0",
+	"version": "3.0.0",
 	"type": "module",
 	"license": "MIT",
 	"repository": {
@@ -23,8 +23,7 @@
 		"postinstall": "wxt prepare"
 	},
 	"dependencies": {
-		"@fontsource-variable/newsreader": "^5.3.0",
-		"@fontsource-variable/schibsted-grotesk": "^5.3.0",
+		"@fontsource/yantramanav": "^5.3.0",
 		"react": "^19.3.0",
 		"react-dom": "^19.3.0"
 	},

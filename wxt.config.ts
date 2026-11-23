@@ -9,6 +9,7 @@ export default defineConfig({
 	publicDir: 'public',
 	outDir: testBuild ? '.output-test' : '.output',
 	vite: () => ({
+		define: { __LD_TEST__: JSON.stringify(testBuild) },
 		build: {
 			sourcemap: false,
 			target: 'chrome120',
@@ -42,39 +43,13 @@ export default defineConfig({
 		name: 'LiveDash',
 		short_name: 'LiveDash',
 		description:
-			'New tab with one search over tabs, history, bookmarks and the web, shortcut groups, recently closed tabs, tasks, calendar and notes.',
+			'A new tab that finds any page you have read by a sentence you remember. Kept on your device, never uploaded.',
 		minimum_chrome_version: '120',
-		permissions: [
-			'storage',
-			'alarms',
-			'contextMenus',
-			'favicon',
-			'activeTab',
-			'search',
-			...(testBuild ? ['history', 'tabs', 'sessions', 'bookmarks', 'tabGroups', 'topSites'] : []),
-		],
-		optional_permissions: [
-			'history',
-			'tabs',
-			'sessions',
-			'bookmarks',
-			'topSites',
-			'tabGroups',
-			'notifications',
-		],
+		permissions: ['storage', 'scripting', 'search'],
 		optional_host_permissions: ['https://*/*'],
-		...(testBuild
-			? {
-					host_permissions: [
-						'https://api.open-meteo.com/*',
-						'https://geocoding-api.open-meteo.com/*',
-						'https://en.wikipedia.org/*',
-						'https://upload.wikimedia.org/*',
-					],
-				}
-			: {}),
+		...(testBuild ? { host_permissions: ['https://*/*'] } : {}),
 		action: {
-			default_title: 'LiveDash quick capture',
+			default_title: 'LiveDash: this page',
 		},
 		commands: {
 			_execute_action: {
@@ -82,7 +57,7 @@ export default defineConfig({
 					default: 'Alt+Shift+L',
 					mac: 'Alt+Shift+L',
 				},
-				description: 'Open quick capture',
+				description: 'Show what LiveDash does with this page',
 			},
 		},
 		icons: {

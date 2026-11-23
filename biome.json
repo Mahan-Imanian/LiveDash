@@ -6,7 +6,7 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!.output", "!.wxt", "!node_modules"]
+		"includes": ["**", "!.output", "!.output-test", "!.wxt", "!node_modules", "!.impeccable"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -34,14 +34,15 @@
 	},
 	"overrides": [
 		{
-			"includes": ["src/features/**", "src/ui/**"],
+			"includes": ["src/app/**"],
 			"linter": {
 				"rules": {
 					"a11y": {
 						"useSemanticElements": "off",
 						"noStaticElementInteractions": "off",
 						"useKeyWithClickEvents": "off",
-						"useFocusableInteractive": "off"
+						"useFocusableInteractive": "off",
+						"noNoninteractiveElementToInteractiveRole": "off"
 					}
 				}
 			}

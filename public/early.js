@@ -1,18 +1,11 @@
 try {
-	const t = localStorage.getItem('ld-theme')
-	const a = localStorage.getItem('ld-accent')
-	if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
-	if (a && a !== 'ember') document.documentElement.dataset.accent = a
-	const tone = localStorage.getItem('ld-tone')
-	if (tone) document.documentElement.dataset.tone = tone
-	const density = localStorage.getItem('ld-density')
-	if (density) document.documentElement.dataset.density = density
-	const headline = localStorage.getItem('ld-headline')
-	if (headline) document.documentElement.dataset.headline = headline
+	const tint = localStorage.getItem('ld-tint')
+	if (tint) document.documentElement.style.setProperty('--tint', tint)
+	// Chrome focuses the address bar on a new tab. Reopening the tab once at its
+	// own address hands focus to the page, so typing goes into LiveDash.
 	if (
 		location.pathname.endsWith('/newtab.html') &&
-		!new URLSearchParams(location.search).has('f') &&
-		localStorage.getItem('ld-type') !== '0'
+		!new URLSearchParams(location.search).has('f')
 	) {
 		window.__ldRedirect = true
 		chrome.tabs.getCurrent((tab) => {
