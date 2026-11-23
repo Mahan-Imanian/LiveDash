@@ -1,152 +1,99 @@
-import { browser } from 'wxt/browser'
+import { type Browser, browser } from 'wxt/browser'
 import { defineBackground } from 'wxt/utils/define-background'
-import { titleFromUrl, toUrl } from '@/lib/url'
-import { parseWhen } from '@/lib/when'
-import { defaultFocus, mergeSettings, newTask, PREFIX } from '@/store/defaults'
-import { MODE_LABEL, remainingMs, settle } from '@/store/focus-logic'
-import type { FocusState, Settings, Shortcut, Task } from '@/store/types'
+import { addReading, forgetAll, forgetPage, forgetSince, forgetSite, savePage } from '@/memory/db'
+import { cleanTitle, neverKeep, pageKey, siteOf } from '@/memory/privacy'
+import { loadSettings, type Message, ORIGINS } from '@/memory/settings'
 
-const END = 'focus-end'
-const TICK = 'focus-tick'
+const SCRIPT_ID = 'reader'
+const SCRIPT_FILE = '/content-scripts/reader.js'
 
-async function read<T>(key: string, fallback: T, area: 'local' | 'sync' = 'local'): Promise<T> {
-	const r = await browser.storage[area].get(PREFIX + key)
-	return (r[PREFIX + key] as T) ?? fallback
+async function hasAccess(): Promise<boolean> {
+	return browser.permissions.contains({ origins: ORIGINS }).catch(() => false)
 }
 
-async function settings(): Promise<Settings> {
-	return mergeSettings(await read<unknown>('settings', {}, 'sync').catch(() => ({})))
-}
-
-async function badge(f: FocusState) {
-	if (f.status === 'running') {
-		const mins = Math.max(1, Math.ceil(remainingMs(f) / 60_000))
-		await browser.action.setBadgeBackgroundColor({
-			color: f.mode === 'focus' ? '#b33a17' : '#18764a',
-		})
-		await browser.action.setBadgeText({ text: `${mins}m` })
-	} else if (f.status === 'paused') {
-		await browser.action.setBadgeBackgroundColor({ color: '#676b72' })
-		await browser.action.setBadgeText({ text: '❚❚' })
-	} else {
-		await browser.action.setBadgeText({ text: '' })
+/** Keeps the page reader registered exactly while remembering is on and allowed. */
+async function sync(injectOpenTabs = false): Promise<void> {
+	const on = (await loadSettings()).remember && (await hasAccess())
+	const existing = await browser.scripting
+		.getRegisteredContentScripts({ ids: [SCRIPT_ID] })
+		.catch(() => [])
+	if (on && !existing.length) {
+		await browser.scripting.registerContentScripts([
+			{
+				id: SCRIPT_ID,
+				js: [SCRIPT_FILE],
+				matches: ORIGINS,
+				runAt: 'document_idle',
+				persistAcrossSessions: true,
+			},
+		])
+	}
+	if (!on && existing.length) await browser.scripting.unregisterContentScripts({ ids: [SCRIPT_ID] })
+	if (on && injectOpenTabs) {
+		const tabs = await browser.tabs.query({ url: ORIGINS })
+		for (const t of tabs) {
+			if (t.id === undefined || t.incognito || t.discarded) continue
+			browser.scripting
+				.executeScript({ target: { tabId: t.id }, files: [SCRIPT_FILE] })
+				.catch(() => {})
+		}
 	}
 }
 
-async function schedule(f: FocusState) {
-	await browser.alarms.clear(END)
-	await browser.alarms.clear(TICK)
-	if (f.status === 'running' && f.endsAt) {
-		await browser.alarms.create(END, { when: f.endsAt })
-		await browser.alarms.create(TICK, { periodInMinutes: 1 })
+async function handle(
+	m: Message,
+	tab: Browser.tabs.Tab | undefined,
+	fromPage: boolean,
+): Promise<unknown> {
+	if ((m.type === 'ld-start' || m.type === 'ld-forget') && !fromPage) return
+	if (m.type === 'ld-start') return sync(true)
+	if (m.type === 'ld-forget') {
+		const now = Date.now()
+		if (m.scope === 'page' && m.value) return forgetPage(pageKey(m.value))
+		if (m.scope === 'site' && m.value) return forgetSite(m.value)
+		if (m.scope === 'hour') return forgetSince(now - 3_600_000)
+		if (m.scope === 'day') return forgetSince(now - 86_400_000)
+		if (m.scope === 'all') return forgetAll()
+		return
 	}
-	await badge(f)
-}
-
-async function finish() {
-	const f = await read<FocusState>('focus', defaultFocus())
-	const s = await settings()
-	const { state, finished } = settle(f, s)
-	if (!finished) return schedule(f)
-	await browser.storage.local.set({ [`${PREFIX}focus`]: state })
-	if (!s.focus.notify) return
-	const allowed = await browser.permissions.contains({ permissions: ['notifications'] })
-	if (!allowed) return
-	await browser.notifications.create('focus', {
-		type: 'basic',
-		iconUrl: browser.runtime.getURL('/icon/128.png'),
-		title: finished === 'focus' ? 'Focus session complete' : 'Break’s over',
-		message:
-			finished === 'focus'
-				? `Time for a ${MODE_LABEL[state.mode].toLowerCase()}.`
-				: 'Ready for another focus session?',
-	})
-}
-
-async function flash(text: string) {
-	await browser.action.setBadgeBackgroundColor({ color: '#146c3d' })
-	await browser.action.setBadgeText({ text })
-	setTimeout(async () => badge(await read<FocusState>('focus', defaultFocus())), 2500)
+	// Page messages come only from the reader in a normal tab.
+	if (!tab || tab.incognito) return
+	const s = await loadSettings()
+	if (!s.remember) return
+	const url = pageKey(m.url)
+	if (neverKeep(url, s.paused)) return
+	if (m.type === 'ld-page') {
+		const paras = m.paras.filter((p) => typeof p === 'string').slice(0, 4000)
+		const title = cleanTitle(String(m.title || '').slice(0, 300), siteOf(url)) || siteOf(url)
+		return savePage({ url, site: siteOf(url), title, paras, at: Date.now() })
+	}
+	if (m.type === 'ld-read') return addReading(url, Number(m.ms) || 0)
 }
 
 export default defineBackground(() => {
 	browser.runtime.onInstalled.addListener(async ({ reason }) => {
-		browser.contextMenus.removeAll(() => {
-			browser.contextMenus.create({
-				id: 'task',
-				title: 'Save “%s” for later in LiveDash',
-				contexts: ['selection'],
-			})
-			browser.contextMenus.create({
-				id: 'later',
-				title: 'Save page for later in LiveDash',
-				contexts: ['page'],
-			})
-			browser.contextMenus.create({
-				id: 'pin',
-				title: 'Pin page to LiveDash',
-				contexts: ['page'],
-			})
-			browser.contextMenus.create({
-				id: 'pin-link',
-				title: 'Pin link to LiveDash',
-				contexts: ['link'],
-			})
-		})
+		await sync()
 		if (reason === 'install') await browser.tabs.create({ url: 'chrome://newtab' })
-		await schedule(await read<FocusState>('focus', defaultFocus()))
 	})
-
-	browser.runtime.onStartup.addListener(async () => {
-		await finish()
+	browser.runtime.onStartup.addListener(() => {
+		sync()
 	})
-
-	browser.contextMenus.onClicked.addListener(async (info, tab) => {
-		if (info.menuItemId === 'later') {
-			const url = toUrl(tab?.url ?? info.pageUrl ?? '')
-			if (!url) return
-			const tasks = await read<Task[]>('tasks', [])
-			if (!tasks.some((t) => t.url === url && !t.done)) {
-				const title = tab?.title || titleFromUrl(url)
-				const task = newTask({ title, due: null, allDay: false }, tasks, url)
-				await browser.storage.local.set({ [`${PREFIX}tasks`]: [...tasks, task] })
-			}
-			await flash('✓')
-			return
-		}
-		if (info.menuItemId === 'task' && info.selectionText) {
-			const text = info.selectionText.trim().slice(0, 500)
-			const tasks = await read<Task[]>('tasks', [])
-			const task = newTask(parseWhen(text), tasks)
-			await browser.storage.local.set({ [`${PREFIX}tasks`]: [...tasks, task] })
-			await flash('✓')
-			return
-		}
-		const raw = info.menuItemId === 'pin-link' ? info.linkUrl : (tab?.url ?? info.pageUrl)
-		const url = raw ? toUrl(raw) : null
-		if (!url) return
-		const list = await read<Shortcut[]>('shortcuts', [])
-		if (!list.some((s) => s.url === url)) {
-			const title = info.menuItemId === 'pin' && tab?.title ? tab.title : titleFromUrl(url)
-			await browser.storage.local.set({
-				[`${PREFIX}shortcuts`]: [...list, { id: crypto.randomUUID(), url, title }],
-			})
-		}
-		await flash('✓')
+	browser.permissions.onAdded.addListener(() => {
+		sync(true)
 	})
-
-	browser.storage.onChanged.addListener((changes, area) => {
-		const c = changes[`${PREFIX}focus`]
-		if (area === 'local' && c) schedule((c.newValue as FocusState) ?? defaultFocus())
+	browser.permissions.onRemoved.addListener(() => {
+		sync()
 	})
-
-	browser.alarms.onAlarm.addListener(async (a) => {
-		if (a.name === END) await finish()
-		if (a.name === TICK) await badge(await read<FocusState>('focus', defaultFocus()))
+	browser.storage.onChanged.addListener((_c, area) => {
+		if (area === 'sync') sync()
 	})
-
-	browser.notifications?.onClicked.addListener((id) => {
-		browser.notifications.clear(id)
-		browser.tabs.create({ url: 'chrome://newtab' })
+	browser.runtime.onMessage.addListener((raw, sender, reply) => {
+		// Only this extension's own pages and its reader may talk to it.
+		if (sender.id !== browser.runtime.id) return
+		const m = raw as Message
+		handle(m, sender.tab, !!sender.url?.startsWith(browser.runtime.getURL('/')))
+			.then(() => reply({ ok: true }))
+			.catch((e) => reply({ ok: false, error: String(e) }))
+		return true
 	})
 })
